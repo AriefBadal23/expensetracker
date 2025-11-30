@@ -1,11 +1,16 @@
 import { useState } from "react";
 import type { Transaction } from "../types/Transaction";
 import type { NewTransactionRow as AddNewTransactionRow } from "../types/NewTransactionRow";
+import { Buckets } from "../types/Buckets";
 
-const CreateForm = ({ updateTable }: AddNewTransactionRow) => {
+const CreateForm = ({
+  updateTable,
+  updateBucketAmount,
+}: AddNewTransactionRow) => {
   const [formdata, setFormData] = useState<Transaction>({
     amount: 0,
     description: "",
+    bucket: Buckets.Groceries,
   });
 
   const change = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -18,7 +23,9 @@ const CreateForm = ({ updateTable }: AddNewTransactionRow) => {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          updateTable(formdata.amount, formdata.description);
+          updateTable(formdata.amount, formdata.description, formdata.bucket);
+          updateBucketAmount(1, formdata.amount);
+          console.log("Executed!");
         }}
       >
         <label>Name</label>
@@ -34,6 +41,14 @@ const CreateForm = ({ updateTable }: AddNewTransactionRow) => {
           onChange={change}
           name="amount"
           value={formdata.amount}
+        />
+
+        <label>Bucket</label>
+        <input
+          type="text"
+          onChange={change}
+          name="bucket"
+          value={formdata.bucket}
         />
         <input type="submit" onChange={(e) => change(e)} value="Send" />
       </form>

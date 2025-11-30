@@ -12,12 +12,17 @@ const TransactionTable = ({ transactions }: TransactionTableProps) => {
           <tr>
             <th scope="col">Transaction</th>
             <th scope="col">Amount</th>
+            <th scope="col">Bucket</th>
           </tr>
         </thead>
         <tbody>
           {transactions.map((t) => {
             return (
-              <TransactionRow description={t.description} amount={t.amount} />
+              <TransactionRow
+                description={t.description}
+                amount={t.amount}
+                bucket={t.bucket.toString()}
+              />
             );
           })}
         </tbody>

@@ -16,8 +16,8 @@ const Bucket = ({ name, icon, amount }: BucketProps) => {
   );
 };
 export default Bucket;
-// React.FC<BucketProps> = ({props})
-// :ReactElement is niet nodig.
+// React.FC<BucketProps> = ({props}) :ReactElement is niet nodig.
 // JSX.Element is ook niet nodig, TS inferred the type van de component return.
 // :BucketProps geeft types aan van de props.
 // React.ChangeEvent<HTMLInputElement>
+// Number() is nog steeds nodig als je met numeric values operations doet.
