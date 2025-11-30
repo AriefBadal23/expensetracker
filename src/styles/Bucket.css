@@ -1,0 +1,22 @@
+.bucket-card {
+  height: 180px;
+  width: 200px;
+  margin: 10px 10px 10px 10px;
+  border: solid black 5px;
+  border-radius: 20px;
+  background-color: #4f46e5;
+  font-size: xx-large;
+  color: white;
+  font-weight: bolder;
+}
+
+#icon {
+  text-align: left;
+  margin: 0;
+}
+#name {
+    margin: 0;
+}
+#amount {
+    margin: 0;
+}
