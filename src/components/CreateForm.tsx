@@ -13,7 +13,13 @@ const CreateForm = ({
     bucket: Buckets.Groceries,
   });
 
-  const change = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const keys = Object.keys(Buckets);
+
+  const change = (
+    e:
+      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLSelectElement>
+  ) => {
     //!   wat doet [e.target.name]: e.target.value
     setFormData({ ...formdata, [e.target.name]: e.target.value });
   };
@@ -25,7 +31,8 @@ const CreateForm = ({
           e.preventDefault();
           updateTable(formdata.amount, formdata.description, formdata.bucket);
           updateBucketAmount(1, formdata.amount);
-          console.log("Executed!");
+          console.log(formdata.bucket);
+          // bucket as keyof typeof Buckets
         }}
       >
         <label>Name</label>
@@ -42,14 +49,13 @@ const CreateForm = ({
           name="amount"
           value={formdata.amount}
         />
-
         <label>Bucket</label>
-        <input
-          type="text"
-          onChange={change}
-          name="bucket"
-          value={formdata.bucket}
-        />
+        <select name="bucket" onChange={(e) => change(e)}>
+          <option>Choose a bucket</option>
+          {keys.map((key) => {
+            return <option value={key}>{key}</option>;
+          })}
+        </select>
         <input type="submit" onChange={(e) => change(e)} value="Send" />
       </form>
     </>
@@ -57,3 +63,6 @@ const CreateForm = ({
 };
 
 export default CreateForm;
+
+// Enum key/id => string naam van de bucket is
+// string name van de bucket geef ik door aan updateBucketAmount()

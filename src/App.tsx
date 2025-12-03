@@ -5,9 +5,9 @@ import TransactionTable from "./components/TransactionTable";
 import CreateForm from "./components/CreateForm";
 import { Buckets } from "./types/Buckets";
 import type { Bucket } from "./types/Bucket";
+import Bucket from "./components/Bucket";
 
 function App() {
-
   // Hold the transaction as state
   const [transactions, setTransactions] = useState([
     {
@@ -29,25 +29,28 @@ function App() {
       name: "Salary",
       total: 0,
       icon: "💰",
+      type: Buckets.Salary,
     },
     {
       id: 2,
       name: "Shopping",
       total: 49.99,
       icon: "🛒",
+      type: Buckets.Shopping,
     },
     {
       id: 3,
       name: "Groceries",
       total: 87.45,
       icon: "🏪",
+      type: Buckets.Groceries,
     },
   ]);
 
   function UpdateBucketAmount(id: number, amount: number): void {
     setBucket(
       buckets.map((b) =>
-        b.id === id ? { ...b, total: (b.total + Number(amount)) } : b
+        b.id === id ? { ...b, total: b.total + Number(amount) } : b
       )
     );
   }

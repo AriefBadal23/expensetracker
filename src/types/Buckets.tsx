@@ -1,5 +1,5 @@
 export enum Buckets {
-  Salary,
-  Shopping,
-  Groceries,
+  Salary = "Salary",
+  Shopping = "Shopping",
+  Groceries = "Groceries",
 }
