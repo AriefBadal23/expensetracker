@@ -24,19 +24,21 @@ const CreateForm = ({
     setFormData({ ...formdata, [e.target.name]: e.target.value });
   };
 
+
   return (
     <>
       <form
         onSubmit={(e) => {
           e.preventDefault();
           updateTable(formdata.amount, formdata.description, formdata.bucket);
-          updateBucketAmount(1, formdata.amount);
-          console.log(formdata.bucket);
+          updateBucketAmount(formdata.bucket, formdata.amount);
           // bucket as keyof typeof Buckets
         }}
       >
+        
         <label>Name</label>
         <input
+          required
           type="text"
           name="description"
           onChange={(e) => change(e)}
@@ -44,13 +46,14 @@ const CreateForm = ({
         />
         <label>Amount</label>
         <input
+          required
           type="number"
           onChange={change}
           name="amount"
           value={formdata.amount}
         />
         <label>Bucket</label>
-        <select name="bucket" onChange={(e) => change(e)}>
+        <select required name="bucket" onChange={(e) => change(e)}>
           <option>Choose a bucket</option>
           {keys.map((key) => {
             return <option value={key}>{key}</option>;

@@ -12,10 +12,16 @@ const TransactionRow = ({
   bucket,
 }: TransactionRowProps) => {
   return (
-    <tr>
-      <td>{description}</td>
-      <td>€{amount}</td>
-      <td>{Buckets[bucket as keyof typeof Buckets]}</td>
+    <tr className={`${bucket === Buckets.Salary} ? "table-success": ""`}>
+      <td className={`${bucket === Buckets.Salary} ? "table-light": ""`}>
+        {description}
+      </td>
+      <td className={`${bucket === Buckets.Salary} ? "table-light": ""`}>
+        €{amount}
+      </td>
+      <td className={`${bucket === Buckets.Salary} ? "table-light": ""`}>
+        {Buckets[bucket as keyof typeof Buckets]}
+      </td>
     </tr>
   );
 };

@@ -5,7 +5,6 @@ import TransactionTable from "./components/TransactionTable";
 import CreateForm from "./components/CreateForm";
 import { Buckets } from "./types/Buckets";
 import type { Bucket } from "./types/Bucket";
-import Bucket from "./components/Bucket";
 
 function App() {
   // Hold the transaction as state
@@ -47,10 +46,11 @@ function App() {
     },
   ]);
 
-  function UpdateBucketAmount(id: number, amount: number): void {
+  function UpdateBucketAmount(name: Buckets, amount: number): void {
+    // TODO: name could be and ID in the future.
     setBucket(
       buckets.map((b) =>
-        b.id === id ? { ...b, total: b.total + Number(amount) } : b
+        b.name === name ? { ...b, total: b.total + Number(amount) } : b
       )
     );
   }

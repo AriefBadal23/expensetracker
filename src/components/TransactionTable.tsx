@@ -1,6 +1,5 @@
 import TransactionRow from "./TransactionRow";
 import type { Transaction } from "../types/Transaction";
-import { v4 as uuidv4 } from "uuid";
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -20,10 +19,9 @@ const TransactionTable = ({ transactions }: TransactionTableProps) => {
           {transactions.map((t) => {
             return (
               <TransactionRow
-                key={uuidv4()}
                 description={t.description}
                 amount={t.amount}
-                bucket={t.bucket.toString()}
+                bucket={t.bucket}
               />
             );
           })}

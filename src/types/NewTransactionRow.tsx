@@ -8,5 +8,5 @@ export interface NewTransactionRow {
     bucket: Buckets
   ) => Transaction[];
 
-  updateBucketAmount: (id: number, amount: number) => void;
+  updateBucketAmount: (name: Buckets, amount: number) => void;
 }
