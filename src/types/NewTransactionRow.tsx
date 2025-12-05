@@ -1,4 +1,3 @@
-import type { Transaction } from "./Transaction";
 import type { Buckets } from "../types/Buckets";
 
 export interface NewTransactionRow {
@@ -6,7 +5,7 @@ export interface NewTransactionRow {
     amount: number,
     description: string,
     bucket: Buckets
-  ) => Transaction[];
+  ) => void;
 
   updateBucketAmount: (name: Buckets, amount: number) => void;
 }
