@@ -2,9 +2,10 @@ import { useState } from "react";
 import "./App.css";
 import BucketList from "./components/BucketList";
 import TransactionTable from "./components/TransactionTable";
-import CreateForm from "./components/CreateForm";
 import { Buckets } from "./types/Buckets";
 import type { Bucket } from "./types/Bucket";
+import CreateFormModal from "./components/CreateFormModal";
+// import { BrowserRouter } from "react-router-dom";
 
 function App() {
   // Hold the transaction as state
@@ -72,9 +73,10 @@ function App() {
     <>
       <BucketList buckets={buckets} />
       <TransactionTable transactions={transactions} />
-      <CreateForm
-        updateTable={UpdateTable}
+
+      <CreateFormModal
         updateBucketAmount={UpdateBucketAmount}
+        updateTable={UpdateTable}
       />
     </>
   );

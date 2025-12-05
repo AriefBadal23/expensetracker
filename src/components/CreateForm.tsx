@@ -7,6 +7,8 @@ const CreateForm = ({
   updateTable,
   updateBucketAmount,
 }: AddNewTransactionRow) => {
+
+  
   const [formdata, setFormData] = useState<Transaction>({
     amount: 0,
     description: "",
@@ -16,14 +18,11 @@ const CreateForm = ({
   const keys = Object.keys(Buckets);
 
   const change = (
-    e:
-      | React.ChangeEvent<HTMLInputElement>
-      | React.ChangeEvent<HTMLSelectElement>
+    e:| React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>
   ) => {
     //!   wat doet [e.target.name]: e.target.value
     setFormData({ ...formdata, [e.target.name]: e.target.value });
   };
-
 
   return (
     <>
@@ -32,34 +31,59 @@ const CreateForm = ({
           e.preventDefault();
           updateTable(formdata.amount, formdata.description, formdata.bucket);
           updateBucketAmount(formdata.bucket, formdata.amount);
-          // bucket as keyof typeof Buckets
+
+          // clear form after submit
+          setFormData({
+            amount: 0,
+            bucket: Buckets.Groceries,
+            description: "",
+          });
         }}
       >
-        
-        <label>Name</label>
+        <div className="form-floating mb-3">
+          <input
+            className="form-control"
+            required
+            type="text"
+            name="description"
+            onChange={(e) => change(e)}
+            value={formdata.description}
+          />
+          <label htmlFor="name">Name</label>
+        </div>
+        <div className="form-floating mb-3">
+          <input
+            className="form-control"
+            required
+            type="number"
+            onChange={change}
+            name="amount"
+            value={formdata.amount}
+            placeholder="amount"
+          />
+          <label htmlFor="amount">Amount</label>
+        </div>
+
+        <div className="form-floating mb-3">
+          <select
+            className="form-select"
+            required
+            name="bucket"
+            onChange={(e) => change(e)}
+          >
+            <option selected>Choose a bucket</option>
+            {keys.map((key) => {
+              return <option value={key}>{key}</option>;
+            })}
+          </select>
+          <label htmlFor="bucket">Bucket</label>
+        </div>
         <input
-          required
-          type="text"
-          name="description"
+          type="submit"
           onChange={(e) => change(e)}
-          value={formdata.description}
+          value="Save transaction"
+          className="btn btn-primary"
         />
-        <label>Amount</label>
-        <input
-          required
-          type="number"
-          onChange={change}
-          name="amount"
-          value={formdata.amount}
-        />
-        <label>Bucket</label>
-        <select required name="bucket" onChange={(e) => change(e)}>
-          <option>Choose a bucket</option>
-          {keys.map((key) => {
-            return <option value={key}>{key}</option>;
-          })}
-        </select>
-        <input type="submit" onChange={(e) => change(e)} value="Send" />
       </form>
     </>
   );
