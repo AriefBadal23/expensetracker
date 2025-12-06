@@ -3,12 +3,10 @@ import type { Transaction } from "../types/Transaction";
 import type { NewTransactionRow as AddNewTransactionRow } from "../types/NewTransactionRow";
 import { Buckets } from "../types/Buckets";
 
-const CreateForm = ({
+const CreateTransactionForm = ({
   updateTable,
   updateBucketAmount,
 }: AddNewTransactionRow) => {
-
-  
   const [formdata, setFormData] = useState<Transaction>({
     amount: 0,
     description: "",
@@ -18,7 +16,9 @@ const CreateForm = ({
   const keys = Object.keys(Buckets);
 
   const change = (
-    e:| React.ChangeEvent<HTMLInputElement> | React.ChangeEvent<HTMLSelectElement>
+    e:
+      | React.ChangeEvent<HTMLInputElement>
+      | React.ChangeEvent<HTMLSelectElement>
   ) => {
     //!   wat doet [e.target.name]: e.target.value
     setFormData({ ...formdata, [e.target.name]: e.target.value });
@@ -89,7 +89,7 @@ const CreateForm = ({
   );
 };
 
-export default CreateForm;
+export default CreateTransactionForm;
 
 // Enum key/id => string naam van de bucket is
 // string name van de bucket geef ik door aan updateBucketAmount()

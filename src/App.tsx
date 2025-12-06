@@ -5,7 +5,8 @@ import TransactionTable from "./components/TransactionTable";
 import { Buckets } from "./types/Buckets";
 import type { Bucket } from "./types/Bucket";
 import CreateFormModal from "./components/CreateFormModal";
-// import { BrowserRouter } from "react-router-dom";
+import { BrowserRouter, Route, Routes } from "react-router-dom";
+import BucketDetail from "./components/BucketDetail";
 
 function App() {
   // Hold the transaction as state
@@ -16,8 +17,13 @@ function App() {
       bucket: Buckets.Shopping,
     },
     {
-      description: "Groceries",
+      description: "A lot of Health Groceries",
       amount: 87.45,
+      bucket: Buckets.Groceries,
+    },
+    {
+      description: "A lot of Snacks",
+      amount: 18.45,
       bucket: Buckets.Groceries,
     },
   ]);
@@ -55,6 +61,7 @@ function App() {
       )
     );
   }
+
   function UpdateTable(
     newamount: number,
     newdescription: string,
@@ -71,13 +78,27 @@ function App() {
   }
   return (
     <>
-      <BucketList buckets={buckets} />
-      <TransactionTable transactions={transactions} />
-
-      <CreateFormModal
-        updateBucketAmount={UpdateBucketAmount}
-        updateTable={UpdateTable}
-      />
+      <BrowserRouter>
+        <Routes>
+          <Route
+            path="/"
+            element={
+              <>
+                <BucketList buckets={buckets} />
+                <TransactionTable transactions={transactions} />
+                <CreateFormModal
+                  updateBucketAmount={UpdateBucketAmount}
+                  updateTable={UpdateTable}
+                />
+              </>
+            }
+          />
+          <Route
+            path=":name"
+            element={<BucketDetail transactions={transactions} />}
+          />
+        </Routes>
+      </BrowserRouter>
     </>
   );
 }

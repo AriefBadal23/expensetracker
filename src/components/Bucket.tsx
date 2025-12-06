@@ -1,3 +1,4 @@
+import { Link } from "react-router-dom";
 import "../styles/Bucket.css";
 
 interface BucketProps {
@@ -8,11 +9,13 @@ interface BucketProps {
 
 const Bucket = ({ name, icon, amount }: BucketProps) => {
   return (
-    <div className="bucket-card">
-      <p id="icon">{icon}</p>
-      <p id="name">{name}</p>
-      <p id="amount">€{amount}</p>
-    </div>
+    <Link to={`/${name}`}>
+      <div className="bucket-card">
+        <p id="icon">{icon}</p>
+        <p id="name">{name}</p>
+        <p id="amount">€{amount}</p>
+      </div>
+    </Link>
   );
 };
 export default Bucket;

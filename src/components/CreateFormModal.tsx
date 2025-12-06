@@ -1,5 +1,5 @@
 import type { NewTransactionRow } from "../types/NewTransactionRow";
-import CreateForm from "./CreateForm";
+import CreateTransactionForm from "./CreateTransactionForm";
 
 const CreateFormModal = ({
   updateTable,
@@ -36,7 +36,7 @@ const CreateFormModal = ({
               ></button>
             </div>
             <div className="modal-body">
-              <CreateForm
+              <CreateTransactionForm
                 updateTable={updateTable}
                 updateBucketAmount={updateBucketAmount}
               />
