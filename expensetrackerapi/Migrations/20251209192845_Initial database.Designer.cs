@@ -12,8 +12,8 @@ using expensetrackerapi.Models;
 namespace expensetrackerapi.Migrations
 {
     [DbContext(typeof(ExpenseTrackerContext))]
-    [Migration("20251209151540_Add more columns")]
-    partial class Addmorecolumns
+    [Migration("20251209192845_Initial database")]
+    partial class Initialdatabase
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -44,6 +44,29 @@ namespace expensetrackerapi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Buckets");
+                });
+
+            modelBuilder.Entity("expensetrackerapi.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created_at")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("expensetrackerapi.Transaction", b =>
@@ -79,29 +102,6 @@ namespace expensetrackerapi.Migrations
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("expensetrackerapi.User", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Created_at")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Users");
-                });
-
             modelBuilder.Entity("expensetrackerapi.Transaction", b =>
                 {
                     b.HasOne("expensetrackerapi.Bucket", null)
@@ -110,7 +110,7 @@ namespace expensetrackerapi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("expensetrackerapi.User", null)
+                    b.HasOne("expensetrackerapi.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)

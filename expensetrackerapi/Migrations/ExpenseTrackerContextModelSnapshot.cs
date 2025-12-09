@@ -43,6 +43,29 @@ namespace expensetrackerapi.Migrations
                     b.ToTable("Buckets");
                 });
 
+            modelBuilder.Entity("expensetrackerapi.Models.User", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("Created_at")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<int>("Role")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("Username")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Users");
+                });
+
             modelBuilder.Entity("expensetrackerapi.Transaction", b =>
                 {
                     b.Property<int>("Id")
@@ -76,29 +99,6 @@ namespace expensetrackerapi.Migrations
                     b.ToTable("Transactions");
                 });
 
-            modelBuilder.Entity("expensetrackerapi.User", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<DateTime>("Created_at")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<int>("Role")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("Username")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Users");
-                });
-
             modelBuilder.Entity("expensetrackerapi.Transaction", b =>
                 {
                     b.HasOne("expensetrackerapi.Bucket", null)
@@ -107,7 +107,7 @@ namespace expensetrackerapi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("expensetrackerapi.User", null)
+                    b.HasOne("expensetrackerapi.Models.User", null)
                         .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
