@@ -8,4 +8,5 @@ public record Transaction
     public required string Description { get; set; }
     public int Amount { get; set; }
     public DateTime Created_at { get; set; } = DateTime.UtcNow;
+    public bool isExpense { get; set; }
 }
