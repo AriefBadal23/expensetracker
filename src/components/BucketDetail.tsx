@@ -41,6 +41,7 @@ function BucketDetail() {
             <th scope="col">Bucket</th>
             <th scope="col">Description</th>
             <th scope="col">Amount</th>
+            <th scope="col">Date</th>
           </tr>
         </thead>
         <tbody>
@@ -50,6 +51,7 @@ function BucketDetail() {
                 <td>{IdToBucket[b.bucketId]}</td>
                 <td>{b.description}</td>
                 <td>€ {b.amount}</td>
+                <td>{new Date(b.created_at).toLocaleDateString()}</td>
               </tr>
             );
           })}

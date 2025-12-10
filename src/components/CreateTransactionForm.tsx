@@ -32,7 +32,6 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
   ) => {
     //!   wat doet [e.target.name]: e.target.value
     setFormData({ ...formdata, [e.target.name]: e.target.value });
-    console.log(`BucketId gekozen:${formdata.bucketId}`);
   };
 
   return (
@@ -48,6 +47,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
             amount: 0,
             bucketId: 0,
             description: "",
+            created_at: new Date(),
           });
         }}
       >
@@ -87,6 +87,11 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
               return <option value={BucketToId[key]}>{key}</option>;
             })}
           </select>
+          <label htmlFor="bucketId">Bucket</label>
+        </div>
+
+        <div className="form-floating mb3">
+          <input type="date" className="form-control" />
           <label htmlFor="bucketId">Bucket</label>
         </div>
 

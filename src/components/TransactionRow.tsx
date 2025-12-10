@@ -14,6 +14,7 @@ const TransactionRow = ({ transactions }: TransactionRowProps) => {
             <td>{t.description}</td>
             <td>{t.amount}</td>
             <td>{IdToBucket[t.bucketId]}</td>
+            <td>{new Date(t.created_at).toLocaleDateString()}</td>
           </tr>
         );
       })}
