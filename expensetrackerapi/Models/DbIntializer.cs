@@ -22,13 +22,13 @@ public static class DbIntializer
 
         var users = new User[]
         {
-            new User{Role=Role.User, Username="Arief", Created_at= DateTime.UtcNow.Date}
+            new User{Role=Role.User, Username="Arief"}
         };
 
 
         context.AddRange(users);
         context.SaveChanges();
-
+        
 
 
 

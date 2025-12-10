@@ -38,6 +38,10 @@ namespace expensetrackerapi.Controllers
             if (transaction != null)
             {
                 _db.Transactions.Add(transaction);
+                var bucket = _db.Buckets.First(b => b.Id == transaction.BucketId);
+                bucket.Total = transaction.Amount + bucket.Total;
+
+                _db.Buckets.Update(bucket);
                 _db.SaveChanges();
 
                 return Ok();

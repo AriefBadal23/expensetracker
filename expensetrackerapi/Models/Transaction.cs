@@ -7,5 +7,5 @@ public record Transaction
     public int UserId { get; set; }
     public required string Description { get; set; }
     public int Amount { get; set; }
-    public DateTime Created_at { get; set; }
+    public DateTime Created_at { get; set; } = DateTime.UtcNow;
 }
