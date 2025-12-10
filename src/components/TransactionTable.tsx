@@ -1,5 +1,5 @@
-import TransactionRow from "./TransactionRow";
 import type { Transaction } from "../types/Transaction";
+import TransactionRow from "./TransactionRow";
 
 interface TransactionTableProps {
   transactions: Transaction[];
@@ -16,15 +16,7 @@ const TransactionTable = ({ transactions }: TransactionTableProps) => {
           </tr>
         </thead>
         <tbody>
-          {transactions.map((t) => {
-            return (
-              <TransactionRow
-                description={t.description}
-                amount={t.amount}
-                bucket={t.bucket}
-              />
-            );
-          })}
+          <TransactionRow transactions={transactions} />
         </tbody>
       </table>
     </>

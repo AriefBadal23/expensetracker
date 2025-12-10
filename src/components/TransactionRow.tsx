@@ -1,28 +1,23 @@
-import { Buckets } from "../types/Buckets";
+import type { Transaction } from "../types/Transaction";
+import { IdToBucket } from "../utils/BucketMap";
 
 interface TransactionRowProps {
-  description: string;
-  amount: number;
-  bucket: string;
+  transactions: Transaction[];
 }
 
-const TransactionRow = ({
-  description,
-  amount,
-  bucket,
-}: TransactionRowProps) => {
+const TransactionRow = ({ transactions }: TransactionRowProps) => {
   return (
-    <tr className={`${bucket === Buckets.Salary} ? "table-success": ""`}>
-      <td className={`${bucket === Buckets.Salary} ? "table-light": ""`}>
-        {description}
-      </td>
-      <td className={`${bucket === Buckets.Salary} ? "table-light": ""`}>
-        €{amount}
-      </td>
-      <td className={`${bucket === Buckets.Salary} ? "table-light": ""`}>
-        {Buckets[bucket as keyof typeof Buckets]}
-      </td>
-    </tr>
+    <>
+      {transactions.map((t: Transaction) => {
+        return (
+          <tr key={t.id}>
+            <td>{t.description}</td>
+            <td>{t.amount}</td>
+            <td>{IdToBucket[t.bucketId]}</td>
+          </tr>
+        );
+      })}
+    </>
   );
 };
 
