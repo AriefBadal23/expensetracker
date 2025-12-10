@@ -28,7 +28,7 @@ public static class DbIntializer
 
         context.AddRange(users);
         context.SaveChanges();
-        
+
 
 
 
@@ -49,6 +49,13 @@ public static class DbIntializer
                 Amount=350
             },
         };
+
+        // Make sure the Total is up-to-date of the buckets.
+        var FirstupdateTotal = context.Buckets.First(x => x.Id == transactions[0].BucketId);
+        FirstupdateTotal.Total = transactions[0].Amount;
+
+        var SecondupdateTotal = context.Buckets.First(x => x.Id == transactions[1].BucketId);
+        SecondupdateTotal.Total = transactions[1].Amount;
 
         context.Transactions.AddRange(transactions);
         context.SaveChanges();
