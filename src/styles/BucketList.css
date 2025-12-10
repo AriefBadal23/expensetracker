@@ -3,3 +3,6 @@
   flex-direction: row;
   flex-wrap: wrap;
 }
+h1 {
+  font-weight: bold;
+}
