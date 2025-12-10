@@ -22,7 +22,7 @@ public static class DbIntializer
 
         var users = new User[]
         {
-            new User{Role=Role.User, Username="Arief"}
+            new User{Role=Role.User, Username="Arief", Password="Test1234"}
         };
 
 
@@ -36,19 +36,23 @@ public static class DbIntializer
         {
             new Transaction
             {
-                BucketId=2,
-                Description="Groceries at the AH",
+                BucketId=1,
+                Description="Monthly Salary",
                 UserId=1,
-                Amount=100
+                Amount=1000,
+                isExpense=false
             },
             new Transaction
             {
-                BucketId=1,
-                Description="New Jacket",
+                BucketId=2,
+                Description="Groceries at the AH",
                 UserId=1,
-                Amount=350
-            },
+                Amount=100,
+                isExpense=true
+            }
+
         };
+
 
         // Make sure the Total is up-to-date of the buckets.
         var FirstupdateTotal = context.Buckets.First(x => x.Id == transactions[0].BucketId);
@@ -59,6 +63,17 @@ public static class DbIntializer
 
         context.Transactions.AddRange(transactions);
         context.SaveChanges();
+
+
+        var Salary = context.Buckets.First(x => x.Name == Buckets.Salary);
+
+        if (Salary.Total > 0)
+        {
+            Salary.Total = Salary.Total - SecondupdateTotal.Total;
+            context.Update(Salary);
+            context.SaveChanges();
+        }
+
 
 
 
