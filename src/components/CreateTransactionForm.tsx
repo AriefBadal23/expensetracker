@@ -11,6 +11,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
     description: "",
     amount: 0,
     created_at: new Date(),
+    isExpense: false,
   });
 
   // 💡 force keys to be enum values
@@ -31,7 +32,11 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
       | React.ChangeEvent<HTMLSelectElement>
   ) => {
     //!   wat doet [e.target.name]: e.target.value
-    setFormData({ ...formdata, [e.target.name]: e.target.value });
+    setFormData({
+      ...formdata,
+      [e.target.name]:
+        e.target.type === "checkbox" ? e.target.checked : e.target.value,
+    });
   };
 
   return (
@@ -39,7 +44,13 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          updateTable(formdata.amount, formdata.description, formdata.bucketId);
+          updateTable(
+            formdata.amount,
+            formdata.description,
+            formdata.bucketId,
+            formdata.created_at,
+            formdata.isExpense
+          );
           SubmitData();
 
           // clear form after submit
@@ -48,9 +59,25 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
             bucketId: 0,
             description: "",
             created_at: new Date(),
+            isExpense: false,
           });
         }}
       >
+        <div className="form-check mb-3">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            name="isExpense"
+            checked={formdata.isExpense}
+            onChange={(e) => {
+              change(e);
+            }}
+          />
+          <label className="form-check-label" htmlFor="flexCheckChecked">
+            This transaction is an expense.
+          </label>
+        </div>
+
         <div className="form-floating mb-3">
           <input
             className="form-control"
@@ -92,7 +119,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
 
         <div className="form-floating mb3">
           <input type="date" className="form-control" />
-          <label htmlFor="bucketId">Bucket</label>
+          <label htmlFor="created_at">Date</label>
         </div>
 
         <input

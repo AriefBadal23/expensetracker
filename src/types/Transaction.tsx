@@ -5,4 +5,5 @@ export interface Transaction {
   description: string;
   amount: number;
   created_at: Date;
+  isExpense: boolean;
 }

@@ -12,7 +12,7 @@ const TransactionRow = ({ transactions }: TransactionRowProps) => {
         return (
           <tr key={t.id}>
             <td>{t.description}</td>
-            <td>{t.amount}</td>
+            <td>€ {t.isExpense ? ` - ${t.amount}` : `+${t.amount}`}</td>
             <td>{IdToBucket[t.bucketId]}</td>
             <td>{new Date(t.created_at).toLocaleDateString()}</td>
           </tr>

@@ -1,9 +1,7 @@
 import type { NewTransactionRow } from "../types/NewTransactionRow";
 import CreateTransactionForm from "./CreateTransactionForm";
 
-const CreateFormModal = ({
-  updateTable,
-}: NewTransactionRow) => {
+const CreateFormModal = ({ updateTable }: NewTransactionRow) => {
   return (
     <>
       <button
@@ -35,9 +33,7 @@ const CreateFormModal = ({
               ></button>
             </div>
             <div className="modal-body">
-              <CreateTransactionForm
-                updateTable={updateTable}
-              />
+              <CreateTransactionForm updateTable={updateTable} />
             </div>
             <div className="modal-footer">
               <button

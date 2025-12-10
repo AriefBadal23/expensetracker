@@ -28,7 +28,9 @@ function App() {
   function UpdateTable(
     newamount: number,
     newdescription: string,
-    newbucket: number
+    newbucket: number,
+    newcreated_at: Date,
+    isExpense: boolean
   ): void {
     setTransactions((prev) => [
       ...prev,
@@ -36,6 +38,8 @@ function App() {
         amount: newamount,
         description: newdescription,
         bucketId: newbucket,
+        created_at: newcreated_at,
+        isExpense: isExpense,
       },
     ]);
   }
