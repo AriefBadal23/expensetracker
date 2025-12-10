@@ -3,7 +3,6 @@ import CreateTransactionForm from "./CreateTransactionForm";
 
 const CreateFormModal = ({
   updateTable,
-  updateBucketAmount,
 }: NewTransactionRow) => {
   return (
     <>
@@ -38,7 +37,6 @@ const CreateFormModal = ({
             <div className="modal-body">
               <CreateTransactionForm
                 updateTable={updateTable}
-                updateBucketAmount={updateBucketAmount}
               />
             </div>
             <div className="modal-footer">

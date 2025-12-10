@@ -1,17 +1,40 @@
 import { useParams } from "react-router-dom";
+import { IdToBucket } from "../utils/BucketMap";
 import type { Transaction } from "../types/Transaction";
+import { useEffect, useState } from "react";
+import { Buckets } from "../types/Buckets";
 
-interface BucketDetailProps {
-  transactions: Transaction[];
-}
-function BucketDetail({ transactions }: BucketDetailProps) {
+function BucketDetail() {
   const params = useParams();
-  const bucket = transactions.filter((t) => t.bucket === params.name);
-  const total = new Array<number>();
+  const [buckettransactions, setTransactions] = useState<Transaction[]>([]);
+  useEffect(() => {
+    const fetchTransactions = async () => {
+      try {
+        const response = await fetch(
+          `http://localhost:5286/api/v1/buckets/${params.name}`
+        );
+
+        const transactions = await response.json();
+        setTransactions(transactions);
+      } catch {
+        console.log("Failed to fetch data from api");
+      }
+    };
+    fetchTransactions();
+  }, [params.name]);
+
+  const bucketName = params.name as Buckets;
+  const bucketTransactions = buckettransactions.find(
+    (x) => IdToBucket[x.bucketId] === bucketName
+  );
 
   return (
     <>
-      <h1>{params.name}</h1>
+      <h1>
+        {bucketTransactions != null
+          ? `${IdToBucket[bucketTransactions?.bucketId]}`
+          : `No Transactions for ${params.name}`}
+      </h1>
       <table className="table">
         <thead>
           <tr>
@@ -21,21 +44,17 @@ function BucketDetail({ transactions }: BucketDetailProps) {
           </tr>
         </thead>
         <tbody>
-          {bucket.map((b) => {
-            total.push(b.amount);
+          {buckettransactions.map((b) => {
             return (
-              <>
-                <tr>
-                  <td>{b.bucket}</td>
-                  <td>{b.description}</td>
-                  <td>{b.amount}</td>
-                </tr>
-              </>
+              <tr key={b.id}>
+                <td>{IdToBucket[b.bucketId]}</td>
+                <td>{b.description}</td>
+                <td>€ {b.amount}</td>
+              </tr>
             );
           })}
         </tbody>
       </table>
-      <h1>€{total.reduce((x, y) => x + y)}</h1>
     </>
   );
 }

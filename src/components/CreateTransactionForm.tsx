@@ -2,19 +2,29 @@ import { useState } from "react";
 import type { Transaction } from "../types/Transaction";
 import type { NewTransactionRow as AddNewTransactionRow } from "../types/NewTransactionRow";
 import { Buckets } from "../types/Buckets";
+import { BucketToId } from "../utils/BucketMap";
 
-const CreateTransactionForm = ({
-  updateTable,
-  updateBucketAmount,
-}: AddNewTransactionRow) => {
+const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
   const [formdata, setFormData] = useState<Transaction>({
-    amount: 0,
+    bucketId: 0,
+    userId: 1,
     description: "",
-    bucket: Buckets.Groceries,
+    amount: 0,
+    created_at: new Date(),
   });
 
-  const keys = Object.keys(Buckets);
+  // 💡 force keys to be enum values
+  const bucketKeys = Object.values(Buckets) as Buckets[];
 
+  function SubmitData() {
+    fetch("http://localhost:5286/api/v1/transactions", {
+      method: "Post",
+      body: JSON.stringify(formdata),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    });
+  }
   const change = (
     e:
       | React.ChangeEvent<HTMLInputElement>
@@ -22,6 +32,7 @@ const CreateTransactionForm = ({
   ) => {
     //!   wat doet [e.target.name]: e.target.value
     setFormData({ ...formdata, [e.target.name]: e.target.value });
+    console.log(`BucketId gekozen:${formdata.bucketId}`);
   };
 
   return (
@@ -29,13 +40,13 @@ const CreateTransactionForm = ({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          updateTable(formdata.amount, formdata.description, formdata.bucket);
-          updateBucketAmount(formdata.bucket, formdata.amount);
+          updateTable(formdata.amount, formdata.description, formdata.bucketId);
+          SubmitData();
 
           // clear form after submit
           setFormData({
             amount: 0,
-            bucket: Buckets.Groceries,
+            bucketId: 0,
             description: "",
           });
         }}
@@ -68,16 +79,17 @@ const CreateTransactionForm = ({
           <select
             className="form-select"
             required
-            name="bucket"
+            name="bucketId"
             onChange={(e) => change(e)}
           >
             <option selected>Choose a bucket</option>
-            {keys.map((key) => {
-              return <option value={key}>{key}</option>;
+            {bucketKeys.map((key) => {
+              return <option value={BucketToId[key]}>{key}</option>;
             })}
           </select>
-          <label htmlFor="bucket">Bucket</label>
+          <label htmlFor="bucketId">Bucket</label>
         </div>
+
         <input
           type="submit"
           onChange={(e) => change(e)}
