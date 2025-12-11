@@ -13,7 +13,7 @@ options =>
     options.AddPolicy(name: MyAllowSpecificOrigins,
     policy =>
     {
-        policy.WithOrigins("http://localhost:5173");
+        policy.WithOrigins("http://localhost:5173").AllowAnyMethod().AllowAnyHeader();
     });
 }
 
@@ -27,7 +27,8 @@ builder.Services.AddControllers()
 
 // Make use of the PostgreSQL database as a service we inject in the DI container.
 builder.Services.AddDbContext<ExpenseTrackerContext>(options => options
-        .UseNpgsql(builder.Configuration.GetConnectionString("ExpenseTrackerContext"), o => o.MapEnum<Buckets>("buckets")));
+        .UseNpgsql(builder.Configuration.GetConnectionString("ExpenseTrackerContext"),
+         o => o.MapEnum<Buckets>("buckets")));
 
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

@@ -13,7 +13,7 @@ const Bucket = ({ name, icon, amount }: BucketProps) => {
       <div className="bucket-card">
         <p id="icon">{icon}</p>
         <p id="name">{name}</p>
-        <p id="amount">€{amount}</p>
+        <p id="amount">Total: €{amount}</p>
       </div>
     </Link>
   );

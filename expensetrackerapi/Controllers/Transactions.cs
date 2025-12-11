@@ -37,7 +37,17 @@ namespace expensetrackerapi.Controllers
         {
             if (transaction != null)
             {
+                if (transaction.isExpense == true)
+                {
+                    var Salary = _db.Buckets.First(x => x.Name == Buckets.Salary && transaction.BucketId != x.Id);
+                    Salary.Total = Salary.Total > 0 ? Salary.Total - transaction.Amount : 0;
+                    _db.Buckets.Update(Salary);
+                }
                 _db.Transactions.Add(transaction);
+                var bucket = _db.Buckets.First(b => b.Id == transaction.BucketId);
+                bucket.Total = transaction.Amount + bucket.Total;
+
+                _db.Buckets.Update(bucket);
                 _db.SaveChanges();
 
                 return Ok();

@@ -27,7 +27,7 @@ public class BucketsController : ControllerBase
             var buckets = from b in _db.Buckets
                           join transaction in _db.Transactions on b.Id equals transaction.BucketId
                           where b.Name == bucketEnum
-                          select new { b, transaction };
+                          select transaction;
 
             if (buckets != null)
             {

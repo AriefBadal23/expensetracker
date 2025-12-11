@@ -1,15 +1,24 @@
-// import Bucket from "./Bucket";
 import "../styles/BucketList.css";
-// import type { Buckets } from "../types/Buckets";
 import Bucket from "./Bucket";
 import type { Bucket as BucketType } from "../types/Bucket";
 import { v4 as uuidv4 } from "uuid";
+import { useEffect, useState } from "react";
 
-interface BucketListProps {
-  buckets: BucketType[];
-}
+const BucketList = () => {
+  const [buckets, SetBuckets] = useState([]);
 
-const BucketList = ({ buckets }: BucketListProps) => {
+  useEffect(() => {
+    const fetchBuckets = async () => {
+      try {
+        const response = await fetch("http://localhost:5286/api/v1/buckets");
+        const buckets = await response.json();
+        SetBuckets(buckets);
+      } catch {
+        console.log("Failed to fetch data from api");
+      }
+    };
+    fetchBuckets();
+  }, []);
   return (
     <>
       <h1>Transaction Overview</h1>

@@ -2,26 +2,41 @@ import { useState } from "react";
 import type { Transaction } from "../types/Transaction";
 import type { NewTransactionRow as AddNewTransactionRow } from "../types/NewTransactionRow";
 import { Buckets } from "../types/Buckets";
+import { BucketToId } from "../utils/BucketMap";
 
-const CreateTransactionForm = ({
-  updateTable,
-  updateBucketAmount,
-}: AddNewTransactionRow) => {
+const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
   const [formdata, setFormData] = useState<Transaction>({
-    amount: 0,
+    bucketId: 0,
+    userId: 1,
     description: "",
-    bucket: Buckets.Groceries,
+    amount: 0,
+    created_at: new Date(),
+    isExpense: false,
   });
 
-  const keys = Object.keys(Buckets);
+  // 💡 force keys to be enum values
+  const bucketKeys = Object.values(Buckets) as Buckets[];
 
+  function SubmitData() {
+    fetch("http://localhost:5286/api/v1/transactions", {
+      method: "Post",
+      body: JSON.stringify(formdata),
+      headers: {
+        "Content-type": "application/json; charset=UTF-8",
+      },
+    });
+  }
   const change = (
     e:
       | React.ChangeEvent<HTMLInputElement>
       | React.ChangeEvent<HTMLSelectElement>
   ) => {
     //!   wat doet [e.target.name]: e.target.value
-    setFormData({ ...formdata, [e.target.name]: e.target.value });
+    setFormData({
+      ...formdata,
+      [e.target.name]:
+        e.target.type === "checkbox" ? e.target.checked : e.target.value,
+    });
   };
 
   return (
@@ -29,17 +44,40 @@ const CreateTransactionForm = ({
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          updateTable(formdata.amount, formdata.description, formdata.bucket);
-          updateBucketAmount(formdata.bucket, formdata.amount);
+          updateTable(
+            formdata.amount,
+            formdata.description,
+            formdata.bucketId,
+            formdata.created_at,
+            formdata.isExpense
+          );
+          SubmitData();
 
           // clear form after submit
           setFormData({
             amount: 0,
-            bucket: Buckets.Groceries,
+            bucketId: 0,
             description: "",
+            created_at: new Date(),
+            isExpense: false,
           });
         }}
       >
+        <div className="form-check mb-3">
+          <input
+            className="form-check-input"
+            type="checkbox"
+            name="isExpense"
+            checked={formdata.isExpense}
+            onChange={(e) => {
+              change(e);
+            }}
+          />
+          <label className="form-check-label" htmlFor="flexCheckChecked">
+            This transaction is an expense.
+          </label>
+        </div>
+
         <div className="form-floating mb-3">
           <input
             className="form-control"
@@ -68,16 +106,22 @@ const CreateTransactionForm = ({
           <select
             className="form-select"
             required
-            name="bucket"
+            name="bucketId"
             onChange={(e) => change(e)}
           >
             <option selected>Choose a bucket</option>
-            {keys.map((key) => {
-              return <option value={key}>{key}</option>;
+            {bucketKeys.map((key) => {
+              return <option value={BucketToId[key]}>{key}</option>;
             })}
           </select>
-          <label htmlFor="bucket">Bucket</label>
+          <label htmlFor="bucketId">Bucket</label>
         </div>
+
+        <div className="form-floating mb3">
+          <input type="date" className="form-control" />
+          <label htmlFor="created_at">Date</label>
+        </div>
+
         <input
           type="submit"
           onChange={(e) => change(e)}

@@ -1,7 +1,9 @@
-import type { Buckets } from "./Buckets";
-
 export interface Transaction {
-  amount: number;
+  id?: number;
+  bucketId: number;
+  userId?: number; // later this will be non-nullable
   description: string;
-  bucket: Buckets;
+  amount: number;
+  created_at: Date;
+  isExpense: boolean;
 }
