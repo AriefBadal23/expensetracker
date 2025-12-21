@@ -23,12 +23,52 @@ namespace expensetrackerapi.Controllers
 
 
         [HttpGet]
-        public ActionResult Get()
+        public ActionResult Get([FromQuery] int? month, [FromQuery] int? bucket, int pageNumber = 1, int pageSize = 3)
         {
-            var transactions = _db.Transactions;
+            var totalRecords = _db.Transactions.Count();
+            if (month.HasValue && !bucket.HasValue)
+            {
+                var month_transactions = _db.Transactions
+                .Where(_ => _.Created_at.Date.Month == month).ToList()
+                .OrderBy(_ => _.Created_at)
+                .ThenBy(x => x.Description)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+                return Ok(new
+                {
+                    Total = totalRecords,
+                    month_transactions
+                });
+            }
 
+            else if (month.HasValue && bucket.HasValue)
+            {
+                var month_transactions = _db.Transactions
+                .Where(_ => _.Created_at.Date.Month == month && _.BucketId == bucket).ToList()
+                .OrderBy(_ => _.Created_at)
+                .ThenBy(x => x.Description)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
+                return Ok(new
+                {
+                    Total = totalRecords,
+                    month_transactions
+                });
+            }
+
+
+            // No month is provided.
+            var transactions = _db.Transactions
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize);
             if (transactions == null) return NotFound("No transactions found.");
-            return Ok(transactions);
+            return Ok(new
+            {
+                transactions,
+                Total = totalRecords,
+
+            });
+
 
         }
 
