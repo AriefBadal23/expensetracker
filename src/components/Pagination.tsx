@@ -12,6 +12,8 @@ const Pagination = ({ setTransactions }: PaginationProps) => {
 
   const PAGESIZE = 5;
   const TOTALPAGES = total / PAGESIZE;
+  console.log(TOTALPAGES);
+  console.log(page <= Math.ceil(TOTALPAGES));
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -49,9 +51,9 @@ const Pagination = ({ setTransactions }: PaginationProps) => {
       <input
         type="button"
         value="Next"
-        disabled={page === TOTALPAGES}
+        disabled={page === Math.ceil(TOTALPAGES)} // why does it work only with ===
         onClick={() => {
-          if (page < TOTALPAGES) {
+          if (page <= TOTALPAGES) {
             SetPage(page + 1);
           }
         }}
