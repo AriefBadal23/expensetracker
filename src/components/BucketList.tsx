@@ -6,15 +6,20 @@ import { useEffect, useState } from "react";
 
 const BucketList = () => {
   const [buckets, SetBuckets] = useState([]);
+  const [error, setError] = useState<string>();
 
   useEffect(() => {
     const fetchBuckets = async () => {
       try {
         const response = await fetch("http://localhost:5286/api/v1/buckets");
-        const buckets = await response.json();
-        SetBuckets(buckets);
-      } catch {
-        console.log("Failed to fetch data from api");
+        const data = await response.json();
+        SetBuckets(data);
+      } catch (error) {
+        if (error instanceof Error) {
+          setError(error.message);
+        } else {
+          setError("Something went wrong");
+        }
       }
     };
     fetchBuckets();
@@ -23,16 +28,17 @@ const BucketList = () => {
     <>
       <h1>Transaction Overview</h1>
       <div className="bucket-list">
-        {buckets.map((b: BucketType) => {
-          return (
-            <Bucket
-              key={uuidv4()}
-              name={b.name}
-              amount={b.total}
-              icon={b.icon}
-            />
-          );
-        })}
+        {buckets &&
+          buckets.map((b: BucketType) => {
+            return (
+              <Bucket
+                key={uuidv4()}
+                name={b.name}
+                amount={b.total}
+                icon={b.icon}
+              />
+            );
+          })}
       </div>
     </>
   );
