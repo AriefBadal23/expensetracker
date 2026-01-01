@@ -1,4 +1,4 @@
-export interface Transaction {
+export type Transaction = {
   id?: number;
   bucketId: number;
   userId?: number; // later this will be non-nullable
@@ -6,4 +6,4 @@ export interface Transaction {
   amount: number;
   created_at: Date;
   isExpense: boolean;
-}
+};

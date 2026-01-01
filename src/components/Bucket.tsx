@@ -9,7 +9,7 @@ interface BucketProps {
 
 const Bucket = ({ name, icon, amount }: BucketProps) => {
   return (
-    <Link to={`/${name}`}>
+    <Link to={`${name}`}>
       <div className="bucket-card">
         <p id="icon">{icon}</p>
         <p id="name">{name}</p>

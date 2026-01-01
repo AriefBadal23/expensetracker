@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import "./App.css";
 import BucketList from "./components/BucketList";
 import TransactionTable from "./components/TransactionTable";
@@ -6,24 +6,11 @@ import CreateFormModal from "./components/CreateFormModal";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import BucketDetail from "./components/BucketDetail";
 import type { Transaction } from "./types/Transaction";
+import Pagination from "./components/Pagination";
+import Filter from "./components/Filter";
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
-
-  useEffect(() => {
-    const fetchTransactions = async () => {
-      try {
-        const response = await fetch(
-          "http://localhost:5286/api/v1/transactions"
-        );
-        const transactions = await response.json();
-        setTransactions(transactions);
-      } catch {
-        console.log("Failed to fetch data from api");
-      }
-    };
-    fetchTransactions();
-  }, []);
 
   function UpdateTable(
     newamount: number,
@@ -48,16 +35,18 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route
-            path="/"
+            path="/transactions"
             element={
               <>
+                <Filter />
                 <BucketList />
                 <CreateFormModal updateTable={UpdateTable} />
                 <TransactionTable transactions={transactions} />
+                <Pagination setTransactions={setTransactions} />
               </>
             }
           />
-          <Route path=":name" element={<BucketDetail />} />
+          <Route path="transactions/:name" element={<BucketDetail />} />
         </Routes>
       </BrowserRouter>
     </>
