@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Transaction } from "../types/Transaction";
+import { useSearchParams } from "react-router-dom";
 
 interface PaginationProps {
   setTransactions: (transactions: Transaction[]) => void;
@@ -7,18 +8,22 @@ interface PaginationProps {
 
 const Pagination = ({ setTransactions }: PaginationProps) => {
   const [page, SetPage] = useState(1);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string>();
   const [total, setTotal] = useState<number>(1);
 
-  const PAGESIZE = 5;
+  const [search] = useSearchParams();
+
+  const PAGESIZE = 10;
   const TOTALPAGES = total / PAGESIZE;
-  console.log(TOTALPAGES);
-  console.log(page <= Math.ceil(TOTALPAGES));
+
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5286/api/v1/transactions?pageNumber=${page}&pageSize=${PAGESIZE}`
+          `http://localhost:5286/api/v1/transactions?pageNumber=${page}&pageSize=${PAGESIZE}&bucket=${search.get(
+            "id"
+          )}`
         );
 
         const data = await response.json();
@@ -34,14 +39,17 @@ const Pagination = ({ setTransactions }: PaginationProps) => {
       }
     };
     fetchTransactions();
-  }, [page, setTransactions]); //! beide als dependancy
+  }, [page, setTransactions, search]); //! beide als dependancy
 
   return (
     <div>
+      <p>
+        Page: {page}/{Math.ceil(TOTALPAGES)}
+      </p>
       <input
         type="button"
         value="Prev"
-        disabled={page === 0}
+        disabled={page === 1}
         onClick={() => {
           if (page > 0) {
             SetPage(page - 1);

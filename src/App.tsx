@@ -7,6 +7,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import BucketDetail from "./components/BucketDetail";
 import type { Transaction } from "./types/Transaction";
 import Pagination from "./components/Pagination";
+import Filter from "./components/Filter";
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -34,9 +35,10 @@ function App() {
       <BrowserRouter>
         <Routes>
           <Route
-            path="/"
+            path="/transactions"
             element={
               <>
+                <Filter />
                 <BucketList />
                 <CreateFormModal updateTable={UpdateTable} />
                 <TransactionTable transactions={transactions} />
@@ -44,7 +46,7 @@ function App() {
               </>
             }
           />
-          <Route path=":name" element={<BucketDetail />} />
+          <Route path="transactions/:name" element={<BucketDetail />} />
         </Routes>
       </BrowserRouter>
     </>

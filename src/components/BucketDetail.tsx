@@ -11,7 +11,7 @@ function BucketDetail() {
     const fetchTransactions = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5286/api/v1/buckets/${params.name}`
+          `http://localhost:5286/api/v1/buckets/${params?.name}`
         );
 
         const transactions = await response.json();

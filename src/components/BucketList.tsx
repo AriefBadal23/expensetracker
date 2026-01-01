@@ -6,7 +6,9 @@ import { useEffect, useState } from "react";
 
 const BucketList = () => {
   const [buckets, SetBuckets] = useState([]);
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string>();
+
 
   useEffect(() => {
     const fetchBuckets = async () => {
