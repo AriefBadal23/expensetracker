@@ -16,7 +16,7 @@ function App() {
     newamount: number,
     newdescription: string,
     newbucket: number,
-    newcreated_at: Date,
+    newcreated_at: string,
     isExpense: boolean
   ): void {
     setTransactions((prev) => [
