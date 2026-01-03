@@ -1,3 +1,5 @@
+using NodaTime;
+
 namespace expensetrackerapi;
 
 public record Transaction
@@ -7,6 +9,6 @@ public record Transaction
     public int UserId { get; set; }
     public required string Description { get; set; }
     public int Amount { get; set; }
-    public DateTime Created_at { get; set; } = DateTime.UtcNow;
+    public LocalDate Created_at { get; set; }
     public bool isExpense { get; set; }
 }
