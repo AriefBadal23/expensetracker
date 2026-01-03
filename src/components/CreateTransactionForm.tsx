@@ -10,7 +10,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
     userId: 1,
     description: "",
     amount: 0,
-    created_at: new Date(),
+    created_at: "",
     isExpense: false,
   });
 
@@ -25,6 +25,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
         "Content-type": "application/json; charset=UTF-8",
       },
     });
+    console.log(`Send: ${JSON.stringify(formdata)}`)
   }
   const change = (
     e:
@@ -44,13 +45,15 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          const created_atDate = new Date(formdata.created_at);
           updateTable(
             formdata.amount,
             formdata.description,
             formdata.bucketId,
-            formdata.created_at,
+            created_atDate.toUTCString(),
             formdata.isExpense
           );
+
           SubmitData();
 
           // clear form after submit
@@ -58,7 +61,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
             amount: 0,
             bucketId: 0,
             description: "",
-            created_at: new Date(),
+            created_at: "",
             isExpense: false,
           });
         }}
@@ -118,7 +121,12 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
         </div>
 
         <div className="form-floating mb3">
-          <input type="date" className="form-control" />
+          <input
+            type="date"
+            className="form-control"
+            name="created_at"
+            onChange={change}
+          />
           <label htmlFor="created_at">Date</label>
         </div>
 
