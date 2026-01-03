@@ -26,6 +26,10 @@ public class ExpenseTrackerContext : DbContext
     // Make use of FluentAPI to define the relations between the entities.
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Transaction>()
+        .Property(x => x.Created_at)
+        .HasColumnType("date");
+
         modelBuilder.Entity<Bucket>()
         .HasMany<Transaction>()
         .WithOne()
