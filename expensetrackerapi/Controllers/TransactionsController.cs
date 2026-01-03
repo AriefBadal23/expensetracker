@@ -1,11 +1,5 @@
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading.Tasks;
 using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
 
 namespace expensetrackerapi.Controllers
 {
@@ -30,7 +24,7 @@ namespace expensetrackerapi.Controllers
             if (month.HasValue && !bucket.HasValue)
             {
                 var month_transactions = _db.Transactions
-                .Where(_ => _.Created_at.Date.Month == month)
+                .Where(_ => _.Created_at.Month == month)
 
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -61,7 +55,7 @@ namespace expensetrackerapi.Controllers
             else if (month.HasValue && bucket.HasValue)
             {
                 var month_transactions = _db.Transactions
-                .Where(_ => _.Created_at.Date.Month == month && _.BucketId == bucket)
+                .Where(_ => _.Created_at.Month == month && _.BucketId == bucket)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .OrderBy(_ => _.Created_at).ToList();
@@ -90,27 +84,33 @@ namespace expensetrackerapi.Controllers
         }
 
         [HttpPost]
-        public ActionResult Post([FromBody] Transaction transaction)
+        public ActionResult Post([FromBody] CreateTransactionDto dto)
         {
-            if (transaction != null)
+            bool BucketExists = _db.Buckets.Any(x => x.Id == dto.BucketId);
+
+            if (dto.Amount > 0 && BucketExists)
             {
-                if (transaction.isExpense == true)
+                Bucket Salary = _db.Buckets.First(x => x.Name == Buckets.Salary);
+                int SalaryAmount = Salary.Total;
+                SalaryAmount += dto.Amount;
+
+
+                _db.Buckets.Update(Salary);
+
+                var transaction = new Transaction
                 {
-                    var Salary = _db.Buckets.First(x => x.Name == Buckets.Salary && transaction.BucketId != x.Id);
-                    Salary.Total = Salary.Total > 0 ? Salary.Total - transaction.Amount : 0;
-                    _db.Buckets.Update(Salary);
-                }
+                    UserId = 1,
+                    BucketId = dto.BucketId,
+                    Description = dto.Description,
+                    Amount = dto.Amount,
+                    Created_at = dto.CreatedAt,
+                    isExpense = dto.IsExpense
+                };
                 _db.Transactions.Add(transaction);
-                var bucket = _db.Buckets.First(b => b.Id == transaction.BucketId);
-                bucket.Total = transaction.Amount + bucket.Total;
-
-                _db.Buckets.Update(bucket);
                 _db.SaveChanges();
-
-                return Ok();
             }
 
-            return BadRequest("Invalid Transaction.");
+            return Created();
 
         }
     }
