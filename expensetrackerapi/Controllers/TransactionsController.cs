@@ -91,8 +91,8 @@ namespace expensetrackerapi.Controllers
             if (dto.Amount > 0 && BucketExists)
             {
                 Bucket Salary = _db.Buckets.First(x => x.Name == Buckets.Salary);
-                int SalaryAmount = Salary.Total;
-                SalaryAmount += dto.Amount;
+                Salary.Total = Salary.Total > 0 ? Salary.Total - dto.Amount : 0;
+
 
 
                 _db.Buckets.Update(Salary);
