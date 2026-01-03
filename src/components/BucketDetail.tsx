@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import { IdToBucket } from "../utils/BucketMap";
 import type { Transaction } from "../types/Transaction";
 import { useEffect, useState } from "react";
@@ -7,11 +7,13 @@ import { Buckets } from "../types/Buckets";
 function BucketDetail() {
   const params = useParams();
   const [buckettransactions, setTransactions] = useState<Transaction[]>([]);
+  const [search] = useSearchParams();
+  console.log(`${search}`);
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
         const response = await fetch(
-          `http://localhost:5286/api/v1/buckets/${params?.name}`
+          `http://localhost:5286/api/v1/buckets/${params?.name}?${search}`
         );
 
         const transactions = await response.json();
@@ -21,7 +23,7 @@ function BucketDetail() {
       }
     };
     fetchTransactions();
-  }, [params.name]);
+  }, [params.name, search]);
 
   const bucketName = params.name as Buckets;
   const bucketTransactions = buckettransactions.find(
