@@ -9,13 +9,11 @@ interface BucketProps {
 
 const Bucket = ({ name, icon, amount }: BucketProps) => {
   return (
-    <Link to={`${name}`}>
-      <div className="bucket-card">
-        <p id="icon">{icon}</p>
-        <p id="name">{name}</p>
-        <p id="amount">Total: €{amount}</p>
-      </div>
-    </Link>
+    <div className="bucket-card">
+      <p id="icon">{icon}</p>
+      <p id="name">{name}</p>
+      <p id="amount">Total: €{amount}</p>
+    </div>
   );
 };
 export default Bucket;
