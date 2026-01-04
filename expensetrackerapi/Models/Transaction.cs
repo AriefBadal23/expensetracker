@@ -10,5 +10,5 @@ public record Transaction
     public required string Description { get; set; }
     public int Amount { get; set; }
     public LocalDate Created_at { get; set; }
-    public bool isExpense { get; set; }
+    public bool IsIncome { get; set; }
 }

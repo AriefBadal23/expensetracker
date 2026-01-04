@@ -1,4 +1,6 @@
 
+using NodaTime;
+
 namespace expensetrackerapi.Models;
 
 public static class DbIntializer
@@ -36,20 +38,95 @@ public static class DbIntializer
         {
             new Transaction
             {
-                BucketId=1,
-                Description="Monthly Salary",
-                UserId=1,
-                Amount=1000,
-                isExpense=false
+                BucketId = 1,
+                Description = "Monthly Salary",
+                UserId = 1,
+                Amount = 1000,
+                IsIncome = true,
+                Created_at = new LocalDate(2025, 1, 5)
             },
             new Transaction
             {
-                BucketId=2,
-                Description="Groceries at the AH",
-                UserId=1,
-                Amount=100,
-                isExpense=true
+                BucketId = 2,
+                Description = "Groceries at the AH",
+                UserId = 1,
+                Amount = 120,
+                IsIncome = false,
+                Created_at = new LocalDate(2025, 1, 12)
+            },
+            new Transaction
+            {
+                BucketId = 3,
+                Description = "Shopping - clothing",
+                UserId = 1,
+                Amount = 80,
+                IsIncome = false,
+                Created_at = new LocalDate(2025, 1, 20)
+            },
+            new Transaction
+            {
+                BucketId = 1,
+                Description = "Monthly Salary",
+                UserId = 1,
+                Amount = 1000,
+                IsIncome = true,
+                Created_at = new LocalDate(2025, 2, 5)
+            },
+            new Transaction
+            {
+                BucketId = 2,
+                Description = "Weekly groceries",
+                UserId = 1,
+                Amount = 95,
+                IsIncome = false,
+                Created_at = new LocalDate(2025, 2, 14)
+            },
+            new Transaction
+            {
+                BucketId = 3,
+                Description = "Shopping - online order",
+                UserId = 1,
+                Amount = 150,
+                IsIncome = false,
+                Created_at = new LocalDate(2025, 3, 2)
+            },
+            new Transaction
+            {
+                BucketId = 1,
+                Description = "Monthly Salary",
+                UserId = 1,
+                Amount = 1000,
+                IsIncome = true,
+                Created_at = new LocalDate(2025, 3, 5)
+            },
+            new Transaction
+            {
+                BucketId = 2,
+                Description = "Groceries at the AH",
+                UserId = 1,
+                Amount = 110,
+                IsIncome = false,
+                Created_at = new LocalDate(2025, 4, 10)
+            },
+            new Transaction
+            {
+                BucketId = 3,
+                Description = "Shopping - electronics",
+                UserId = 1,
+                Amount = 60,
+                IsIncome = false,
+                Created_at = new LocalDate(2025, 4, 18)
+            },
+            new Transaction
+            {
+                BucketId = 1,
+                Description = "Monthly Salary",
+                UserId = 1,
+                Amount = 1000,
+                IsIncome = true,
+                Created_at = new LocalDate(2025, 5, 5)
             }
+
 
         };
 
