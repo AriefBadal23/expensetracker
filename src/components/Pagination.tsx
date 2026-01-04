@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import type { Transaction } from "../types/Transaction";
 import { useSearchParams } from "react-router-dom";
+import "react-day-picker/dist/style.css";
 
 interface PaginationProps {
   setTransactions: (transactions: Transaction[]) => void;
@@ -8,7 +9,6 @@ interface PaginationProps {
 
 const Pagination = ({ setTransactions }: PaginationProps) => {
   const [page, SetPage] = useState(1);
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string>();
   const [total, setTotal] = useState<number>(1);
 
@@ -23,7 +23,7 @@ const Pagination = ({ setTransactions }: PaginationProps) => {
         const response = await fetch(
           `http://localhost:5286/api/v1/transactions?pageNumber=${page}&pageSize=${PAGESIZE}&bucket=${search.get(
             "id"
-          )}`
+          )}&month=${search.get("month")}&year=${search.get("year")}`
         );
 
         const data = await response.json();

@@ -17,7 +17,7 @@ function App() {
     newdescription: string,
     newbucket: number,
     newcreated_at: string,
-    isExpense: boolean
+    isIncome: boolean
   ): void {
     setTransactions((prev) => [
       ...prev,
@@ -26,7 +26,7 @@ function App() {
         description: newdescription,
         bucketId: newbucket,
         created_at: newcreated_at,
-        isExpense: isExpense,
+        isIncome: isIncome,
       },
     ]);
   }
@@ -46,7 +46,8 @@ function App() {
               </>
             }
           />
-          <Route path="transactions/:name" element={<BucketDetail />} />
+          {/* <Route path="transactions/:name" element={<BucketDetail />} /> */} 
+          {/* bucket detail is unneccasry now because the filtering can be done at the home page */}
         </Routes>
       </BrowserRouter>
     </>
