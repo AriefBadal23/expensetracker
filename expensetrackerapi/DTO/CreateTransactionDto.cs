@@ -12,6 +12,6 @@ public class CreateTransactionDto
     [JsonPropertyName("created_at")]
     public LocalDate CreatedAt { get; set; }
     
-    [JsonPropertyName("isExpense")]
-    public bool IsExpense { get; set; }
+    [JsonPropertyName("isIncome")]
+    public bool IsIncome { get; set; }
 }
