@@ -19,14 +19,15 @@ public class BucketsController : ControllerBase
 
 
     [HttpGet("{bucket?}")]
-    public IActionResult Get(string? bucket)// Action method
+    public IActionResult Get(string? bucket, int? month, int? year)// Action method
     {
+        month ??= new DateTime().Date.Month;
 
         if (!string.IsNullOrEmpty(bucket) && Enum.TryParse<Buckets>(bucket, ignoreCase: true, out var bucketEnum))
         {
             var buckets = from b in _db.Buckets
                           join transaction in _db.Transactions on b.Id equals transaction.BucketId
-                          where b.Name == bucketEnum
+                          where b.Name == bucketEnum && transaction.Created_at.Month == month && transaction.Created_at.Year == year
                           select transaction;
 
             if (buckets != null)

@@ -10,8 +10,8 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
     userId: 1,
     description: "",
     amount: 0,
-    created_at: new Date(),
-    isExpense: false,
+    created_at: "",
+    isIncome: false,
   });
 
   // 💡 force keys to be enum values
@@ -25,6 +25,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
         "Content-type": "application/json; charset=UTF-8",
       },
     });
+    console.log(`Send: ${JSON.stringify(formdata)}`);
   }
   const change = (
     e:
@@ -44,13 +45,15 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
       <form
         onSubmit={(e) => {
           e.preventDefault();
+          const created_atDate = new Date(formdata.created_at);
           updateTable(
             formdata.amount,
             formdata.description,
             formdata.bucketId,
-            formdata.created_at,
-            formdata.isExpense
+            created_atDate.toUTCString(),
+            formdata.isIncome
           );
+
           SubmitData();
 
           // clear form after submit
@@ -58,8 +61,8 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
             amount: 0,
             bucketId: 0,
             description: "",
-            created_at: new Date(),
-            isExpense: false,
+            created_at: "",
+            isIncome: false,
           });
         }}
       >
@@ -67,14 +70,14 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
           <input
             className="form-check-input"
             type="checkbox"
-            name="isExpense"
-            checked={formdata.isExpense}
+            name="isIncome"
+            checked={formdata.isIncome}
             onChange={(e) => {
               change(e);
             }}
           />
           <label className="form-check-label" htmlFor="flexCheckChecked">
-            This transaction is an expense.
+            This transaction is an Income.
           </label>
         </div>
 
@@ -118,7 +121,12 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
         </div>
 
         <div className="form-floating mb3">
-          <input type="date" className="form-control" />
+          <input
+            type="date"
+            className="form-control"
+            name="created_at"
+            onChange={change}
+          />
           <label htmlFor="created_at">Date</label>
         </div>
 

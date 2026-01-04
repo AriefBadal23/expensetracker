@@ -4,6 +4,6 @@ export type Transaction = {
   userId?: number; // later this will be non-nullable
   description: string;
   amount: number;
-  created_at: Date;
-  isExpense: boolean;
+  created_at: string;
+  isIncome: boolean;
 };

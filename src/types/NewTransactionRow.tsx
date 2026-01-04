@@ -3,8 +3,8 @@ export interface NewTransactionRow {
     amount: number,
     description: string,
     bucketId: number,
-    created_at: Date,
-    isExpense: boolean
+    created_at: string,
+    isIncome: boolean
   ) => void;
 
   // updateBucketAmount: (name: Buckets, amount: number) => void;

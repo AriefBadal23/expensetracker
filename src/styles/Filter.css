@@ -1,0 +1,11 @@
+#transaction-filter{
+    padding: 20px 20px 20px 20px;
+}
+#select-bucket{
+    width: auto;
+}
+
+#daypicker{
+    display: flex;
+    justify-content: center;
+}

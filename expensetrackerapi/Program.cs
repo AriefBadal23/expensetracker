@@ -1,6 +1,8 @@
 using System.Text.Json.Serialization;
 using expensetrackerapi.Models;
 using Microsoft.EntityFrameworkCore;
+using NodaTime;
+using NodaTime.Serialization.SystemTextJson;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
@@ -23,12 +25,20 @@ builder.Services.AddControllers()
 .AddJsonOptions(options =>
 {
     options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+    // !Required for nodatime deserialization otherwise 400 bad request
+    options.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
 });
 
 // Make use of the PostgreSQL database as a service we inject in the DI container.
 builder.Services.AddDbContext<ExpenseTrackerContext>(options => options
         .UseNpgsql(builder.Configuration.GetConnectionString("ExpenseTrackerContext"),
-         o => o.MapEnum<Buckets>("buckets")));
+         o =>
+         {
+             o.MapEnum<Buckets>("buckets");
+             o.UseNodaTime();
+         }
+
+         ));
 
 
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
