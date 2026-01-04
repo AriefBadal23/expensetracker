@@ -17,14 +17,14 @@ namespace expensetrackerapi.Controllers
 
 
         [HttpGet]
-        public ActionResult Get([FromQuery] int? month, [FromQuery] int? bucket, int pageNumber = 1, int pageSize = 3)
+        public ActionResult Get([FromQuery] int? month, int? year, [FromQuery] int? bucket, int pageNumber = 1, int pageSize = 3)
         {
             // bucket query string = bucket ID
             var totalRecords = _db.Transactions.Count();
-            if (month.HasValue && !bucket.HasValue)
+            if (month.HasValue && year.HasValue && !bucket.HasValue)
             {
                 var month_transactions = _db.Transactions
-                .Where(_ => _.Created_at.Month == month)
+                .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year)
 
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -32,7 +32,7 @@ namespace expensetrackerapi.Controllers
 
                 return Ok(new
                 {
-                    Total = totalRecords,
+                    Total = month_transactions.Count,
                     Transactions = month_transactions
                 });
             }
@@ -52,16 +52,29 @@ namespace expensetrackerapi.Controllers
             }
 
 
-            else if (month.HasValue && bucket.HasValue)
+            else if (month.HasValue && year.HasValue && bucket.HasValue)
             {
                 var month_transactions = _db.Transactions
-                .Where(_ => _.Created_at.Month == month && _.BucketId == bucket)
+                .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year && _.BucketId == bucket)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .OrderBy(_ => _.Created_at).ToList();
                 return Ok(new
                 {
-                    Total = totalRecords,
+                    Total = month_transactions.Count,
+                    Transactions = month_transactions
+                });
+            }
+            else if (month.HasValue && year.HasValue)
+            {
+                var month_transactions = _db.Transactions
+                .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year)
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .OrderBy(_ => _.Created_at).ToList();
+                return Ok(new
+                {
+                    Total = month_transactions.Count,
                     Transactions = month_transactions
                 });
             }
@@ -91,7 +104,7 @@ namespace expensetrackerapi.Controllers
             if (dto.Amount > 0 && BucketExists)
             {
                 Bucket Salary = _db.Buckets.First(x => x.Name == Buckets.Salary);
-                Salary.Total = Salary.Total > 0 ? Salary.Total - dto.Amount : 0;
+                Salary.Total = Salary.Total > 0 && dto.IsIncome == false ? Salary.Total - dto.Amount : Salary.Total + dto.Amount;
 
 
 
@@ -104,7 +117,7 @@ namespace expensetrackerapi.Controllers
                     Description = dto.Description,
                     Amount = dto.Amount,
                     Created_at = dto.CreatedAt,
-                    isExpense = dto.IsExpense
+                    IsIncome = dto.IsIncome
                 };
                 _db.Transactions.Add(transaction);
                 _db.SaveChanges();

@@ -19,7 +19,7 @@ public class BucketsController : ControllerBase
 
 
     [HttpGet("{bucket?}")]
-    public IActionResult Get(string? bucket, int? month)// Action method
+    public IActionResult Get(string? bucket, int? month, int? year)// Action method
     {
         month ??= new DateTime().Date.Month;
 
@@ -27,7 +27,7 @@ public class BucketsController : ControllerBase
         {
             var buckets = from b in _db.Buckets
                           join transaction in _db.Transactions on b.Id equals transaction.BucketId
-                          where b.Name == bucketEnum && transaction.Created_at.Month == month
+                          where b.Name == bucketEnum && transaction.Created_at.Month == month && transaction.Created_at.Year == year
                           select transaction;
 
             if (buckets != null)
