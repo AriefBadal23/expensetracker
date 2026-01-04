@@ -99,16 +99,25 @@ namespace expensetrackerapi.Controllers
         [HttpPost]
         public ActionResult Post([FromBody] CreateTransactionDto dto)
         {
+            // We check first if the bucket exists at all
             bool BucketExists = _db.Buckets.Any(x => x.Id == dto.BucketId);
 
+            // Make sure the input of the client is not negative and the bucket exists
             if (dto.Amount > 0 && BucketExists)
             {
+                // We get the salary bucket object.
                 Bucket Salary = _db.Buckets.First(x => x.Name == Buckets.Salary);
+
+                // Its necassary to update the Salary bucket total if it is an income otherwise it will substract from it.
                 Salary.Total = Salary.Total > 0 && dto.IsIncome == false ? Salary.Total - dto.Amount : Salary.Total + dto.Amount;
 
+                // Make sure we update the other bucket total amounts
+                Bucket TransactionBucket = _db.Buckets.First(x => x.Id == dto.BucketId);
+                TransactionBucket.Total = dto.Amount > 0 && dto.IsIncome == false ? TransactionBucket.Total + dto.Amount : TransactionBucket.Total;
 
 
-                _db.Buckets.Update(Salary);
+
+                _db.Buckets.UpdateRange([Salary, TransactionBucket]);
 
                 var transaction = new Transaction
                 {
