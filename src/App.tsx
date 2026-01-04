@@ -4,7 +4,6 @@ import BucketList from "./components/BucketList";
 import TransactionTable from "./components/TransactionTable";
 import CreateFormModal from "./components/CreateFormModal";
 import { BrowserRouter, Route, Routes } from "react-router-dom";
-import BucketDetail from "./components/BucketDetail";
 import type { Transaction } from "./types/Transaction";
 import Pagination from "./components/Pagination";
 import Filter from "./components/Filter";
@@ -38,9 +37,9 @@ function App() {
             path="/transactions"
             element={
               <>
-                <Filter />
                 <BucketList />
                 <CreateFormModal updateTable={UpdateTable} />
+                <Filter />
                 <TransactionTable transactions={transactions} />
                 <Pagination setTransactions={setTransactions} />
               </>

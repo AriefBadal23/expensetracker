@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { DayPicker } from "react-day-picker";
 import { useSearchParams, useNavigate } from "react-router-dom";
+import "../styles/Filter.css";
 
 const Filter = () => {
   const [isShown, setisShown] = useState<boolean>(false);
@@ -15,7 +16,12 @@ const Filter = () => {
 
   return (
     <>
-      <div className="btn-group" role="group" aria-label="Transaction filter">
+      <div
+        id="transaction-filter"
+        className="btn-group"
+        role="group"
+        aria-label="Transaction filter"
+      >
         <input
           type="radio"
           className="btn-check"
@@ -112,6 +118,36 @@ const Filter = () => {
           <></>
         )}
       </div>
+
+      {activeId != null && isShown === false ? (
+        <div>
+          <span id="daypicker">
+            <DayPicker
+              month={selectedMonth}
+              onMonthChange={setSelectedMonth}
+              captionLayout="dropdown"
+              showOutsideDays={false}
+              modifiers={{}}
+            />
+          </span>
+
+          <input
+            id="filter-btn"
+            type="button"
+            value="Filter"
+            onClick={() => {
+              navigate(
+                `/transactions?month=${
+                  selectedMonth?.getMonth() + 1
+                }&year=${selectedMonth?.getFullYear()}&id=${activeId}`
+              );
+              setisShown(false);
+            }}
+          />
+        </div>
+      ) : (
+        <p></p>
+      )}
     </>
   );
 };
