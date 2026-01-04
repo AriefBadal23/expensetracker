@@ -4,7 +4,7 @@ export interface NewTransactionRow {
     description: string,
     bucketId: number,
     created_at: string,
-    isExpense: boolean
+    isIncome: boolean
   ) => void;
 
   // updateBucketAmount: (name: Buckets, amount: number) => void;

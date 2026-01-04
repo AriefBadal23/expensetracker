@@ -5,5 +5,5 @@ export type Transaction = {
   description: string;
   amount: number;
   created_at: string;
-  isExpense: boolean;
+  isIncome: boolean;
 };
