@@ -11,7 +11,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
     description: "",
     amount: 0,
     created_at: "",
-    isExpense: false,
+    isIncome: false,
   });
 
   // 💡 force keys to be enum values
@@ -25,7 +25,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
         "Content-type": "application/json; charset=UTF-8",
       },
     });
-    console.log(`Send: ${JSON.stringify(formdata)}`)
+    console.log(`Send: ${JSON.stringify(formdata)}`);
   }
   const change = (
     e:
@@ -51,7 +51,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
             formdata.description,
             formdata.bucketId,
             created_atDate.toUTCString(),
-            formdata.isExpense
+            formdata.isIncome
           );
 
           SubmitData();
@@ -62,7 +62,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
             bucketId: 0,
             description: "",
             created_at: "",
-            isExpense: false,
+            isIncome: false,
           });
         }}
       >
@@ -70,14 +70,14 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
           <input
             className="form-check-input"
             type="checkbox"
-            name="isExpense"
-            checked={formdata.isExpense}
+            name="isIncome"
+            checked={formdata.isIncome}
             onChange={(e) => {
               change(e);
             }}
           />
           <label className="form-check-label" htmlFor="flexCheckChecked">
-            This transaction is an expense.
+            This transaction is an Income.
           </label>
         </div>
 
