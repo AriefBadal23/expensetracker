@@ -15,11 +15,6 @@ public class ExpenseTrackerContext : DbContext
 
     public DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseNpgsql(@"Host=localhost;Username=postgres;Password=_87KK@pdT;Database=expensetracker");
-
-    }
 
 
 
