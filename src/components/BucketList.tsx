@@ -3,8 +3,14 @@ import Bucket from "./Bucket";
 import type { Bucket as BucketType } from "../types/Bucket";
 import { v4 as uuidv4 } from "uuid";
 import { useEffect, useState } from "react";
+import type { Transaction } from "../types/Transaction";
 
-const BucketList = () => {
+interface BucketListProps{
+  transactions: Transaction[]
+}
+
+
+const BucketList = ({transactions}:BucketListProps) => {
   const [buckets, SetBuckets] = useState([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string>();
@@ -25,7 +31,7 @@ const BucketList = () => {
       }
     };
     fetchBuckets();
-  }, []);
+  }, [transactions]);
   return (
     <>
       <h1>Transaction Overview</h1>

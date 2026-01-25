@@ -1,3 +1,4 @@
+using System.Reflection.Metadata.Ecma335;
 using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Mvc;
 
@@ -134,6 +135,42 @@ namespace expensetrackerapi.Controllers
 
             return Created();
 
+        }
+
+        [HttpDelete("{transactionID}")]
+        public ActionResult Delete(int transactionID)
+        {
+            Transaction? t = _db.Transactions.FirstOrDefault(_ => _.Id == transactionID);
+            var transactionBucket = _db.Buckets.FirstOrDefault(_ => _.Id == t.BucketId);
+            Bucket Income = _db.Buckets.Where(_ => _.Name == Buckets.Salary).First();
+
+
+            if (t != null && transactionBucket != null)
+            {
+                _db.Transactions.Remove(t);
+                // Je kijkt of the transaction een income of expense is. 
+                // Daarop update je de Income total.
+                // -----
+                // Is the transaction not an income
+                // then add it back to the income and decrease the bucket amount.
+                // otherwise decrease it from the income and decrease it from the Income as well.
+
+                if (t.IsIncome is false)
+                {
+                    transactionBucket.Total -= t.Amount;
+                    Income.Total += t.Amount;
+                }
+                else
+                {
+                    Income.Total -= t.Amount;
+                }
+
+
+
+                _db.SaveChanges();
+                return NoContent();
+            }
+            return NotFound();
         }
     }
 }
