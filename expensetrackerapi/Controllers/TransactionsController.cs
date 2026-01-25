@@ -1,6 +1,6 @@
-using System.Reflection.Metadata.Ecma335;
 using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Mvc;
+using expensetrackerapi.Services;
 
 namespace expensetrackerapi.Controllers
 {
@@ -10,90 +10,28 @@ namespace expensetrackerapi.Controllers
         private readonly ILogger<Transactions> _logger;
         private readonly ExpenseTrackerContext _db;
 
-        public Transactions(ILogger<Transactions> logger, ExpenseTrackerContext context)
+        private readonly IExpenseService _expenseService;
+
+        public Transactions(ILogger<Transactions> logger, ExpenseTrackerContext context, IExpenseService service)
         {
             _logger = logger;
             _db = context;
+            _expenseService = service;
         }
 
 
         [HttpGet]
-        public ActionResult Get([FromQuery] int? month, int? year, [FromQuery] int? bucket, int pageNumber = 1, int pageSize = 3)
+        public ActionResult<IExpenseService> Get(
+            [FromQuery] int? month, int? year,
+            [FromQuery] int? bucket,
+            int pageNumber = 1, int pageSize = 3)
         {
-            // bucket query string = bucket ID
-            var totalRecords = _db.Transactions.Count();
-            if (month.HasValue && year.HasValue && !bucket.HasValue)
+            var transactions = _expenseService.GetTransactions(month, year, bucket, pageNumber, pageSize);
+            if (transactions is null)
             {
-                var month_transactions = _db.Transactions
-                .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year)
-
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .OrderBy(_ => _.Created_at).ToList();
-
-                return Ok(new
-                {
-                    Total = month_transactions.Count,
-                    Transactions = month_transactions
-                });
+                return NotFound();
             }
-            else if (!month.HasValue && bucket.HasValue)
-            {
-                var bucket_transactions = _db.Transactions
-                .Where(_ => _.BucketId == bucket)
-
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .OrderBy(_ => _.BucketId).ToList();
-                return Ok(new
-                {
-                    Total = totalRecords,
-                    Transactions = bucket_transactions
-                });
-            }
-
-
-            else if (month.HasValue && year.HasValue && bucket.HasValue)
-            {
-                var month_transactions = _db.Transactions
-                .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year && _.BucketId == bucket)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .OrderBy(_ => _.Created_at).ToList();
-                return Ok(new
-                {
-                    Total = month_transactions.Count,
-                    Transactions = month_transactions
-                });
-            }
-            else if (month.HasValue && year.HasValue)
-            {
-                var month_transactions = _db.Transactions
-                .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year)
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .OrderBy(_ => _.Created_at).ToList();
-                return Ok(new
-                {
-                    Total = month_transactions.Count,
-                    Transactions = month_transactions
-                });
-            }
-
-
-            // No month is provided.
-            var transactions = _db.Transactions
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .OrderBy(_ => _.Created_at).ToList();
-            if (transactions == null) return NotFound("No transactions found.");
-            return Ok(new
-            {
-                transactions,
-                Total = totalRecords,
-
-            });
-
+            return Ok(transactions);
 
         }
 

@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using expensetrackerapi.Models;
+using expensetrackerapi.Services;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
@@ -9,6 +10,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddCors(
 options =>
 {
