@@ -21,15 +21,27 @@ public class BucketsController : ControllerBase
     }
 
 
-    [HttpGet("{bucket?}")]
-    public IActionResult Get(Buckets? bucket, [FromQuery] int? month, [FromQuery] int? year)
+    [HttpGet("summary/{bucket?}")]
+    public IActionResult Get(Buckets bucket, [FromQuery] int month, [FromQuery] int year)
     {
-        var transactions = _service.Get(bucket, month, year);
-        if (transactions.Count > 0)
+        var transactions = _service.GetSummary(bucket, month, year);
+        if (transactions.Buckets.Count > 0)
         {
             return Ok(transactions);
         }
 
         return BadRequest("No transactions found.");
+    }
+    
+    [HttpGet("{bucket?}")]
+    public IActionResult GetBuckets(Buckets bucket)
+    {
+        var buckets = _service.GetBuckets(bucket);
+        if (buckets.Count > 0)
+        {
+            return Ok(buckets);
+        }
+
+        return BadRequest("No buckets found.");
     }
 }
