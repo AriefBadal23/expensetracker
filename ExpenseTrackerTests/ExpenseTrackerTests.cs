@@ -35,23 +35,23 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     public void TestCreateTransaction()
     {
         // Arrange
-        using var _db = _fixture.CreateContext();
+        using var db = _fixture.CreateContext();
 
         // Act
 
-        var buckets = new Bucket[]
+        var buckets = new[]
         {
                 new Bucket{Id=1, Name=Buckets.Salary,Icon="💰"},
                 new Bucket{Id=2, Name=Buckets.Groceries,Icon="🏪"},
                 new Bucket{Id=3, Name=Buckets.Shopping,Icon="🛒"}
         };
 
-        _db.Buckets.AddRange(buckets);
-        _db.SaveChanges();
+        db.Buckets.AddRange(buckets);
+        db.SaveChanges();
 
-        var service = new ExpenseService(_db);
+        var service = new ExpenseService(db);
 
-        bool[] TransactionArrayResult = new bool[3];
+        bool[] transactionArrayResult = new bool[3];
 
         CreateTransactionDto[] dto = new[] {
         new CreateTransactionDto
@@ -84,23 +84,23 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
     };
 
-        for (var i = 0; i < TransactionArrayResult.Length; i++)
+        for (var i = 0; i < transactionArrayResult.Length; i++)
         {
             var TransactionIsCreated = service.CreateTransaction(dto[i]);
 
             if (TransactionIsCreated)
             {
-                TransactionArrayResult[i] = TransactionIsCreated;
+                transactionArrayResult[i] = TransactionIsCreated;
             }
         }
-        _db.SaveChanges();
+        db.SaveChanges();
 
         // Assert
-        Assert.Equal(3, TransactionArrayResult.Count(_ => _ == true)); // Service method returns 3x true
-        Assert.Equal(3, _db.Transactions.Count()); // there are 3 transactions
-        Assert.Equal(800, _db.Buckets.Where(_ => _.Name == Buckets.Salary).First().Total);
-        Assert.Equal(120, _db.Buckets.Where(_ => _.Name == Buckets.Groceries).First().Total);
-        Assert.Equal(80, _db.Buckets.Where(_ => _.Name == Buckets.Shopping).First().Total);
+        Assert.Equal(3, transactionArrayResult.Count(_ => _ == true)); // Service method returns 3x true
+        Assert.Equal(3, db.Transactions.Count()); // there are 3 transactions
+        Assert.Equal(800, db.Buckets.Where(_ => _.Name == Buckets.Salary).First().Total);
+        Assert.Equal(120, db.Buckets.Where(_ => _.Name == Buckets.Groceries).First().Total);
+        Assert.Equal(80, db.Buckets.Where(_ => _.Name == Buckets.Shopping).First().Total);
     }
 
     [Fact]
