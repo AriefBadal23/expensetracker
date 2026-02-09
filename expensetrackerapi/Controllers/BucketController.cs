@@ -1,5 +1,7 @@
+using System.Globalization;
 using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace expensetrackerapi.Controllers;
 
@@ -19,26 +21,59 @@ public class BucketsController : ControllerBase
 
 
     [HttpGet("{bucket?}")]
-    public IActionResult Get(string? bucket)// Action method
+    public IActionResult Get(Buckets? bucket, [FromQuery] int? month, [FromQuery] int? year)
     {
 
-        if (!string.IsNullOrEmpty(bucket) && Enum.TryParse<Buckets>(bucket, ignoreCase: true, out var bucketEnum))
+        if (!bucket.HasValue)
         {
-            var buckets = from b in _db.Buckets
-                          join transaction in _db.Transactions on b.Id equals transaction.BucketId
-                          where b.Name == bucketEnum
-                          select transaction;
-
-            if (buckets != null)
-            {
-                return Ok(buckets);
-            }
-            else
-            {
-                return NotFound($"No bucket found for {bucket}.");
-            }
+            // TODO oplossen dat als ik geen bucket meegeef ik alles van een jaar te zien krijg.
+            // nu zie ik het per maand..
         }
-        return Ok(_db.Buckets);
-    }
 
-};
+        // base query: all transactions for the bucket
+        var query =
+            from b in _db.Buckets
+            join t in _db.Transactions on b.Id equals t.BucketId
+            where b.Name == bucket
+            select t;
+
+        if (month.HasValue)
+        {
+            query = query.Where(x => x.Created_at.Month == month);
+        }
+
+        if (year.HasValue)
+        {
+            query = query.Where(x => x.Created_at.Year == year);
+
+        }
+
+        var grouped = (from t in query
+                       group t by new { t.Created_at.Month, t.Created_at.Year } // composite keys
+                      into grouping
+                       select new
+                       {
+                           grouping.Key.Month,
+                           grouping.Key.Year,
+                           Total = grouping.Sum(x => x.Amount),
+                           BucketId = grouping.Select(x => x.BucketId),
+
+                       })
+                       .OrderBy(x => x.Year)
+                       .ThenBy(x => x.Month)
+                       .ToList();
+
+        var labels = grouped.Select(x => year.HasValue ? CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(x.Month) : $"{x.Year}-{x.Month:00}").ToArray();
+        var totals = grouped.Select(x => x.Total).ToArray();
+        var bucketName = grouped.Select(x => x.BucketId).First();
+
+        return Ok(new
+        {
+            Labels = labels,
+            Bucket = bucketName.First(),
+            Totals = totals,
+            Month = month,
+            Year = year
+        });
+    }
+}

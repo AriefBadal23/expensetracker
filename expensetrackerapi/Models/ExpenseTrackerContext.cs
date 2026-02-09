@@ -15,17 +15,16 @@ public class ExpenseTrackerContext : DbContext
 
     public DbSet<User> Users { get; set; }
 
-    protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-    {
-        optionsBuilder.UseNpgsql(@"Host=localhost;Username=postgres;Password=_87KK@pdT;Database=expensetracker");
-
-    }
 
 
 
     // Make use of FluentAPI to define the relations between the entities.
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
+        modelBuilder.Entity<Transaction>()
+        .Property(x => x.Created_at)
+        .HasColumnType("date");
+
         modelBuilder.Entity<Bucket>()
         .HasMany<Transaction>()
         .WithOne()
