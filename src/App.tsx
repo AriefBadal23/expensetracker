@@ -7,6 +7,7 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import type { Transaction } from "./types/Transaction";
 import Pagination from "./components/Pagination";
 import Filter from "./components/Filter";
+import ExpenseChart from "./components/ExpenseChart";
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -15,7 +16,7 @@ function App() {
     newamount: number,
     newdescription: string,
     newbucket: number,
-    newcreated_at: string,
+    newcreated_at: Date,
     isIncome: boolean
   ): void {
     setTransactions((prev) => [
@@ -33,14 +34,16 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
+          <Route path="/chart" element={<ExpenseChart/>}
+          />
           <Route
             path="/transactions"
             element={
               <>
-                <BucketList />
+                <BucketList transactions={transactions} />
                 <CreateFormModal updateTable={UpdateTable} />
                 <Filter />
-                <TransactionTable transactions={transactions} />
+                <TransactionTable transactions={transactions} setTransactions={setTransactions} />
                 <Pagination setTransactions={setTransactions} />
               </>
             }
