@@ -88,35 +88,7 @@ const Filter = () => {
           checked={activeId === "filter"}
           onClick={() => setisShown(!isShown)}
         />
-        <label className="btn btn-outline-primary" htmlFor="filter">
-          Filter on date
-        </label>
-        {isShown ? (
-          <>
-            <DayPicker
-              month={selectedMonth}
-              onMonthChange={setSelectedMonth}
-              captionLayout="dropdown"
-              showOutsideDays={false}
-              modifiers={{}}
-            />
-
-            <input
-              type="button"
-              value="Filter"
-              onClick={() => {
-                navigate(
-                  `/transactions?month=${
-                    selectedMonth?.getMonth() + 1
-                  }&year=${selectedMonth?.getFullYear()}`
-                );
-                setisShown(false);
-              }}
-            />
-          </>
-        ) : (
-          <></>
-        )}
+      
       </div>
 
       {activeId != null && isShown === false ? (

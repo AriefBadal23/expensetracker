@@ -9,8 +9,6 @@ interface TransactionRowProps {
 
 const TransactionRow = ({ transactions, setTransactions }: TransactionRowProps) => {
 
-  // const [trans, SetTransactions] = useState(transactions)
-  console.log(transactions)
 
   function DeleteTransaction(id: number | undefined) {
     try {
