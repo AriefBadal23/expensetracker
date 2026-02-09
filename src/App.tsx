@@ -7,7 +7,6 @@ import { BrowserRouter, Route, Routes } from "react-router-dom";
 import type { Transaction } from "./types/Transaction";
 import Pagination from "./components/Pagination";
 import Filter from "./components/Filter";
-import ExpenseChart from "./components/ExpenseChart";
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -34,8 +33,7 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
-          <Route path="/chart" element={<ExpenseChart/>}
-          />
+          
           <Route
             path="/transactions"
             element={
