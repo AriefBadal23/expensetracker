@@ -23,20 +23,20 @@ public class BucketsController : ControllerBase
     [HttpGet("{bucket?}")]
     public IActionResult Get(Buckets? bucket, [FromQuery] int? month, [FromQuery] int? year)
     {
+        // base query: all transactions for the bucket
+        
 
         if (!bucket.HasValue)
         {
-            // TODO oplossen dat als ik geen bucket meegeef ik alles van een jaar te zien krijg.
-            // nu zie ik het per maand..
+            var allBuckets = _db.Buckets;
+            return Ok(allBuckets);
         }
 
-        // base query: all transactions for the bucket
         var query =
             from b in _db.Buckets
             join t in _db.Transactions on b.Id equals t.BucketId
             where b.Name == bucket
             select t;
-
         if (month.HasValue)
         {
             query = query.Where(x => x.Created_at.Month == month);
