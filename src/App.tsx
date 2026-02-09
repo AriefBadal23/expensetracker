@@ -15,7 +15,7 @@ function App() {
     newamount: number,
     newdescription: string,
     newbucket: number,
-    newcreated_at: string,
+    newcreated_at: Date,
     isIncome: boolean
   ): void {
     setTransactions((prev) => [
@@ -33,14 +33,15 @@ function App() {
     <>
       <BrowserRouter>
         <Routes>
+          
           <Route
             path="/transactions"
             element={
               <>
-                <BucketList />
+                <BucketList transactions={transactions} />
                 <CreateFormModal updateTable={UpdateTable} />
                 <Filter />
-                <TransactionTable transactions={transactions} />
+                <TransactionTable transactions={transactions} setTransactions={setTransactions} />
                 <Pagination setTransactions={setTransactions} />
               </>
             }
