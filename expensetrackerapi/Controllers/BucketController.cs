@@ -22,9 +22,9 @@ public class BucketsController : ControllerBase
 
 
     [HttpGet("summary/{bucket?}")]
-    public IActionResult Get(Buckets bucket, [FromQuery] int month, [FromQuery] int year)
+    public IActionResult Get([FromQuery] int month, [FromQuery] int year)
     {
-        var transactions = _service.GetSummary(bucket, month, year);
+        var transactions = _service.GetSummary(month, year);
         if (transactions.Buckets.Count > 0)
         {
             return Ok(transactions);

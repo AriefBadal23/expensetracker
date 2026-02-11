@@ -5,7 +5,7 @@ namespace expensetrackerapi.Services;
 
 public interface IBucketService
 {
-    public SummaryDTO GetSummary(Buckets bucket, int month, int year);
+    public SummaryDTO GetSummary(int month, int year);
     public List<Bucket> GetBuckets(Buckets bucket);
 }
 
@@ -33,30 +33,29 @@ public class BucketService : IBucketService
         return _db.Buckets.ToList();
     }
 
-    public SummaryDTO GetSummary(Buckets bucket, int month, int year)
+    public SummaryDTO GetSummary(int month, int year)
     {
-        if (month != 0 && year != 0)
-        {
-            var query = (from buck in _db.Buckets
-                join transaction in _db.Transactions on buck.Id equals transaction.BucketId into bucketTransactions
-                     
-                let BuckTransactions = bucketTransactions
-                    .Where(t => t.Created_at.Month == month && t.Created_at.Year == year)
+        if (month == 0 || year == 0) return new SummaryDTO();
+
+        var query = (from buck in _db.Buckets
+            join transaction in _db.Transactions on buck.Id equals transaction.BucketId
+                into bucketTransactions
+            
+            let BuckTransactionsResult = bucketTransactions
+                .Where(t => t.Created_at.Month == month && t.Created_at.Year == year)
                      
                 select 
-                    new BucketTransactionsDTO(buck.Id, buck.Name, BuckTransactions.ToArray())
-                ).ToList();
+                    new BucketTransactionsDTO(buck.Id, buck.Name, BuckTransactionsResult.ToArray())
+            ).ToList();
             
-            // Make use of the query but change the return type so it matches the required output for the front-end.
-            return new SummaryDTO
-            {
-                Month = month,
-                Year = year,
-                Buckets = query
-            };
-        }
+        // Make use of the query but change the return type so it matches the required output for the front-end.
+        return new SummaryDTO
+        {
+            Month = month,
+            Year = year,
+            Buckets = query
+        };
 
-        return new SummaryDTO();
     }
 
         }
