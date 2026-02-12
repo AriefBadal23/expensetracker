@@ -5,13 +5,17 @@ import type { Bucket } from "../types/Bucket";
 export type BucketTransactions = {
     bucketId: string,
     bucketName:string,
-    transactions: Transaction[]
+    transactions: Transaction[],
+   
+    
 }
 
 export type TransactionsSummary = {
     month: string,
     year: string,
-    buckets: BucketTransactions[]
+    buckets: BucketTransactions[],
+    totalIncome: number,
+    totalExpenses: number
 }
 
 interface OverviewRowProps{
@@ -28,7 +32,7 @@ const OverviewRow = ({ data }:OverviewRowProps) => {
 
         return transactions.map((x:Transaction, index) => (
             <tr key={`${bucket.id}-${x.id}`}>
-                {index === 0 && <td rowSpan={transactions.length}>{bucket.bucketName}</td>}
+                {index === 0 && <td rowSpan={transactions.length}><strong>{bucket.bucketName}</strong></td>}
                 <td>{x.description}</td>
                 <td>{x.created_at}</td>
                 <td>{x.isIncome ? "Income" : "Expense"}</td>

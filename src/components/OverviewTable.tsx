@@ -1,7 +1,7 @@
 ﻿import {useEffect, useState} from "react";
 import type {TransactionsSummary, BucketTransactions} from "../components/OverviewRow"
 import OverviewRow from "./OverviewRow"
-
+import TotalCard from "./TotalCard"
 const OverviewTable = () => {
     // fetch doen naar:
     // http://localhost:5286/api/v1/buckets/summary?month=3&year=2027
@@ -15,7 +15,7 @@ const OverviewTable = () => {
         const fetchSummary =  async () =>
         {
             try{
-                const response = await fetch("http://localhost:5286/api/v1/buckets/summary?month=2&year=2026")
+                const response = await fetch("http://localhost:5286/api/v1/buckets/summary?month=1&year=2025")
                 if (!response.ok) {
                     throw new Error(`HTTP error: ${response.status}`);
                 }
@@ -30,9 +30,12 @@ const OverviewTable = () => {
     },
     [])
     
-        
     return (
         <div>
+            <div className="bucket-list">
+                <TotalCard icon="💰" amount={transactions != undefined ? transactions.totalIncome : 0 } name="Income"/>
+                <TotalCard icon="💸" amount={transactions != undefined ? transactions.totalExpenses : 0 } name="Expenses"/>
+            </div>
             <table className="table">
             <thead>
                 <tr>

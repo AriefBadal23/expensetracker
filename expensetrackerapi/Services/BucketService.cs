@@ -10,13 +10,17 @@ public interface IBucketService
 }
 
 
-public record BucketTransactionsDTO(int BucketId,Buckets BucketName, Transaction[] Transactions);
+public record BucketTransactionsDTO(int BucketId, Buckets BucketName, int BucketExpenseTotal, Transaction[] Transactions);
 
 public record SummaryDTO
 {
     public int Month { get; set; }
     public int Year { get; set; }
     public List<BucketTransactionsDTO> Buckets { get; set; }
+
+    public int TotalIncome { get; set; }
+    public int TotalExpenses { get; set; }
+
 }
 
 public class BucketService : IBucketService
@@ -43,17 +47,22 @@ public class BucketService : IBucketService
             
             let BuckTransactionsResult = bucketTransactions
                 .Where(t => t.Created_at.Month == month && t.Created_at.Year == year)
-                     
-                select 
-                    new BucketTransactionsDTO(buck.Id, buck.Name, BuckTransactionsResult.ToArray())
-            ).ToList();
             
+            let MonthBucketTotal = BuckTransactionsResult.Sum(x => x.Amount)
+                
+            select 
+                    new BucketTransactionsDTO(buck.Id, buck.Name,MonthBucketTotal, BuckTransactionsResult.ToArray())
+            ).ToList();
+
+        
         // Make use of the query but change the return type so it matches the required output for the front-end.
         return new SummaryDTO
         {
             Month = month,
             Year = year,
-            Buckets = query
+            Buckets = query,
+            TotalExpenses = query.Where(x => x.BucketName != Buckets.Salary).Sum(x => x.BucketExpenseTotal),
+            TotalIncome = query.Where(x => x.BucketName == Buckets.Salary).Sum(x => x.BucketExpenseTotal),
         };
 
     }
