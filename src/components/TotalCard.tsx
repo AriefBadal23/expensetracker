@@ -1,12 +1,23 @@
 ﻿import "../styles/Bucket.css";
-import "../styles/BucketList.css";
+import type {TransactionsSummary} from "../components/OverviewRow"
+import {TransactionType} from "../types/TransactionType"
 
 interface ITotalCard{
     name:string,
-    amount: number,
-    icon: string
+    type: TransactionType,
+    icon: string,
+    data: TransactionSummary
 }
-const TotalCard = ({name, amount, icon}):ITotalCard => {
+const TotalCard = ({name, type, icon, data}:ITotalCard) => {
+    let amount: number = 0;
+
+    if (type === TransactionType.Income) {
+        amount = data ? data.totalIncome : 0;
+    } else {
+        amount = data ? data.totalExpenses : 0;
+    }
+
+
     return (
         <div className="bucket-card">
             <p id="icon">{icon}</p>
