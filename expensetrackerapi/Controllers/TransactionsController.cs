@@ -19,7 +19,19 @@ namespace expensetrackerapi.Controllers
             _expenseService = service;
         }
 
+        [HttpGet("details")]
+        public ActionResult GetTransactionById([FromQuery] int id)
+        {
+            var transaction = _expenseService.GetTransactionByID(id);
+            if (transaction == null)
+            {
+                return NotFound();
+            }
 
+            return Ok(transaction);
+        }
+        
+        
         [HttpGet]
         public ActionResult<IExpenseService> Get(
             [FromQuery] int? month, int? year,
@@ -52,6 +64,17 @@ namespace expensetrackerapi.Controllers
             if (isDeleted)
             {
                 return Ok();
+            }
+            return NotFound();
+        }
+        
+        [HttpPut]
+        public ActionResult Update([FromBody]Transaction UpdatedTransaction)
+        {
+            var transaction = _expenseService.UpdateTransaction(UpdatedTransaction);
+            if (transaction != null)
+            {
+                return Ok(transaction);
             }
             return NotFound();
         }
