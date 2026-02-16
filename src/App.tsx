@@ -43,15 +43,13 @@ function App() {
             element={
               <>
                 <BucketList transactions={transactions} />
-                <CreateFormModal updateTable={UpdateTable} />
+                <CreateFormModal updateTable={UpdateTable} isUpdateForm={false} />
                 <Filter />
                 <TransactionTable transactions={transactions} setTransactions={setTransactions} />
                 <Pagination setTransactions={setTransactions} />
               </>
             }
           />
-          {/* <Route path="transactions/:name" element={<BucketDetail />} /> */} 
-          {/* bucket detail is unneccasry now because the filtering can be done at the home page */}
         </Routes>
       </BrowserRouter>
     </>
