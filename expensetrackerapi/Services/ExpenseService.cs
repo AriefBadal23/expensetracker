@@ -1,4 +1,3 @@
-using expensetrackerapi.Controllers;
 using expensetrackerapi.Models;
 
 
@@ -126,36 +125,36 @@ namespace expensetrackerapi.Services
 
         }
 
-        public bool CreateTransaction(CreateTransactionDto dto)
+        public bool CreateTransaction(Transaction transaction)
         {
             // We check first if the bucket exists at all
-            var bucketExists = _db.Buckets.Find(dto.BucketId);
+            var bucketExists = _db.Buckets.Find(transaction.BucketId);
 
             // Make sure the input of the client is not negative and the bucket exists
-            if (dto.Amount > 0 && bucketExists != null)
+            if (transaction.Amount > 0 && bucketExists != null)
             {
                 // We get the salary bucket object.
                 Bucket Salary = _db.Buckets.First(x => x.Name == Buckets.Salary);
 
                 // Its necassary to update the Salary bucket total if it is an income otherwise it will substract from it.
-                Salary.Total = Salary.Total > 0 && dto.IsIncome == false ? Salary.Total - dto.Amount : Salary.Total + dto.Amount;
+                Salary.Total = Salary.Total > 0 && transaction.IsIncome == false ? Salary.Total - transaction.Amount : Salary.Total + transaction.Amount;
 
                 // Make sure we update the other bucket total amounts
-                Bucket TransactionBucket = _db.Buckets.First(x => x.Id == dto.BucketId);
-                TransactionBucket.Total = dto.Amount > 0 && dto.IsIncome == false ? TransactionBucket.Total + dto.Amount : TransactionBucket.Total;
+                Bucket TransactionBucket = _db.Buckets.First(x => x.Id == transaction.BucketId);
+                TransactionBucket.Total = transaction.Amount > 0 && transaction.IsIncome == false ? TransactionBucket.Total + transaction.Amount : TransactionBucket.Total;
 
 
 
                 _db.Buckets.UpdateRange([Salary, TransactionBucket]);
 
-                var transaction = new Transaction
+                var newtransaction = new Transaction
                 {
                     UserId = 1,
-                    BucketId = dto.BucketId,
-                    Description = dto.Description,
-                    Amount = dto.Amount,
-                    Created_at = dto.CreatedAt,
-                    IsIncome = dto.IsIncome
+                    BucketId = transaction.BucketId,
+                    Description = transaction.Description,
+                    Amount = transaction.Amount,
+                    Created_at = transaction.Created_at,
+                    IsIncome = transaction.IsIncome
                 };
                 _db.Transactions.Add(transaction);
                 _db.SaveChanges();

@@ -4,6 +4,7 @@ using expensetrackerapi.Services;
 
 namespace expensetrackerapi.Controllers
 {
+    [ApiController]
     [Route("api/v1/[controller]")]
     public class Transactions : Controller
     {
@@ -48,10 +49,10 @@ namespace expensetrackerapi.Controllers
         }
 
         [HttpPost]
-        public ActionResult Post([FromBody] CreateTransactionDto dto)
+        public ActionResult Post([FromBody] Transaction transaction)
         {
 
-            var TransactionCreated = _expenseService.CreateTransaction(dto);
+            var TransactionCreated = _expenseService.CreateTransaction(transaction);
             if (!TransactionCreated) return BadRequest();
             return Created();
 
