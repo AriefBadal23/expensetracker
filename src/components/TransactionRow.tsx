@@ -15,10 +15,7 @@ const TransactionRow = ({ transactions, setTransactions }: TransactionRowProps) 
   useEffect(() => {
     
   }, [selectedTransaction]);
-
-  function SortOnCreation(){
-    
-  }
+  
   function DeleteTransaction(id: number | undefined) {
     try {
       fetch(`http://localhost:5286/api/v1/transactions/${id}`, {
