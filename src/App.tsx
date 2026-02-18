@@ -8,6 +8,7 @@ import type { Transaction } from "./types/Transaction";
 import Pagination from "./components/Pagination";
 import Filter from "./components/Filter";
 import Overview from "./components/Overview"
+import Navbar from "./components/NavBar.tsx";
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -39,9 +40,10 @@ function App() {
           element=<Overview/>
           />
           <Route
-            path="/transactions"
+            path="/"
             element={
               <>
+                <Navbar/>
                 <BucketList transactions={transactions} />
                 <CreateFormModal updateTable={UpdateTable} isUpdateForm={false} />
                 <Filter />
