@@ -49,7 +49,7 @@ namespace expensetrackerapi.Services
             {
                 var month_transactions = _db.Transactions
                     .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year)
-                    .OrderBy(_ => _.Created_at.Year).ThenBy(_ => _.Created_at.Month)
+                    .OrderByDescending(_ => _.Created_at)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize).ToList();
 
@@ -67,7 +67,7 @@ namespace expensetrackerapi.Services
 
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .OrderBy(_ => _.BucketId).ToList();
+                .OrderByDescending(_ => _.Created_at).ToList();
 
                 // TODO: ResponseDTO
                 return new
@@ -82,7 +82,7 @@ namespace expensetrackerapi.Services
             {
                 var month_transactions = _db.Transactions
                 .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year && _.BucketId == bucket)
-                .OrderBy(_ => _.Created_at)
+                .OrderByDescending(_ => _.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
@@ -96,10 +96,27 @@ namespace expensetrackerapi.Services
             {
                 var month_transactions = _db.Transactions
                 .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year)
-                .OrderBy(_ => _.Created_at)
+                .OrderByDescending(_ => _.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
+
+                // TODO: ResponseDTO
+                return new
+                {
+                    Total = month_transactions.Count,
+                    Transactions = month_transactions
+                };
+            }
+            
+            else if (year.HasValue)
+            {
+                var month_transactions = _db.Transactions
+                    .Where(_ => _.Created_at.Year == year)
+                    .OrderByDescending(_ => _.Created_at)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize)
+                    .ToList();
 
                 // TODO: ResponseDTO
                 return new
