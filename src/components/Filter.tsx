@@ -29,7 +29,7 @@ const Filter = () => {
           id="bucket-0"
           checked={activeId === null}
           onChange={() => {
-            navigate("/transactions");
+            navigate("/");
             setisShown(false);
           }}
         />
@@ -43,7 +43,7 @@ const Filter = () => {
           id="bucket-1"
           checked={activeId === "1"}
           onChange={() => {
-            navigate("/transactions?id=1");
+            navigate("?id=1&year=2025");
             setisShown(false);
           }}
         />
@@ -58,7 +58,7 @@ const Filter = () => {
           id="bucket-2"
           checked={activeId === "2"}
           onChange={() => {
-            navigate("/transactions?id=2");
+            navigate("?id=2&year=2025");
             setisShown(false);
           }}
         />
@@ -72,7 +72,7 @@ const Filter = () => {
           id="bucket-3"
           checked={activeId === "3"}
           onChange={() => {
-            navigate("/transactions?id=3");
+            navigate("?id=3&year=2025");
             setisShown(false);
           }}
         />
