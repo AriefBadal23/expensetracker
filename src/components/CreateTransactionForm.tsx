@@ -1,13 +1,15 @@
-import { useState, useEffect } from "react";
-import type { Transaction } from "../types/Transaction";
-import { Buckets } from "../types/Buckets";
+import {useEffect, useState} from "react";
+import type {Transaction} from "../types/Transaction";
+import {Buckets} from "../types/Buckets";
 import type {NewTransactionRow} from "../types/NewTransactionRow.tsx";
 import {BucketToId, IdToBucket} from "../utils/BucketMap.ts";
 
-const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID }: NewTransactionRow) => {
+const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetShowModal, showModal }: NewTransactionRow) => {
   
   // NOTE: Voor een transaction is het niet nodig om een ID mee te geven. 
   // Dit omdat EFC en PostgreSQL een auto-incremented ID aanmaken.
+  
+  console.log(`Passed in showModal value in CreateTransactionForm: ${showModal}`)
   
   const [formdata, setFormData] = useState<Transaction>({
     bucketId: 0,
@@ -17,6 +19,7 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID }: NewT
     created_at: "",
     isIncome: false,
   });
+  console.log(SetShowModal)
 
   useEffect(() => {
     if (isUpdateForm && transactionID) {
@@ -86,6 +89,11 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID }: NewT
         onSubmit={(e) => {
           e.preventDefault();
           const created_atDate = new Date(formdata.created_at);
+          
+          if(showModal === true && SetShowModal !== undefined){
+            SetShowModal(false)
+          }
+          
           if(updateTable !== undefined){
             updateTable(
               formdata.amount,
@@ -95,6 +103,7 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID }: NewT
               formdata.isIncome
             )
           }
+          
             
 
           SubmitData();
@@ -114,7 +123,7 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID }: NewT
             className="form-check-input"
             type="checkbox"
             name="isIncome"
-            checked={formdata.isIncome}
+            checked={IdToBucket[formdata.bucketId] === Buckets.Salary ? true : formdata.isIncome}
             onChange={(e) => {
               change(e);
             }}
@@ -178,7 +187,10 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID }: NewT
 
         <input
           type="submit"
-          onChange={(e) => change(e)}
+          onChange={(e) => {
+            change(e)
+          }
+        }
           value="Save transaction"
           className="btn btn-primary"
         />
