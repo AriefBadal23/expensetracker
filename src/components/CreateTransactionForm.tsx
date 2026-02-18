@@ -9,7 +9,6 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetSho
   // NOTE: Voor een transaction is het niet nodig om een ID mee te geven. 
   // Dit omdat EFC en PostgreSQL een auto-incremented ID aanmaken.
   
-  console.log(`Passed in showModal value in CreateTransactionForm: ${showModal}`)
   
   const [formdata, setFormData] = useState<Transaction>({
     bucketId: 0,
@@ -19,7 +18,6 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetSho
     created_at: "",
     isIncome: false,
   });
-  console.log(SetShowModal)
 
   useEffect(() => {
     if (isUpdateForm && transactionID) {
@@ -51,7 +49,6 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetSho
           "Content-type": "application/json; charset=UTF-8",
         },
       })
-      console.log(`The object has been updated: ${JSON.stringify(formdata)}`)
     }
     else{
       
@@ -62,7 +59,7 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetSho
         "Content-type": "application/json; charset=UTF-8",
       },
     });
-    console.log(`Send: ${JSON.stringify(formdata)}`);
+    
     }
   }
   const change = (
