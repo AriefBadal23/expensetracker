@@ -19,7 +19,7 @@ export type TransactionsSummary = {
 }
 
 interface OverviewRowProps{
-    data: TransactionsSummary
+    data: TransactionsSummary | undefined
 }
 const OverviewRow = ({ data }:OverviewRowProps) => {
     if (!data || !data.buckets) return null;
@@ -31,7 +31,7 @@ const OverviewRow = ({ data }:OverviewRowProps) => {
         if (!transactions || transactions.length === 0) return null;
 
         return transactions.map((x:Transaction, index) => (
-            <tr key={`${bucket.id}-${x.id}`}>
+            <tr key={`${bucket.bucketId}-${x.id}`}>
                 {index === 0 && <td rowSpan={transactions.length}><strong>{bucket.bucketName}</strong></td>}
                 <td>{x.description}</td>
                 <td>{x.created_at}</td>

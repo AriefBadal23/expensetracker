@@ -10,7 +10,7 @@ interface TransactionTableProps {
 }
 const TransactionTable = ({ transactions, setTransactions }: TransactionTableProps) => {
   const [showModal, setShowModal] = useState(false);
-  
+      
   return (
     <>
       <button
@@ -18,7 +18,6 @@ const TransactionTable = ({ transactions, setTransactions }: TransactionTablePro
           className="btn btn-primary"
           onClick={() => {
             setShowModal(true)
-            console.log(showModal)
 
           }}
       >
@@ -26,6 +25,7 @@ const TransactionTable = ({ transactions, setTransactions }: TransactionTablePro
       </button>
 
       {
+          
         showModal ? 
             <CreateFormModal SetShowModal={setShowModal} showModal={showModal} isUpdateForm={false}/>
             : 

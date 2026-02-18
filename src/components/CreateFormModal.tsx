@@ -1,16 +1,12 @@
 import CreateTransactionForm from "./CreateTransactionForm";
 import type {NewTransactionRow} from "../types/NewTransactionRow.tsx";
 const CreateFormModal = ({ updateTable, SetShowModal,showModal, isUpdateForm, transactionID }: NewTransactionRow ) => {
-console.log(`Het is een updateform: ${isUpdateForm}`)
-return (
+    return (
     <>
-        
-        
         {
             showModal && SetShowModal !== undefined ?
                 (
                 <>
-
                     <div
                         className="modal fade show"
                         id="createTransaction"
