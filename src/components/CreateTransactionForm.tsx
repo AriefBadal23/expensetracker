@@ -35,13 +35,7 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetSho
       fetchData();
     }
   }, [isUpdateForm, transactionID]); // alleen aanroepen als deze veranderen
-
-
-
-
   
-  console.log(`Bucket ID: ${formdata.bucketId}`)
-  console.log(`Transaction ID: ${formdata.id}`)
 
   // 💡 force keys to be enum values
   const bucketKeys = Object.values(Buckets) as Buckets[];
