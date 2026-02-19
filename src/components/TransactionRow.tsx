@@ -46,21 +46,25 @@ const TransactionRow = ({ transactions, setTransactions }: TransactionRowProps) 
       
       {transactions.map((t: Transaction) => {
         return (
-            <>
-              <tr key={t.id}>
+              <tr >
                 <td>{t.description}</td>
                 {/* TODO: dit kan beter: */}
                 <td>€ {t.isIncome ? ` + ${t.amount}` : `- ${t.amount}`}</td>
                 <td>{IdToBucket[t.bucketId]}</td>
                 <td>{new Date(t.created_at).toLocaleDateString()}</td>
-                <td onClick={() => DeleteTransaction(t.id)}><a><img src="delete.png"/></a></td>
-                <td key={t.id}><img src="update.png" onClick={() => {
-                  setShowModal(true)
-                  setSelectedTransaction(t)
-                }}/></td>
+                <td><button type="button" 
+                      aria-label="Delete transaction"
+                      onClick={() => DeleteTransaction(t.id)}>
+                     <img src="delete.png" alt="Delete transaction"/></button></td>
+                
+                <td><button type="button"
+                            aria-label="Update transaction"
+                            onClick={() => {
+                            setShowModal(true)
+                            setSelectedTransaction(t)}}>
+                <img src="update.png" alt="Update transaction" /></button></td>
               </tr>
               
-            </>
         );
       })}
       

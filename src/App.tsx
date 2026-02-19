@@ -37,13 +37,12 @@ function App() {
         <Routes>
           <Route
           path="/overview"
-          element=<Overview/>
+          element={<Overview/>}
           />
           <Route
             path="/"
             element={
               <>
-                <Navbar/>
                 <BucketList transactions={transactions} />
                 <CreateFormModal updateTable={UpdateTable} isUpdateForm={false} />
                 <Filter />

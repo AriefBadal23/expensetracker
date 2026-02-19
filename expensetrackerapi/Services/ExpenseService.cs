@@ -14,13 +14,15 @@ namespace expensetrackerapi.Services
 
         public Transaction? GetTransactionByID(int id)
         {
-            var transaction = _db.Transactions.FirstOrDefault(_ => _.Id == id);
+            var transaction = _db.Transactions.FirstOrDefault(t => t.Id == id);
             return transaction ?? null;
         }
 
         public Transaction? UpdateTransaction(Transaction transaction)
         {
-
+            
+            if (transaction.Id <= 0 ) return null;
+            
             var t = _db.Transactions.Find(transaction.Id);
             
             if (t == null)
@@ -28,7 +30,6 @@ namespace expensetrackerapi.Services
                 return null;
             }
             
-            t.Id = transaction.Id;
             t.Amount = transaction.Amount;
             t.BucketId = transaction.BucketId;
             t.Created_at = transaction.Created_at;
@@ -47,56 +48,56 @@ namespace expensetrackerapi.Services
             var totalRecords = _db.Transactions.Count();
             if (month.HasValue && year.HasValue && !bucket.HasValue)
             {
-                var month_transactions = _db.Transactions
-                    .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year)
-                    .OrderByDescending(_ => _.Created_at)
+                var monthTransactions = _db.Transactions
+                    .Where(t => t.Created_at.Month == month && t.Created_at.Year == year)
+                    .OrderByDescending(t => t.Created_at)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize).ToList();
 
                 // TODO: ResponseDTO
                 return new
                 {
-                    Total = month_transactions.Count,
-                    Transactions = month_transactions
+                    Total = monthTransactions.Count,
+                    Transactions = monthTransactions
                 };
             }
             else if (!month.HasValue && bucket.HasValue)
             {
-                var bucket_transactions = _db.Transactions
-                .Where(_ => _.BucketId == bucket)
+                var bucketTransactions = _db.Transactions
+                .Where(b=> b.BucketId == bucket)
 
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .OrderByDescending(_ => _.Created_at).ToList();
+                .OrderByDescending(t => t.Created_at).ToList();
 
                 // TODO: ResponseDTO
                 return new
                 {
                     Total = totalRecords,
-                    Transactions = bucket_transactions
+                    Transactions = bucketTransactions
                 };
             }
 
 
             else if (month.HasValue && year.HasValue && bucket.HasValue)
             {
-                var month_transactions = _db.Transactions
-                .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year && _.BucketId == bucket)
-                .OrderByDescending(_ => _.Created_at)
+                var monthTransactions = _db.Transactions
+                .Where(t=> t.Created_at.Month == month && t.Created_at.Year == year && t.BucketId == bucket)
+                .OrderByDescending(t => t.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
                 return new
                 {
-                    Total = month_transactions.Count,
-                    Transactions = month_transactions
+                    Total = monthTransactions.Count,
+                    Transactions = monthTransactions
                 };
             }
             else if (month.HasValue && year.HasValue)
             {
-                var month_transactions = _db.Transactions
-                .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year)
-                .OrderByDescending(_ => _.Created_at)
+                var monthTransactions = _db.Transactions
+                .Where(t => t.Created_at.Month == month && t.Created_at.Year == year)
+                .OrderByDescending(t => t.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToList();
@@ -104,16 +105,16 @@ namespace expensetrackerapi.Services
                 // TODO: ResponseDTO
                 return new
                 {
-                    Total = month_transactions.Count,
-                    Transactions = month_transactions
+                    Total = monthTransactions.Count,
+                    Transactions = monthTransactions
                 };
             }
             
             else if (year.HasValue)
             {
-                var month_transactions = _db.Transactions
-                    .Where(_ => _.Created_at.Year == year)
-                    .OrderByDescending(_ => _.Created_at)
+                var monthTransactions = _db.Transactions
+                    .Where(t => t.Created_at.Year == year)
+                    .OrderByDescending(t => t.Created_at)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToList();
@@ -121,15 +122,15 @@ namespace expensetrackerapi.Services
                 // TODO: ResponseDTO
                 return new
                 {
-                    Total = month_transactions.Count,
-                    Transactions = month_transactions
+                    Total = monthTransactions.Count,
+                    Transactions = monthTransactions
                 };
             }
 
 
             // No month is provided.
             var transactions = _db.Transactions
-                .OrderByDescending(_ => _.Created_at)
+                .OrderByDescending(t => t.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).ToList();
                
@@ -146,33 +147,22 @@ namespace expensetrackerapi.Services
         {
             // We check first if the bucket exists at all
             var bucketExists = _db.Buckets.Find(transaction.BucketId);
-
             // Make sure the input of the client is not negative and the bucket exists
             if (transaction.Amount > 0 && bucketExists != null)
             {
                 // We get the salary bucket object.
-                Bucket Salary = _db.Buckets.First(x => x.Name == Buckets.Salary);
+                Bucket salary = _db.Buckets.First(x => x.Name == Buckets.Salary);
 
                 // Its necassary to update the Salary bucket total if it is an income otherwise it will substract from it.
-                Salary.Total = Salary.Total > 0 && transaction.IsIncome == false ? Salary.Total - transaction.Amount : Salary.Total + transaction.Amount;
+                salary.Total = salary.Total > 0 && transaction.IsIncome == false ? salary.Total - transaction.Amount : salary.Total + transaction.Amount;
 
                 // Make sure we update the other bucket total amounts
-                Bucket TransactionBucket = _db.Buckets.First(x => x.Id == transaction.BucketId);
-                TransactionBucket.Total = transaction.Amount > 0 && transaction.IsIncome == false ? TransactionBucket.Total + transaction.Amount : TransactionBucket.Total;
+                Bucket transactionBucket = _db.Buckets.First(x => x.Id == transaction.BucketId);
+                transactionBucket.Total = transaction.Amount > 0 && transaction.IsIncome == false ? transactionBucket.Total + transaction.Amount : transactionBucket.Total;
 
 
 
-                _db.Buckets.UpdateRange([Salary, TransactionBucket]);
-
-                var newtransaction = new Transaction
-                {
-                    UserId = 1,
-                    BucketId = transaction.BucketId,
-                    Description = transaction.Description,
-                    Amount = transaction.Amount,
-                    Created_at = transaction.Created_at,
-                    IsIncome = transaction.IsIncome
-                };
+                _db.Buckets.UpdateRange([salary, transactionBucket]);
                 _db.Transactions.Add(transaction);
                 _db.SaveChanges();
                 return true;
@@ -180,16 +170,16 @@ namespace expensetrackerapi.Services
             return false;
         }
 
-        public bool DeleteTransaction(int transactionID)
+        public bool DeleteTransaction(int transactionId)
         {
-            Transaction? t = _db.Transactions.FirstOrDefault(_ => _.Id == transactionID);
-            var transactionBucket = _db.Buckets.FirstOrDefault(_ => t != null && _.Id == t.BucketId);
-            Bucket Income = _db.Buckets.Where(_ => _.Name == Buckets.Salary).First();
+            var deletedTransaction = _db.Transactions.FirstOrDefault(t => t.Id == transactionId);
+            var transactionBucket = _db.Buckets.FirstOrDefault(bucket => deletedTransaction != null && bucket.Id == deletedTransaction.BucketId);
+            Bucket income = _db.Buckets.First(b => b.Name == Buckets.Salary);
 
 
-            if (t != null && transactionBucket != null)
+            if (deletedTransaction != null && transactionBucket != null)
             {
-                _db.Transactions.Remove(t);
+                _db.Transactions.Remove(deletedTransaction);
                 // Je kijkt of the transaction een income of expense is. 
                 // Daarop update je de Income total.
                 // -----
@@ -197,14 +187,14 @@ namespace expensetrackerapi.Services
                 // then add it back to the income and decrease the bucket amount.
                 // otherwise decrease it from the income and decrease it from the Income as well.
 
-                if (t.IsIncome is false)
+                if (deletedTransaction.IsIncome is false)
                 {
-                    transactionBucket.Total -= t.Amount;
-                    Income.Total += t.Amount;
+                    transactionBucket.Total -= deletedTransaction.Amount;
+                    income.Total += deletedTransaction.Amount;
                 }
                 else
                 {
-                    Income.Total -= t.Amount;
+                    income.Total -= deletedTransaction.Amount;
                 }
 
 

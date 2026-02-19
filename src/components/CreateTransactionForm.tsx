@@ -15,7 +15,7 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetSho
     userId: 1,
     description: "",
     amount: 0,
-    created_at: "",
+    created_at: new Date(),
     isIncome: false,
   });
 
@@ -42,23 +42,32 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetSho
   
   function SubmitData() {
     if(isUpdateForm){
-      fetch("http://localhost:5286/api/v1/transactions",{
-        method: "Put",
-        body: JSON.stringify(formdata),
-        headers: {
-          "Content-type": "application/json; charset=UTF-8",
-        },
-      })
-    }
+       try{
+         fetch("http://localhost:5286/api/v1/transactions",{
+           method: "Put",
+           body: JSON.stringify(formdata),
+           headers: {
+             "Content-type": "application/json; charset=UTF-8",
+           },
+         })
+       }
+      catch(e){
+        console.log(e)
+      }
+     }
     else{
-      
-    fetch("http://localhost:5286/api/v1/transactions", {
-      method: "Post",
-      body: JSON.stringify(formdata),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-      },
-    });
+      try{
+        fetch("http://localhost:5286/api/v1/transactions", {
+          method: "Post",
+          body: JSON.stringify(formdata),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        });
+      }
+      catch(e){
+        console.log(e)
+      }
     
     }
   }
@@ -90,7 +99,7 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetSho
               formdata.amount,
               formdata.description,
               formdata.bucketId,
-              created_atDate.toUTCString(),
+              created_atDate,
               formdata.isIncome
             )
           }

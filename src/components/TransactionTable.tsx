@@ -28,9 +28,7 @@ const TransactionTable = ({ transactions, setTransactions }: TransactionTablePro
           
         showModal ? 
             <CreateFormModal SetShowModal={setShowModal} showModal={showModal} isUpdateForm={false}/>
-            : 
-            <>
-            </>
+            : null
       }
       <table className="table">
         <thead>

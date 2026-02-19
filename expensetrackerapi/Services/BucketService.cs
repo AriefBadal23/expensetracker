@@ -39,7 +39,10 @@ public class BucketService : IBucketService
 
     public SummaryDTO GetSummary(int month, int year)
     {
-        if (month == 0 || year == 0) return new SummaryDTO();
+        if (month == 0 || year == 0) return new SummaryDTO
+        {
+            Buckets = new List<BucketTransactionsDTO>()
+        };
 
         var query = (from buck in _db.Buckets
             join transaction in _db.Transactions on buck.Id equals transaction.BucketId
@@ -48,10 +51,10 @@ public class BucketService : IBucketService
             let BuckTransactionsResult = bucketTransactions
                 .Where(t => t.Created_at.Month == month && t.Created_at.Year == year)
             
-            let MonthBucketTotal = BuckTransactionsResult.Sum(x => x.Amount)
+            let monthBucketTotal = BuckTransactionsResult.Sum(x => x.Amount)
                 
             select 
-                    new BucketTransactionsDTO(buck.Id, buck.Name,MonthBucketTotal, BuckTransactionsResult.ToArray())
+                    new BucketTransactionsDTO(buck.Id, buck.Name,monthBucketTotal, BuckTransactionsResult.ToArray())
             ).ToList();
 
         

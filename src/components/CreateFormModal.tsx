@@ -44,10 +44,8 @@ const CreateFormModal = ({ updateTable, SetShowModal,showModal, isUpdateForm, tr
                         </div>
                     </div>
                 </>
-                ) :
-                <>
-                    
-                </>
+                ) : null
+                
         }
       
     </>

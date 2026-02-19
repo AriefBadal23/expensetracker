@@ -70,9 +70,9 @@ namespace expensetrackerapi.Controllers
         }
         
         [HttpPut]
-        public ActionResult Update([FromBody]Transaction UpdatedTransaction)
+        public ActionResult Update([FromBody]Transaction updatedTransaction)
         {
-            var transaction = _expenseService.UpdateTransaction(UpdatedTransaction);
+            var transaction = _expenseService.UpdateTransaction(updatedTransaction);
             if (transaction != null)
             {
                 return Ok(transaction);
