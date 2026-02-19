@@ -20,11 +20,23 @@ const Pagination = ({ setTransactions }: PaginationProps) => {
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
-        const response = await fetch(
-          `http://localhost:5286/api/v1/transactions?pageNumber=${page}&pageSize=${PAGESIZE}&bucket=${search.get(
-            "id"
-          )}&month=${search.get("month")}&year=${search.get("year")}`
-        );
+          const month = search.get("month")
+          const year = search.get("year") 
+          const bucketId = search.get("id") 
+          
+          let url = `http://localhost:5286/api/v1/transactions?pageNumber=${page}&pageSize=${PAGESIZE}`
+          
+          if(year !== null ){
+              url = url + `&year=${year}`
+          }
+          if(month !== null ){
+              url = url + `&month=${month}`
+          }
+          if(bucketId !== null){
+              url = url + `&bucket=${bucketId}`
+          }
+          
+          const response = await fetch(url);
 
         const data = await response.json();
         setTotal(data["total"]);

@@ -1,9 +1,10 @@
 ﻿using expensetrackerapi;
+using expensetrackerapi.Models;
 
 public interface IExpenseService
 {
     public object GetTransactions(int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3);
-    public bool CreateTransaction(CreateTransactionDto dto);
+    public bool CreateTransaction(Transaction transaction);
 
     public bool DeleteTransaction(int transactionID);
 

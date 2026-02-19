@@ -8,6 +8,7 @@ import type { Transaction } from "./types/Transaction";
 import Pagination from "./components/Pagination";
 import Filter from "./components/Filter";
 import Overview from "./components/Overview"
+import Navbar from "./components/NavBar.tsx";
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -36,10 +37,10 @@ function App() {
         <Routes>
           <Route
           path="/overview"
-          element=<Overview/>
+          element={<Overview/>}
           />
           <Route
-            path="/transactions"
+            path="/"
             element={
               <>
                 <BucketList transactions={transactions} />
