@@ -1,10 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import type { Transaction } from "../types/Transaction";
-import type { NewTransactionRow as AddNewTransactionRow } from "../types/NewTransactionRow";
 import { Buckets } from "../types/Buckets";
-import { BucketToId } from "../utils/BucketMap";
+import type {NewTransactionRow} from "../types/NewTransactionRow.tsx";
+import {BucketToId, IdToBucket} from "../utils/BucketMap.ts";
 
-const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
+const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID }: NewTransactionRow) => {
+  
+  // NOTE: Voor een transaction is het niet nodig om een ID mee te geven. 
+  // Dit omdat EFC en PostgreSQL een auto-incremented ID aanmaken.
+  
   const [formdata, setFormData] = useState<Transaction>({
     bucketId: 0,
     userId: 1,
@@ -14,10 +18,46 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
     isIncome: false,
   });
 
+  useEffect(() => {
+    if (isUpdateForm && transactionID) {
+      const fetchData = async () => {
+        try {
+          const response = await fetch(`http://localhost:5286/api/v1/transactions/details?id=${transactionID}`);
+          const data = await response.json();
+          setFormData(data);
+        } catch (e) {
+          console.log(e);
+        }
+      };
+      fetchData();
+    }
+  }, [isUpdateForm, transactionID]); // alleen aanroepen als deze veranderen
+
+
+
+
+  
+  console.log(`Bucket ID: ${formdata.bucketId}`)
+  console.log(`Transaction ID: ${formdata.id}`)
+
   // 💡 force keys to be enum values
   const bucketKeys = Object.values(Buckets) as Buckets[];
-
+  
+  
+  
   function SubmitData() {
+    if(isUpdateForm){
+      fetch("http://localhost:5286/api/v1/transactions",{
+        method: "Put",
+        body: JSON.stringify(formdata),
+        headers: {
+          "Content-type": "application/json; charset=UTF-8",
+        },
+      })
+      console.log(`The object has been updated: ${JSON.stringify(formdata)}`)
+    }
+    else{
+      
     fetch("http://localhost:5286/api/v1/transactions", {
       method: "Post",
       body: JSON.stringify(formdata),
@@ -26,6 +66,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
       },
     });
     console.log(`Send: ${JSON.stringify(formdata)}`);
+    }
   }
   const change = (
     e:
@@ -39,20 +80,22 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
         e.target.type === "checkbox" ? e.target.checked : e.target.value,
     });
   };
-
   return (
     <>
       <form
         onSubmit={(e) => {
           e.preventDefault();
           const created_atDate = new Date(formdata.created_at);
-          updateTable(
-            formdata.amount,
-            formdata.description,
-            formdata.bucketId,
-            created_atDate.toUTCString(),
-            formdata.isIncome
-          );
+          if(updateTable !== undefined){
+            updateTable(
+              formdata.amount,
+              formdata.description,
+              formdata.bucketId,
+              created_atDate.toUTCString(),
+              formdata.isIncome
+            )
+          }
+            
 
           SubmitData();
 
@@ -75,6 +118,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
             onChange={(e) => {
               change(e);
             }}
+            
           />
           <label className="form-check-label" htmlFor="flexCheckChecked">
             This transaction is an Income.
@@ -99,10 +143,11 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
             type="number"
             onChange={change}
             name="amount"
-            value={formdata.amount}
             placeholder="amount"
+            value={formdata.amount}
           />
           <label htmlFor="amount">Amount</label>
+          
         </div>
 
         <div className="form-floating mb-3">
@@ -112,7 +157,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
             name="bucketId"
             onChange={(e) => change(e)}
           >
-            <option selected>Choose a bucket</option>
+            {isUpdateForm ? <option selected>{IdToBucket[formdata.bucketId]}</option> : <option selected>Choose a bucket</option>}
             {bucketKeys.map((key) => {
               return <option value={BucketToId[key]}>{key}</option>;
             })}
@@ -126,6 +171,7 @@ const CreateTransactionForm = ({ updateTable }: AddNewTransactionRow) => {
             className="form-control"
             name="created_at"
             onChange={change}
+            value={formdata.created_at}
           />
           <label htmlFor="created_at">Date</label>
         </div>

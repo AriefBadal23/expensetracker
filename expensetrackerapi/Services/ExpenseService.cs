@@ -1,14 +1,5 @@
+using expensetrackerapi.Controllers;
 using expensetrackerapi.Models;
-
-public interface IExpenseService
-{
-    public object GetTransactions(int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3);
-    public bool CreateTransaction(CreateTransactionDto dto);
-
-    public bool DeleteTransaction(int transactionID);
-
-
-}
 
 
 namespace expensetrackerapi.Services
@@ -21,6 +12,36 @@ namespace expensetrackerapi.Services
         {
             _db = db;
         }
+
+        public Transaction? GetTransactionByID(int id)
+        {
+            var transaction = _db.Transactions.FirstOrDefault(_ => _.Id == id);
+            return transaction ?? null;
+        }
+
+        public Transaction? UpdateTransaction(Transaction transaction)
+        {
+
+            var t = _db.Transactions.Find(transaction.Id);
+            
+            if (t == null)
+            {
+                return null;
+            }
+            
+            t.Id = transaction.Id;
+            t.Amount = transaction.Amount;
+            t.BucketId = transaction.BucketId;
+            t.Created_at = transaction.Created_at;
+            t.Description = transaction.Description;
+            t.IsIncome = transaction.IsIncome;
+            
+            _db.Transactions.Update(t);
+            _db.SaveChanges();
+            
+            return  t;
+        }
+
         public object GetTransactions(int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3)
         {
             // bucket query string = bucket ID
@@ -28,11 +49,10 @@ namespace expensetrackerapi.Services
             if (month.HasValue && year.HasValue && !bucket.HasValue)
             {
                 var month_transactions = _db.Transactions
-                .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year)
-
-                .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .OrderBy(_ => _.Created_at).ToList();
+                    .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year)
+                    .OrderBy(_ => _.Created_at.Year).ThenBy(_ => _.Created_at.Month)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize).ToList();
 
                 // TODO: ResponseDTO
                 return new
@@ -63,9 +83,10 @@ namespace expensetrackerapi.Services
             {
                 var month_transactions = _db.Transactions
                 .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year && _.BucketId == bucket)
+                .OrderBy(_ => _.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .OrderBy(_ => _.Created_at).ToList();
+                .ToList();
                 return new
                 {
                     Total = month_transactions.Count,
@@ -76,9 +97,10 @@ namespace expensetrackerapi.Services
             {
                 var month_transactions = _db.Transactions
                 .Where(_ => _.Created_at.Month == month && _.Created_at.Year == year)
+                .OrderBy(_ => _.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
-                .OrderBy(_ => _.Created_at).ToList();
+                .ToList();
 
                 // TODO: ResponseDTO
                 return new
@@ -91,9 +113,10 @@ namespace expensetrackerapi.Services
 
             // No month is provided.
             var transactions = _db.Transactions
+                .OrderByDescending(_ => _.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .OrderBy(_ => _.Created_at).ToList();
+                .Take(pageSize).ToList();
+               
             return new
             {
                 transactions,
@@ -106,10 +129,10 @@ namespace expensetrackerapi.Services
         public bool CreateTransaction(CreateTransactionDto dto)
         {
             // We check first if the bucket exists at all
-            bool BucketExists = _db.Buckets.Any(x => x.Id == dto.BucketId);
+            var bucketExists = _db.Buckets.Find(dto.BucketId);
 
             // Make sure the input of the client is not negative and the bucket exists
-            if (dto.Amount > 0 && BucketExists)
+            if (dto.Amount > 0 && bucketExists != null)
             {
                 // We get the salary bucket object.
                 Bucket Salary = _db.Buckets.First(x => x.Name == Buckets.Salary);

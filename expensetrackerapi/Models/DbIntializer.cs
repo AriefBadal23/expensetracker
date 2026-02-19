@@ -37,7 +37,7 @@ public static class DbIntializer
         {
             new Transaction
             {
-                Id=1,
+                
                 BucketId = 1,
                 Description = "Monthly Salary",
                 UserId = 1,
@@ -47,7 +47,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=2,
                 BucketId = 2,
                 Description = "Groceries at the AH",
                 UserId = 1,
@@ -57,7 +56,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=3,
                 BucketId = 3,
                 Description = "Shopping - clothing",
                 UserId = 1,
@@ -67,7 +65,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=4,
                 BucketId = 2,
                 Description = "Weekly groceries",
                 UserId = 1,
@@ -77,7 +74,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=5,
                 BucketId = 3,
                 Description = "Shopping - online order",
                 UserId = 1,
@@ -87,7 +83,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=6,
                 BucketId = 1,
                 Description = "Monthly Salary",
                 UserId = 1,
@@ -97,7 +92,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=7,
                 BucketId = 2,
                 Description = "Groceries at the AH",
                 UserId = 1,
@@ -107,7 +101,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=8,
                 BucketId = 3,
                 Description = "Shopping - electronics",
                 UserId = 1,
@@ -117,7 +110,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=9,
                 BucketId = 1,
                 Description = "Monthly Salary",
                 UserId = 1,
@@ -127,7 +119,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=10,
                 BucketId = 2,
                 Description = "Groceries",
                 UserId = 1,
@@ -137,7 +128,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=11,
                 BucketId = 3,
                 Description = "Shopping - shoes",
                 UserId = 1,
@@ -147,7 +137,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=12,
                 BucketId = 2,
                 Description = "Groceries",
                 UserId = 1,
@@ -157,7 +146,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=13,
                 BucketId = 3,
                 Description = "Shopping - gadgets",
                 UserId = 1,
@@ -167,7 +155,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=14,
                 BucketId = 2,
                 Description = "Groceries",
                 UserId = 1,
@@ -177,7 +164,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=15,
                 BucketId = 1,
                 Description = "Monthly Salary",
                 UserId = 1,
@@ -187,7 +173,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=16,
                 BucketId = 2,
                 Description = "Groceries",
                 UserId = 1,
@@ -197,7 +182,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=17,
                 BucketId = 3,
                 Description = "Shopping - summer sale",
                 UserId = 1,
@@ -207,7 +191,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=18,
                 BucketId = 1,
                 Description = "Monthly Salary",
                 UserId = 1,
@@ -217,7 +200,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=19,
                 BucketId = 2,
                 Description = "Groceries",
                 UserId = 1,
@@ -227,7 +209,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=20,
                 BucketId = 3,
                 Description = "Shopping - backpack",
                 UserId = 1,
@@ -237,7 +218,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=21,
                 BucketId = 1,
                 Description = "Monthly Salary",
                 UserId = 1,
@@ -247,7 +227,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=22,
                 BucketId = 2,
                 Description = "Groceries",
                 UserId = 1,
@@ -257,7 +236,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=23,
                 BucketId = 3,
                 Description = "Shopping - jacket",
                 UserId = 1,
@@ -267,7 +245,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=24,
                 BucketId = 1,
                 Description = "Monthly Salary",
                 UserId = 1,
@@ -277,7 +254,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=25,
                 BucketId = 1,
                 Description = "Monthly Salary",
                 UserId = 1,
@@ -287,7 +263,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=26,
                 BucketId = 2,
                 Description = "Extra groceries",
                 UserId = 1,
@@ -297,7 +272,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=27,
                 BucketId = 3,
                 Description = "Shopping - small items",
                 UserId = 1,
@@ -307,7 +281,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=28,
                 BucketId = 2,
                 Description = "Extra groceries",
                 UserId = 1,
@@ -317,7 +290,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=29,
                 BucketId = 3,
                 Description = "Shopping - accessories",
                 UserId = 1,
@@ -327,7 +299,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=30,
                 BucketId = 2,
                 Description = "Groceries",
                 UserId = 1,
@@ -337,7 +308,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=31,
                 BucketId = 3,
                 Description = "Shopping - sale item",
                 UserId = 1,
@@ -347,7 +317,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=32,
                 BucketId = 2,
                 Description = "Late groceries",
                 UserId = 1,
@@ -357,7 +326,6 @@ public static class DbIntializer
             },
             new Transaction
             {
-                Id=33,
                 BucketId = 3,
                 Description = "Impulse buy",
                 UserId = 1,

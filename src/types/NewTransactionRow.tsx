@@ -1,11 +1,15 @@
 export interface NewTransactionRow {
-  updateTable: (
+  updateTable?: (
     amount: number,
     description: string,
     bucketId: number,
     created_at: Date,
     isIncome: boolean
-  ) => void;
-
-  // updateBucketAmount: (name: Buckets, amount: number) => void;
+  ) => void,
+  showModal?: boolean,
+  SetShowModal?: (showModal:boolean) => void,
+  isUpdateForm: boolean,
+  transactionID?: number
 }
+
+
