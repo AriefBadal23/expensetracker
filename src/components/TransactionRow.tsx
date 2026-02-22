@@ -3,12 +3,14 @@ import type { Transaction } from "../types/Transaction";
 import { IdToBucket } from "../utils/BucketMap";
 import CreateFormModal from "./CreateFormModal.tsx";
 import {useState, useEffect} from "react"
+
+
 interface TransactionRowProps {
-  transactions: Transaction[];
+  transaction: Transaction;
   setTransactions: Dispatch<SetStateAction<Transaction[]>>
 }
 
-const TransactionRow = ({ transactions, setTransactions }: TransactionRowProps) => {
+const TransactionRow = ({transaction, setTransactions }: TransactionRowProps) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
 
@@ -40,34 +42,28 @@ const TransactionRow = ({ transactions, setTransactions }: TransactionRowProps) 
     <>
         {
           showModal && selectedTransaction !== null ?
-              <CreateFormModal SetShowModal={setShowModal} showModal={showModal} isUpdateForm={true} transactionID={selectedTransaction.id} />
+              <CreateFormModal SetShowModal={setShowModal} showModal={showModal} isUpdateForm={true} transactionID={selectedTransaction.id} setTransactions={setTransactions} />
               : <></>
         }
-      
-      {transactions.map((t: Transaction) => {
-        return (
-              <tr >
-                <td>{t.description}</td>
+        
+              <tr key={transaction.id} id={transaction.id?.toString()}>
+                <td>{transaction.description}</td>
                 {/* TODO: dit kan beter: */}
-                <td>€ {t.isIncome ? ` + ${t.amount}` : `- ${t.amount}`}</td>
-                <td>{IdToBucket[t.bucketId]}</td>
-                <td>{new Date(t.created_at).toLocaleDateString()}</td>
+                <td>€ {transaction.isIncome ? ` + ${transaction.amount}` : `- ${transaction.amount}`}</td>
+                <td>{IdToBucket[transaction.bucketId]}</td>
+                <td>{new Date(transaction.created_at).toLocaleDateString()}</td>
                 <td><button type="button" 
                       aria-label="Delete transaction"
-                      onClick={() => DeleteTransaction(t.id)}>
+                      onClick={() => DeleteTransaction(transaction.id)}>
                      <img src="delete.png" alt="Delete transaction"/></button></td>
                 
                 <td><button type="button"
                             aria-label="Update transaction"
                             onClick={() => {
                             setShowModal(true)
-                            setSelectedTransaction(t)}}>
+                            setSelectedTransaction(transaction)}}>
                 <img src="update.png" alt="Update transaction" /></button></td>
               </tr>
-              
-        );
-      })}
-      
     </>
   );
 };
