@@ -1,27 +1,9 @@
-﻿using expensetrackerapi.Models;
+﻿using expensetrackerapi.DTO;
+using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Mvc;
 
 namespace expensetrackerapi.Services;
 
-public interface IBucketService
-{
-    public SummaryDTO GetSummary(int month, int year);
-    public List<Bucket> GetBuckets(Buckets bucket);
-}
-
-
-public record BucketTransactionsDTO(int BucketId, Buckets BucketName, int BucketExpenseTotal, Transaction[] Transactions);
-
-public record SummaryDTO
-{
-    public int Month { get; set; }
-    public int Year { get; set; }
-    public List<BucketTransactionsDTO> Buckets { get; set; }
-
-    public int TotalIncome { get; set; }
-    public int TotalExpenses { get; set; }
-
-}
 
 public class BucketService : IBucketService
 {
@@ -37,12 +19,13 @@ public class BucketService : IBucketService
         return _db.Buckets.ToList();
     }
 
-    public SummaryDTO GetSummary(int month, int year)
+    public BucketResponseDto GetSummary(int month, int year)
     {
-        if (month == 0 || year == 0) return new SummaryDTO
-        {
-            Buckets = new List<BucketTransactionsDTO>()
-        };
+        if (month == 0 || year == 0) return 
+            new BucketResponseDto
+            {
+                Buckets = new List<BucketTransaction>()
+            };
 
         var query = (from buck in _db.Buckets
             join transaction in _db.Transactions on buck.Id equals transaction.BucketId
@@ -54,12 +37,12 @@ public class BucketService : IBucketService
             let monthBucketTotal = BuckTransactionsResult.Sum(x => x.Amount)
                 
             select 
-                    new BucketTransactionsDTO(buck.Id, buck.Name,monthBucketTotal, BuckTransactionsResult.ToArray())
+                    new BucketTransaction(buck.Id, buck.Name,monthBucketTotal, BuckTransactionsResult.ToArray())
             ).ToList();
 
         
         // Make use of the query but change the return type so it matches the required output for the front-end.
-        return new SummaryDTO
+        return new BucketResponseDto
         {
             Month = month,
             Year = year,
