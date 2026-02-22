@@ -10,7 +10,7 @@ interface TransactionTableProps {
 }
 const TransactionTable = ({ transactions, setTransactions }: TransactionTableProps) => {
   const [showModal, setShowModal] = useState(false);
-      
+
   return (
     <>
       <button
@@ -27,7 +27,7 @@ const TransactionTable = ({ transactions, setTransactions }: TransactionTablePro
       {
           
         showModal ? 
-            <CreateFormModal SetShowModal={setShowModal} showModal={showModal} isUpdateForm={false}/>
+            <CreateFormModal SetShowModal={setShowModal} showModal={showModal} isUpdateForm={false} setTransactions={setTransactions}/>
             : null
       }
       <table className="table">
@@ -42,7 +42,14 @@ const TransactionTable = ({ transactions, setTransactions }: TransactionTablePro
           </tr>
         </thead>
         <tbody>
-          <TransactionRow transactions={transactions} setTransactions={setTransactions} />
+        {
+            transactions.map((t) => {
+                return (
+                        <TransactionRow key={t.id} transaction={t} setTransactions={setTransactions} />
+                    )
+            })
+            
+        }
         </tbody>
       </table>
     </>

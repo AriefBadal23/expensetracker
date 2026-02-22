@@ -2,9 +2,13 @@ import { useEffect, useState } from "react";
 import type { Transaction } from "../types/Transaction";
 import { useSearchParams } from "react-router-dom";
 import "react-day-picker/dist/style.css";
+import type { Dispatch, SetStateAction } from "react";
+import {SortTransactions} from "../utils/SortTransactions.ts";
+
 
 interface PaginationProps {
-  setTransactions: (transactions: Transaction[]) => void;
+    // Type for useState setter function is Dispatch<SetStateAction>
+    setTransactions: Dispatch<SetStateAction<Transaction[]>>
 }
 
 const Pagination = ({ setTransactions }: PaginationProps) => {
@@ -40,7 +44,8 @@ const Pagination = ({ setTransactions }: PaginationProps) => {
 
         const data = await response.json();
         setTotal(data["total"]);
-        setTransactions(data["transactions"]);
+        setTransactions(data["transactions"].sort(SortTransactions));
+        
       } catch (error) {
         if (error instanceof Error) {
           setError(error.message);
@@ -51,7 +56,7 @@ const Pagination = ({ setTransactions }: PaginationProps) => {
       }
     };
     fetchTransactions();
-  }, [page, setTransactions, search]); //! beide als dependancy
+  }, [page, search, setTransactions]); //! beide als dependancy
 
   return (
     <div>

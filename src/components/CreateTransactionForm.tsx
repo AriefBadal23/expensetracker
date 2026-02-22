@@ -4,11 +4,10 @@ import {Buckets} from "../types/Buckets";
 import type {NewTransactionRow} from "../types/NewTransactionRow.tsx";
 import {BucketToId, IdToBucket} from "../utils/BucketMap.ts";
 
-const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetShowModal, showModal }: NewTransactionRow) => {
+const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showModal, setTransactions }: NewTransactionRow) => {
   
   // NOTE: Voor een transaction is het niet nodig om een ID mee te geven. 
   // Dit omdat EFC en PostgreSQL een auto-incremented ID aanmaken.
-  
   
   const [formdata, setFormData] = useState<Transaction>({
     bucketId: 0,
@@ -40,10 +39,10 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetSho
   
   
   
-  function SubmitData() {
+  async function SubmitData() {
     if(isUpdateForm){
-       try{
-         fetch("http://localhost:5286/api/v1/transactions",{
+      try{
+           await fetch("http://localhost:5286/api/v1/transactions",{
            method: "Put",
            body: JSON.stringify(formdata),
            headers: {
@@ -57,13 +56,33 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetSho
      }
     else{
       try{
-        fetch("http://localhost:5286/api/v1/transactions", {
+        const response = await fetch("http://localhost:5286/api/v1/transactions", {
           method: "Post",
           body: JSON.stringify(formdata),
           headers: {
             "Content-type": "application/json; charset=UTF-8",
           },
         });
+        
+        const data = await response.json()
+
+        const newTransaction: Transaction = {
+          id: data.id,
+          bucketId: data.bucketId,
+          userId: data.userId,
+          description: data.description,
+          amount: data.amount,
+          created_at: new Date(data.created_at), 
+          isIncome: data.isIncome,
+        };
+
+
+
+        // Dit maakt een nieuwe array door oude values van de huidige state te kopieeren
+        // naar een de nieuwe array met de nieuwe transactie.
+        // Hiervoor heb ik een spread operator gebruikt. Door dit doen wordt er re-render gedaan.
+        setTransactions((prev) => [newTransaction, ...prev]);
+        
       }
       catch(e){
         console.log(e)
@@ -88,21 +107,21 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetSho
       <form
         onSubmit={(e) => {
           e.preventDefault();
-          const created_atDate = new Date(formdata.created_at);
           
           if(showModal === true && SetShowModal !== undefined){
             SetShowModal(false)
           }
           
-          if(updateTable !== undefined){
-            updateTable(
-              formdata.amount,
-              formdata.description,
-              formdata.bucketId,
-              created_atDate,
-              formdata.isIncome
-            )
-          }
+          // const created_atDate = new Date(formdata.created_at);
+          // if(updateTable !== undefined){
+          //   updateTable(
+          //     formdata.amount,
+          //     formdata.description,
+          //     formdata.bucketId,
+          //     created_atDate,
+          //     formdata.isIncome
+          //   )
+          // }
           
             
 
@@ -113,7 +132,7 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetSho
             amount: 0,
             bucketId: 0,
             description: "",
-            created_at: "",
+            created_at: new Date(),
             isIncome: false,
           });
         }}
@@ -180,7 +199,7 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetSho
             className="form-control"
             name="created_at"
             onChange={change}
-            value={formdata.created_at}
+            value={formdata.created_at.toString()}
           />
           <label htmlFor="created_at">Date</label>
         </div>
