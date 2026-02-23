@@ -1,20 +1,21 @@
-import { useState, useEffect } from "react";
-import type { Transaction } from "../types/Transaction";
-import { Buckets } from "../types/Buckets";
+import {useEffect, useState} from "react";
+import type {Transaction} from "../types/Transaction";
+import {Buckets} from "../types/Buckets";
 import type {NewTransactionRow} from "../types/NewTransactionRow.tsx";
 import {BucketToId, IdToBucket} from "../utils/BucketMap.ts";
 
-const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID }: NewTransactionRow) => {
+const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID, SetShowModal, showModal }: NewTransactionRow) => {
   
   // NOTE: Voor een transaction is het niet nodig om een ID mee te geven. 
   // Dit omdat EFC en PostgreSQL een auto-incremented ID aanmaken.
+  
   
   const [formdata, setFormData] = useState<Transaction>({
     bucketId: 0,
     userId: 1,
     description: "",
     amount: 0,
-    created_at: "",
+    created_at: new Date(),
     isIncome: false,
   });
 
@@ -32,13 +33,7 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID }: NewT
       fetchData();
     }
   }, [isUpdateForm, transactionID]); // alleen aanroepen als deze veranderen
-
-
-
-
   
-  console.log(`Bucket ID: ${formdata.bucketId}`)
-  console.log(`Transaction ID: ${formdata.id}`)
 
   // 💡 force keys to be enum values
   const bucketKeys = Object.values(Buckets) as Buckets[];
@@ -47,25 +42,33 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID }: NewT
   
   function SubmitData() {
     if(isUpdateForm){
-      fetch("http://localhost:5286/api/v1/transactions",{
-        method: "Put",
-        body: JSON.stringify(formdata),
-        headers: {
-          "Content-type": "application/json; charset=UTF-8",
-        },
-      })
-      console.log(`The object has been updated: ${JSON.stringify(formdata)}`)
-    }
+       try{
+         fetch("http://localhost:5286/api/v1/transactions",{
+           method: "Put",
+           body: JSON.stringify(formdata),
+           headers: {
+             "Content-type": "application/json; charset=UTF-8",
+           },
+         })
+       }
+      catch(e){
+        console.log(e)
+      }
+     }
     else{
-      
-    fetch("http://localhost:5286/api/v1/transactions", {
-      method: "Post",
-      body: JSON.stringify(formdata),
-      headers: {
-        "Content-type": "application/json; charset=UTF-8",
-      },
-    });
-    console.log(`Send: ${JSON.stringify(formdata)}`);
+      try{
+        fetch("http://localhost:5286/api/v1/transactions", {
+          method: "Post",
+          body: JSON.stringify(formdata),
+          headers: {
+            "Content-type": "application/json; charset=UTF-8",
+          },
+        });
+      }
+      catch(e){
+        console.log(e)
+      }
+    
     }
   }
   const change = (
@@ -86,15 +89,21 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID }: NewT
         onSubmit={(e) => {
           e.preventDefault();
           const created_atDate = new Date(formdata.created_at);
+          
+          if(showModal === true && SetShowModal !== undefined){
+            SetShowModal(false)
+          }
+          
           if(updateTable !== undefined){
             updateTable(
               formdata.amount,
               formdata.description,
               formdata.bucketId,
-              created_atDate.toUTCString(),
+              created_atDate,
               formdata.isIncome
             )
           }
+          
             
 
           SubmitData();
@@ -114,7 +123,7 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID }: NewT
             className="form-check-input"
             type="checkbox"
             name="isIncome"
-            checked={formdata.isIncome}
+            checked={IdToBucket[formdata.bucketId] === Buckets.Salary ? true : formdata.isIncome}
             onChange={(e) => {
               change(e);
             }}
@@ -178,7 +187,10 @@ const CreateTransactionForm = ({ updateTable,isUpdateForm, transactionID }: NewT
 
         <input
           type="submit"
-          onChange={(e) => change(e)}
+          onChange={(e) => {
+            change(e)
+          }
+        }
           value="Save transaction"
           className="btn btn-primary"
         />

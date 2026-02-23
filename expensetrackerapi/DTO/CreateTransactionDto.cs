@@ -1,5 +1,6 @@
 using System.Text.Json.Serialization;
 using NodaTime;
+namespace expensetrackerapi.DTO;
 
 public class CreateTransactionDto
 {
