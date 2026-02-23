@@ -69,10 +69,9 @@ namespace expensetrackerapi.Services
             {
                 var bucketTransactions = _db.Transactions
                 .Where(b=> b.BucketId == bucket)
-
+                .OrderByDescending(t => t.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .OrderByDescending(t => t.Created_at).ToList();
+                .Take(pageSize).ToList();
 
                 // TODO: ResponseDTO
                 return new
