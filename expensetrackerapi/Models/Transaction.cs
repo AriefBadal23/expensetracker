@@ -1,5 +1,4 @@
 using NodaTime;
-
 namespace expensetrackerapi.Models;
 using System.ComponentModel.DataAnnotations;
 
@@ -13,7 +12,7 @@ public record Transaction
     [StringLength(50,ErrorMessage = "The description must be less than 50 characters.")]
     public string? Description { get; set; }
     
-    [Range(1, 100000, ErrorMessage = "The amount must be between 1 and 100000.")]
+    [Range(0, 100_000, ErrorMessage = "The amount must be between 0 and 100_000.")]
     public int Amount { get; set; }
     
     [CreatedAtValidation]

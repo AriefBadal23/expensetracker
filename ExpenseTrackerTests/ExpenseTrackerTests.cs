@@ -1,4 +1,6 @@
-﻿namespace ExpenseTrackerTests;
+﻿using expensetrackerapi.DTO;
+
+namespace ExpenseTrackerTests;
 
 using expensetrackerapi;
 using expensetrackerapi.Models;
@@ -51,32 +53,33 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
         var service = new ExpenseService(db);
 
-        bool[] transactionArrayResult = new bool[3];
+        ResponseTransactionDTo[] transactionArrayResult = new ResponseTransactionDTo[3];
 
-        CreateTransactionDto[] dto = new[] {
-        new CreateTransactionDto
+        RequestTransactionDto[] transactions = new[] {
+            
+        new RequestTransactionDto
         {
             BucketId = 1,
             Description = "Salary payment",
             Amount = 1000,
-            CreatedAt = new LocalDate(2025, 1, 20),
+            Created_at = new LocalDate(2025, 1, 20),
             IsIncome = true
         },
 
-        new CreateTransactionDto
+        new RequestTransactionDto
         {
             BucketId = 2,
             Description = "Groceries at AH",
             Amount = 120,
-            CreatedAt = new LocalDate(2025, 1, 12),
+            Created_at = new LocalDate(2025, 1, 12),
             IsIncome = false
         },
-        new CreateTransactionDto
+        new RequestTransactionDto
         {
             BucketId = 3,
             Description = "Shopping - Clothing",
             Amount = 80,
-            CreatedAt = new LocalDate(2025, 1, 29),
+            Created_at = new LocalDate(2025, 1, 29),
             IsIncome = false
         }
 
@@ -86,17 +89,17 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
         for (var i = 0; i < transactionArrayResult.Length; i++)
         {
-            var TransactionIsCreated = service.CreateTransaction(dto[i]);
+            var transactionIsCreated = service.CreateTransaction(transactions[i]);
 
-            if (TransactionIsCreated)
+            if (transactionIsCreated is not null)
             {
-                transactionArrayResult[i] = TransactionIsCreated;
+                transactionArrayResult[i] = transactionIsCreated;
             }
         }
         db.SaveChanges();
 
         // Assert
-        Assert.Equal(3, transactionArrayResult.Count(_ => _ == true)); // Service method returns 3x true
+        Assert.Equal(3, transactionArrayResult.Count()); // Service method returns 3x true
         Assert.Equal(3, db.Transactions.Count()); // there are 3 transactions
         Assert.Equal(800, db.Buckets.Where(_ => _.Name == Buckets.Salary).First().Total);
         Assert.Equal(120, db.Buckets.Where(_ => _.Name == Buckets.Groceries).First().Total);
@@ -190,8 +193,8 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
         Transaction[] newTransactions =
         {
-            new Transaction{Id=3,BucketId=1,UserId=1,Description="TestSalaris",Amount=100,Created_at=new NodaTime.LocalDate(2025,1,20), IsIncome=true },
-            new Transaction{Id=4,BucketId=3,UserId=1,Description="Shopping - clothing",Amount=80,Created_at=new NodaTime.LocalDate(2025,1,20), IsIncome=false },
+            new Transaction{Id=3,BucketId=1,UserId=1,Description="TestSalaris",Amount=100,Created_at= new NodaTime.LocalDate(2025,1,20), IsIncome=true },
+            new Transaction{Id=4,BucketId=3,UserId=1,Description="Shopping - clothing",Amount=80,Created_at= new NodaTime.LocalDate(2025,1,20), IsIncome=false },
 
         };
 

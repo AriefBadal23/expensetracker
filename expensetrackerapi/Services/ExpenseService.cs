@@ -1,3 +1,5 @@
+using expensetrackerapi.DTO;
+using expensetrackerapi.Mapper;
 using expensetrackerapi.Models;
 
 
@@ -6,19 +8,21 @@ namespace expensetrackerapi.Services
     public class ExpenseService : IExpenseService
     {
         private readonly ExpenseTrackerContext _db;
+        private TransactionMapper _mapper = new();
 
         public ExpenseService(ExpenseTrackerContext db)
         {
             _db = db;
         }
 
-        public Transaction? GetTransactionByID(int id)
+        public ResponseTransactionDTo? GetTransactionByID(int id)
         {
             var transaction = _db.Transactions.FirstOrDefault(t => t.Id == id);
-            return transaction ?? null;
+            return _mapper.TransactionToResponseTransaction(transaction);
+
         }
 
-        public Transaction? UpdateTransaction(Transaction transaction)
+        public ResponseTransactionDTo? UpdateTransaction(Transaction transaction)
         {
             
             if (transaction.Id <= 0 ) return null;
@@ -38,8 +42,8 @@ namespace expensetrackerapi.Services
             
             _db.Transactions.Update(t);
             _db.SaveChanges();
-            
-            return  t;
+            var response = _mapper.TransactionToResponseTransaction(t);
+            return  response;
         }
 
         public object GetTransactions(int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3)
@@ -65,10 +69,9 @@ namespace expensetrackerapi.Services
             {
                 var bucketTransactions = _db.Transactions
                 .Where(b=> b.BucketId == bucket)
-
+                .OrderByDescending(t => t.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
-                .Take(pageSize)
-                .OrderByDescending(t => t.Created_at).ToList();
+                .Take(pageSize).ToList();
 
                 // TODO: ResponseDTO
                 return new
@@ -143,31 +146,38 @@ namespace expensetrackerapi.Services
 
         }
 
-        public bool CreateTransaction(Transaction transaction)
+        public ResponseTransactionDTo? CreateTransaction(RequestTransactionDto transaction)
         {
+            var mappedTransaction = _mapper.TransactionDtoToRequestTransaction(transaction);
             // We check first if the bucket exists at all
-            var bucketExists = _db.Buckets.Find(transaction.BucketId);
+            var bucketExists = _db.Buckets.Find(mappedTransaction.BucketId);
             // Make sure the input of the client is not negative and the bucket exists
-            if (transaction.Amount > 0 && bucketExists != null)
+            if (mappedTransaction.Amount > 0 && bucketExists != null)
             {
                 // We get the salary bucket object.
                 Bucket salary = _db.Buckets.First(x => x.Name == Buckets.Salary);
 
                 // Its necassary to update the Salary bucket total if it is an income otherwise it will substract from it.
-                salary.Total = salary.Total > 0 && transaction.IsIncome == false ? salary.Total - transaction.Amount : salary.Total + transaction.Amount;
+                salary.Total = salary.Total > 0 && mappedTransaction.IsIncome == false ? salary.Total - mappedTransaction.Amount : salary.Total + mappedTransaction.Amount;
 
                 // Make sure we update the other bucket total amounts
-                Bucket transactionBucket = _db.Buckets.First(x => x.Id == transaction.BucketId);
-                transactionBucket.Total = transaction.Amount > 0 && transaction.IsIncome == false ? transactionBucket.Total + transaction.Amount : transactionBucket.Total;
+                Bucket transactionBucket = _db.Buckets.First(x => x.Id == mappedTransaction.BucketId);
+                transactionBucket.Total = mappedTransaction.Amount > 0 && mappedTransaction.IsIncome == false ? transactionBucket.Total + mappedTransaction.Amount : transactionBucket.Total;
 
 
 
                 _db.Buckets.UpdateRange([salary, transactionBucket]);
-                _db.Transactions.Add(transaction);
+                _db.Transactions.Add(mappedTransaction);
+                
+                
                 _db.SaveChanges();
-                return true;
+                var response = _mapper.TransactionToResponseTransaction(mappedTransaction);
+                
+                return response;
+
+
             }
-            return false;
+            return new ResponseTransactionDTo();
         }
 
         public bool DeleteTransaction(int transactionId)

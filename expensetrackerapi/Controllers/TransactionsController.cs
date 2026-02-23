@@ -1,3 +1,4 @@
+using expensetrackerapi.DTO;
 using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Mvc;
 using expensetrackerapi.Services;
@@ -8,15 +9,11 @@ namespace expensetrackerapi.Controllers
     [Route("api/v1/[controller]")]
     public class Transactions : Controller
     {
-        private readonly ILogger<Transactions> _logger;
-        private readonly ExpenseTrackerContext _db;
 
         private readonly IExpenseService _expenseService;
 
-        public Transactions(ILogger<Transactions> logger, ExpenseTrackerContext context, IExpenseService service)
+        public Transactions(IExpenseService service)
         {
-            _logger = logger;
-            _db = context;
             _expenseService = service;
         }
 
@@ -49,12 +46,12 @@ namespace expensetrackerapi.Controllers
         }
 
         [HttpPost]
-        public ActionResult Post([FromBody] Transaction transaction)
+        public ActionResult Post([FromBody] RequestTransactionDto transaction)
         {
 
-            var TransactionCreated = _expenseService.CreateTransaction(transaction);
-            if (!TransactionCreated) return BadRequest();
-            return Created();
+            var transactionCreated = _expenseService.CreateTransaction(transaction);
+            if (transactionCreated == null) return BadRequest();
+            return Ok(transactionCreated);
 
         }
 

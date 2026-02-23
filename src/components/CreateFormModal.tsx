@@ -1,6 +1,6 @@
 import CreateTransactionForm from "./CreateTransactionForm";
 import type {NewTransactionRow} from "../types/NewTransactionRow.tsx";
-const CreateFormModal = ({ updateTable, SetShowModal,showModal, isUpdateForm, transactionID }: NewTransactionRow ) => {
+const CreateFormModal = ({SetShowModal,showModal, isUpdateForm, transactionID, setTransactions }: NewTransactionRow ) => {
     return (
     <>
         {
@@ -28,7 +28,7 @@ const CreateFormModal = ({ updateTable, SetShowModal,showModal, isUpdateForm, tr
                                     ></button>
                                 </div>
                                 <div className="modal-body">
-                                    <CreateTransactionForm updateTable={updateTable} SetShowModal={SetShowModal} showModal={showModal} isUpdateForm={isUpdateForm} transactionID={transactionID}/>
+                                    <CreateTransactionForm SetShowModal={SetShowModal} showModal={showModal} isUpdateForm={isUpdateForm} transactionID={transactionID} setTransactions={setTransactions} />
                                 </div>
                                 <div className="modal-footer">
                                     <button
