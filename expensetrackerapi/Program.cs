@@ -2,9 +2,9 @@ using System.Text.Json.Serialization;
 using expensetrackerapi.Models;
 using expensetrackerapi.Services;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Net.Http.Headers;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
-using System.Data.SqlClient;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
@@ -14,13 +14,17 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddScoped<IExpenseService, ExpenseService>();
 builder.Services.AddScoped<IBucketService, BucketService>();
+
+// CORS setup between React FE and C# BE
 builder.Services.AddCors(
 options =>
 {
     options.AddPolicy(name: MyAllowSpecificOrigins,
     policy =>
     {
-        policy.WithOrigins("http://localhost:5173").AllowAnyMethod().AllowAnyHeader();
+        policy.WithOrigins("http://localhost:5173")
+             .WithHeaders(HeaderNames.ContentType)
+             .WithMethods("PUT", "DELETE", "GET", "POST");
     });
 }
 
