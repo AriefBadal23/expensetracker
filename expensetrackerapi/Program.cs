@@ -4,9 +4,11 @@ using expensetrackerapi.Services;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
+using System.Data.SqlClient;
 
 var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
 var builder = WebApplication.CreateBuilder(args);
+
 
 // Add services to the container.
 
@@ -33,8 +35,17 @@ builder.Services.AddControllers()
 });
 
 // Make use of the PostgreSQL database as a service we inject in the DI container.
+var password = builder.Configuration["DbPassword"];
+
+Npgsql.NpgsqlConnectionStringBuilder npgsqlConnectionStringBuilder = new (builder.Configuration.GetConnectionString("ExpenseTrackerContext"))
+    {
+        Password = password
+    };
+
+var connectionstring = npgsqlConnectionStringBuilder.ConnectionString;
+
 builder.Services.AddDbContext<ExpenseTrackerContext>(options => options
-        .UseNpgsql(builder.Configuration.GetConnectionString("ExpenseTrackerContext"),
+        .UseNpgsql(connectionstring,
          o =>
          {
              o.MapEnum<Buckets>("buckets");
