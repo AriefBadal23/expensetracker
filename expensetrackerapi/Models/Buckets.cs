@@ -1,7 +1,7 @@
 public enum Buckets
 {
     Salary,
-    Groceries,
-    Shopping
+    Shopping,
+    Groceries
 }
 

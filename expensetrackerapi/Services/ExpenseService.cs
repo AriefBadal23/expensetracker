@@ -38,7 +38,7 @@ namespace expensetrackerapi.Services
             t.BucketId = transaction.BucketId;
             t.Created_at = transaction.Created_at;
             t.Description = transaction.Description;
-            t.IsIncome = transaction.IsIncome;
+            
             
             _db.Transactions.Update(t);
             _db.SaveChanges();
@@ -149,45 +149,48 @@ namespace expensetrackerapi.Services
         public ResponseTransactionDTo? CreateTransaction(RequestTransactionDto transaction)
         {
             var mappedTransaction = _mapper.TransactionDtoToRequestTransaction(transaction);
+            
             // We check first if the bucket exists at all
             var bucketExists = _db.Buckets.Find(mappedTransaction.BucketId);
-            // Make sure the input of the client is not negative and the bucket exists
-            if (mappedTransaction.Amount > 0 && bucketExists != null)
+            
+            Bucket salary = _db.Buckets.First(x => x.Name == Buckets.Salary);
+            Bucket? transactionBucket = _db.Buckets.FirstOrDefault(b => b.Id == mappedTransaction.BucketId);
+
+            // Guard clauses, always start with null check first.
+            if (transactionBucket == null || mappedTransaction.Amount <= 0) return new ResponseTransactionDTo();
+            
+            if (transactionBucket.Type == BucketTypes.Income && mappedTransaction.BucketId == 1)
             {
-                // We get the salary bucket object.
-                Bucket salary = _db.Buckets.First(x => x.Name == Buckets.Salary);
-
-                // Its necassary to update the Salary bucket total if it is an income otherwise it will substract from it.
-                salary.Total = salary.Total > 0 && mappedTransaction.IsIncome == false ? salary.Total - mappedTransaction.Amount : salary.Total + mappedTransaction.Amount;
-
-                // Make sure we update the other bucket total amounts
-                Bucket transactionBucket = _db.Buckets.First(x => x.Id == mappedTransaction.BucketId);
-                transactionBucket.Total = mappedTransaction.Amount > 0 && mappedTransaction.IsIncome == false ? transactionBucket.Total + mappedTransaction.Amount : transactionBucket.Total;
-
-
-
-                _db.Buckets.UpdateRange([salary, transactionBucket]);
-                _db.Transactions.Add(mappedTransaction);
-                
-                
-                _db.SaveChanges();
-                var response = _mapper.TransactionToResponseTransaction(mappedTransaction);
-                
-                return response;
-
-
+                salary.Total += mappedTransaction.Amount;
             }
-            return new ResponseTransactionDTo();
+            else
+            {
+                salary.Total -= mappedTransaction.Amount;
+                    
+            }
+
+            if (transactionBucket.Total >= 0 && transactionBucket.Name != Buckets.Salary)
+            {
+                transactionBucket.Total += mappedTransaction.Amount;
+            }
+                
+            _db.Transactions.Add(mappedTransaction);
+            _db.Buckets.UpdateRange([salary, transactionBucket]);
+            _db.SaveChanges();
+            var response = _mapper.TransactionToResponseTransaction(mappedTransaction);
+            return response;
         }
 
         public bool DeleteTransaction(int transactionId)
         {
-            var deletedTransaction = _db.Transactions.FirstOrDefault(t => t.Id == transactionId);
+            var deletedTransaction = _db.Transactions.Find(transactionId);
+            
             var transactionBucket = _db.Buckets.FirstOrDefault(bucket => deletedTransaction != null && bucket.Id == deletedTransaction.BucketId);
+            
             Bucket income = _db.Buckets.First(b => b.Name == Buckets.Salary);
 
 
-            if (deletedTransaction != null && transactionBucket != null)
+            if (deletedTransaction != null && deletedTransaction.Amount > 0 && transactionBucket != null)
             {
                 _db.Transactions.Remove(deletedTransaction);
                 // Je kijkt of the transaction een income of expense is. 
@@ -197,7 +200,7 @@ namespace expensetrackerapi.Services
                 // then add it back to the income and decrease the bucket amount.
                 // otherwise decrease it from the income and decrease it from the Income as well.
 
-                if (deletedTransaction.IsIncome is false)
+                if (transactionBucket.Type == BucketTypes.Expense)
                 {
                     transactionBucket.Total -= deletedTransaction.Amount;
                     income.Total += deletedTransaction.Amount;

@@ -1,8 +1,9 @@
-import type { Dispatch, SetStateAction } from "react";
-import type { Transaction } from "../types/Transaction";
-import { IdToBucket } from "../utils/BucketMap";
+import type {Dispatch, SetStateAction} from "react";
+import {useEffect, useState} from "react"
+import type {Transaction} from "../types/Transaction";
+import {IdToBucket} from "../utils/BucketMap";
 import CreateFormModal from "./CreateFormModal.tsx";
-import {useState, useEffect} from "react"
+import {Buckets} from "../types/Buckets.tsx";
 
 
 interface TransactionRowProps {
@@ -49,7 +50,7 @@ const TransactionRow = ({transaction, setTransactions }: TransactionRowProps) =>
               <tr key={transaction.id} id={transaction.id?.toString()}>
                 <td>{transaction.description}</td>
                 {/* TODO: dit kan beter: */}
-                <td>€ {transaction.isIncome ? ` + ${transaction.amount}` : `- ${transaction.amount}`}</td>
+                <td>{IdToBucket[transaction.bucketId] === Buckets.Salary ? `   + €${transaction.amount}` : ` - € ${transaction.amount}`}</td>
                 <td>{IdToBucket[transaction.bucketId]}</td>
                 <td>{new Date(transaction.created_at).toLocaleDateString()}</td>
                 <td><button type="button" 

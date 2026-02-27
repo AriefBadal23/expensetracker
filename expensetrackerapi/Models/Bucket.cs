@@ -1,3 +1,5 @@
+using expensetrackerapi.Models;
+
 namespace expensetrackerapi;
 using System.ComponentModel.DataAnnotations;
 public record Bucket
@@ -12,5 +14,8 @@ public record Bucket
     
     [Range(0, 1_000_000, ErrorMessage = "The amount must be between 1 and 1_000_000.")]
     public int Total { get; set; }
+    
+    [Required(ErrorMessage = "Type is required.")]
+    public BucketTypes Type { get; set; }
 }
 

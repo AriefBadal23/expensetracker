@@ -9,6 +9,5 @@ public class ResponseTransactionDTo
     public string Description { get; set; } = null!;
     public int Amount { get; set; }
     public LocalDate Created_at { get; set; }
-    public bool IsIncome { get; set; }
 }
 

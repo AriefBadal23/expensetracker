@@ -25,7 +25,4 @@ public class RequestTransactionDto
     [Required(ErrorMessage = "Created_at is required.")]
     public LocalDate Created_at { get; set; }
     
-    [JsonPropertyName("isIncome")]
-    [Required(ErrorMessage = "isIncome is required.")]
-    public bool IsIncome { get; set; }
 }

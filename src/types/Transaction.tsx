@@ -5,5 +5,4 @@ export type Transaction = {
   description: string;
   amount: number;
   created_at: Date;
-  isIncome: boolean;
 };

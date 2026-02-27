@@ -20,6 +20,4 @@ public record Transaction
     [Required(ErrorMessage = "Created_at is required.")]
     public LocalDate Created_at { get; set; }
     
-    [Required(ErrorMessage = "isIncome is required.")]
-    public bool IsIncome { get; set; }
 }
