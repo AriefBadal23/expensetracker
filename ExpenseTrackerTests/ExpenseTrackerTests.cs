@@ -1,4 +1,6 @@
-﻿using expensetrackerapi.DTO;
+﻿using System.ComponentModel.DataAnnotations;
+using expensetrackerapi.DTO;
+using expensetrackerapi.Validation;
 
 namespace ExpenseTrackerTests;
 
@@ -63,7 +65,6 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
             Description = "Salary payment",
             Amount = 1000,
             Created_at = new LocalDate(2025, 1, 20),
-            IsIncome = true
         },
 
         new RequestTransactionDto
@@ -72,7 +73,6 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
             Description = "Groceries at AH",
             Amount = 120,
             Created_at = new LocalDate(2025, 1, 12),
-            IsIncome = false
         },
         new RequestTransactionDto
         {
@@ -80,7 +80,6 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
             Description = "Shopping - Clothing",
             Amount = 80,
             Created_at = new LocalDate(2025, 1, 29),
-            IsIncome = false
         }
 
 
@@ -120,7 +119,6 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         // Bucket  id=1 is Salary and id=2 is Groceries and id=3 is Shopping
 
         // Assert
-        var salaryTransAction = _db.Transactions.Where(x => x.IsIncome == true).First();
         var firstFiveTransactions = new Transaction[]
         {
             new Transaction
@@ -130,7 +128,6 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
                 Description = "Monthly Salary",
                 UserId = 1,
                 Amount = 1000,
-                IsIncome = true,
                 Created_at = new LocalDate(2025, 1, 5)
             },
             new Transaction
@@ -140,7 +137,6 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
                 Description = "Groceries at the AH",
                 UserId = 1,
                 Amount = 120,
-                IsIncome = false,
                 Created_at = new LocalDate(2025, 1, 12)
             },
             new Transaction
@@ -150,7 +146,6 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
                 Description = "Shopping - clothing",
                 UserId = 1,
                 Amount = 80,
-                IsIncome = false,
                 Created_at = new LocalDate(2025, 1, 20)
             },
             new Transaction
@@ -160,7 +155,6 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
                 Description = "Weekly groceries",
                 UserId = 1,
                 Amount = 95,
-                IsIncome = false,
                 Created_at = new LocalDate(2025, 2, 14)
             },
             new Transaction
@@ -170,15 +164,11 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
                 Description = "Shopping - online order",
                 UserId = 1,
                 Amount = 150,
-                IsIncome = false,
                 Created_at = new LocalDate(2025, 3, 2)
             } };
 
         Assert.Equal(33, _db.Transactions.Count());
-        Assert.Equal(1, salaryTransAction.Id);
-        Assert.Equal("Monthly Salary", salaryTransAction.Description);
         Assert.Equal(firstFiveTransactions, _db.Transactions.OrderBy(_ => _.Id).Take(5));
-
         // asserts op waarde niet hele object!
     }
 
@@ -190,31 +180,87 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
         using var _db = _fixture.CreateContext();
 
-
-        Transaction[] newTransactions =
-        {
-            new Transaction{Id=3,BucketId=1,UserId=1,Description="TestSalaris",Amount=100,Created_at= new NodaTime.LocalDate(2025,1,20), IsIncome=true },
-            new Transaction{Id=4,BucketId=3,UserId=1,Description="Shopping - clothing",Amount=80,Created_at= new NodaTime.LocalDate(2025,1,20), IsIncome=false },
-
-        };
-
         DbIntializer.Initialize(_db);
 
         // Act
-
+        
+        //1105
         var shoppingTotal = _db.Buckets.First(_ => _.Name == Buckets.Shopping).Total;
+        // 5730
         var salaryTotal = _db.Buckets.First(_ => _.Name == Buckets.Salary).Total;
-
-        var deletedTransaction = _db.Transactions.Where(x => x.Id == 3).First();
-
-        var isDeleted = new ExpenseService(_db).DeleteTransaction(3);
-        var updatedShoppingTotal = _db.Buckets.First(_ => _.Name == Buckets.Shopping).Total;
-        var updatedSalaryTotal = _db.Buckets.First(_ => _.Name == Buckets.Salary).Total;
+        
+        // 3-> 80
+        // 4 -> 95
+        // 8 -> 110
+        var T_3_isDeleted = new ExpenseService(_db).DeleteTransaction(3);
+        var T_4_isDeleted = new ExpenseService(_db).DeleteTransaction(5);
+        var T_8_isDeleted = new ExpenseService(_db).DeleteTransaction(8);
+        
+        var current_Shopping_Total =  _db.Buckets.First(_ => _.Name == Buckets.Shopping).Total;
+        var current_salaryTotal = _db.Buckets.First(_ => _.Name == Buckets.Salary).Total;
 
         // Assert
-        Assert.True(isDeleted);
-        Assert.Equal(1025, updatedShoppingTotal);
-        Assert.Equal(5810, updatedSalaryTotal);
+        Assert.True(T_3_isDeleted);
+        Assert.True(T_4_isDeleted);
+        Assert.True(T_8_isDeleted);
+        Assert.Equal(815, current_Shopping_Total);
+        Assert.Equal(6020, current_salaryTotal);
+    }
+
+    [Fact]
+    public void TestDeleteAllTransactions_Zero_As_Totals()
+    {
+        using var _db = _fixture.CreateContext();
+        var expenseService = new ExpenseService(_db);
+        var bucketService = new BucketService(_db);
+
+        DbIntializer.Initialize(_db);
+
+        foreach (var transaction in _db.Transactions)
+        {
+            expenseService.DeleteTransaction(transaction.Id);
+        }
+
+        int bucketsTotals = bucketService.GetBuckets().Count(_ => _.Total == 0);
+        
+        Assert.Equal(3, bucketsTotals);
+    }
+
+    [Fact]
+    public void TestInvalidCreationDateValidationAttribute()
+    {
+     // ARRANGE
+     using var _db = _fixture.CreateContext();
+     DbIntializer.Initialize(_db);
+     
+     Transaction[] newTransactions =
+     {
+         new Transaction{BucketId=1,
+                        UserId=1,
+                        Description="TestSalaris",
+                        Amount=100,
+                        Created_at= new NodaTime.LocalDate(2030,1,20),
+                         },
+         
+         new Transaction{BucketId=3,
+                        UserId=1,
+                        Description="Shopping - clothing",
+                        Amount=80,
+                        Created_at= new NodaTime.LocalDate(2025,1,20),
+                        },
+
+     };
+     // ACT
+     _db.Transactions.AddRange(newTransactions);
+     _db.SaveChanges();
+
+     var attr = new CreatedAtValidation();
+     var context = new ValidationContext(new { });
+     var result = attr.GetValidationResult(newTransactions[0].Created_at, context);
+     // ASSERT
+     Assert.NotEqual(ValidationResult.Success, result);
+     Assert.Equal("The created date year must not be later than this year.", result.ErrorMessage);
+
     }
 
 }
