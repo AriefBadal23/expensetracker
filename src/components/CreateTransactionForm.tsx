@@ -15,7 +15,6 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
     description: "",
     amount: 0,
     created_at: new Date(),
-    isIncome: false,
   });
 
   useEffect(() => {
@@ -73,7 +72,6 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
           description: data.description,
           amount: data.amount,
           created_at: new Date(data.created_at), 
-          isIncome: data.isIncome,
         };
 
 
@@ -96,12 +94,16 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
       | React.ChangeEvent<HTMLSelectElement>
   ) => {
     //!   wat doet [e.target.name]: e.target.value
-    setFormData({
-      ...formdata,
-      [e.target.name]:
-        e.target.type === "checkbox" ? e.target.checked : e.target.value,
-    });
+    setFormData(() => (
+        {
+          ...formdata,
+          [e.target.name]:
+          e.target.value,
+        }
+    ));
   };
+  
+  
   return (
     <>
       <form
@@ -112,19 +114,6 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
             SetShowModal(false)
           }
           
-          // const created_atDate = new Date(formdata.created_at);
-          // if(updateTable !== undefined){
-          //   updateTable(
-          //     formdata.amount,
-          //     formdata.description,
-          //     formdata.bucketId,
-          //     created_atDate,
-          //     formdata.isIncome
-          //   )
-          // }
-          
-            
-
           SubmitData();
 
           // clear form after submit
@@ -133,26 +122,9 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
             bucketId: 0,
             description: "",
             created_at: new Date(),
-            isIncome: false,
           });
         }}
       >
-        <div className="form-check mb-3">
-          <input
-            className="form-check-input"
-            type="checkbox"
-            name="isIncome"
-            checked={IdToBucket[formdata.bucketId] === Buckets.Salary ? true : formdata.isIncome}
-            onChange={(e) => {
-              change(e);
-            }}
-            
-          />
-          <label className="form-check-label" htmlFor="flexCheckChecked">
-            This transaction is an Income.
-          </label>
-        </div>
-
         <div className="form-floating mb-3">
           <input
             className="form-control"
@@ -185,9 +157,9 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
             name="bucketId"
             onChange={(e) => change(e)}
           >
-            {isUpdateForm ? <option selected>{IdToBucket[formdata.bucketId]}</option> : <option selected>Choose a bucket</option>}
+            {isUpdateForm ? <option>{IdToBucket[formdata.bucketId]}</option> : <option value={0}>Choose a bucket</option>}
             {bucketKeys.map((key) => {
-              return <option value={BucketToId[key]}>{key}</option>;
+              return <option key={key} value={BucketToId[key]}>{key}</option>;
             })}
           </select>
           <label htmlFor="bucketId">Bucket</label>

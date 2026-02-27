@@ -1,9 +1,8 @@
 import "../styles/BucketList.css";
 import Bucket from "./Bucket";
 import type { Bucket as BucketType } from "../types/Bucket";
-import { v4 as uuidv4 } from "uuid";
 import { useEffect, useState } from "react";
-import type { Transaction } from "../types/Transaction";
+import type {Transaction} from "../types/Transaction.tsx";
 
 interface BucketListProps{
   transactions: Transaction[]
@@ -11,7 +10,7 @@ interface BucketListProps{
 
 
 const BucketList = ({transactions}:BucketListProps) => {
-  const [buckets, SetBuckets] = useState([]);
+  const [buckets, SetBuckets] = useState<BucketType[]>([]);
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [error, setError] = useState<string>();
 
@@ -23,11 +22,13 @@ const BucketList = ({transactions}:BucketListProps) => {
         const data = await response.json();
         SetBuckets(data);
       } catch (error) {
-        if (error instanceof Error) {
-          setError(error.message);
-        } else {
-          setError("Something went wrong");
-        }
+          if (error instanceof Error) {
+            console.log(error.name === TypeError.name)
+            console.log(error.message)
+            setError(error.message);
+          } else {
+            setError("Something went wrong with loading the data.");
+          }
       }
     };
     fetchBuckets();
@@ -36,11 +37,11 @@ const BucketList = ({transactions}:BucketListProps) => {
     <>
       <h1>Transaction Overview</h1>
       <div className="bucket-list">
-        {buckets &&
+        {buckets !== null &&
           buckets.map((b: BucketType) => {
             return (
               <Bucket
-                key={uuidv4()}
+                key={b.id}
                 name={b.name}
                 amount={b.total}
                 icon={b.icon}
