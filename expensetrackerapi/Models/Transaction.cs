@@ -1,3 +1,4 @@
+using expensetrackerapi.Validation;
 using NodaTime;
 namespace expensetrackerapi.Models;
 using System.ComponentModel.DataAnnotations;

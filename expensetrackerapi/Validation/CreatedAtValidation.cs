@@ -1,9 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using expensetrackerapi.Models;
 using NodaTime;
 
-
-namespace expensetrackerapi;
+namespace expensetrackerapi.Validation;
 
 public class CreatedAtValidation : ValidationAttribute
 {

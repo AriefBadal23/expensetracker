@@ -33,10 +33,10 @@ public class BucketsController : ControllerBase
         return BadRequest("No transactions found.");
     }
     
-    [HttpGet("{bucket?}")]
-    public IActionResult GetBuckets(Buckets bucket)
+    [HttpGet]
+    public IActionResult GetBuckets()
     {
-        var buckets = _service.GetBuckets(bucket);
+        var buckets = _service.GetBuckets();
         if (buckets.Count > 0)
         {
             return Ok(buckets);
