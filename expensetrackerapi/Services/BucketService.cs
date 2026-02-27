@@ -14,9 +14,9 @@ public class BucketService : IBucketService
         _db = context;
     }
 
-    public List<Bucket> GetBuckets(Buckets bucket)
+    public List<Bucket> GetBuckets()
     {
-        return _db.Buckets.ToList();
+        return _db.Buckets.OrderBy(b => b.Name).ToList();
     }
 
     public BucketResponseDto GetSummary(int month, int year)
