@@ -42,6 +42,9 @@ namespace expensetrackerapi.Migrations
                     b.Property<int>("Total")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
                     b.HasKey("Id");
 
                     b.ToTable("Buckets");
@@ -68,9 +71,6 @@ namespace expensetrackerapi.Migrations
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
-
-                    b.Property<bool>("IsIncome")
-                        .HasColumnType("boolean");
 
                     b.Property<int>("UserId")
                         .HasColumnType("integer");
