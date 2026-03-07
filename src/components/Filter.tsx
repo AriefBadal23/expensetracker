@@ -91,35 +91,35 @@ const Filter = () => {
       
       </div>
 
-      {activeId != null && isShown === false ? (
-        <div>
-          <span id="daypicker">
-            <DayPicker
-              month={selectedMonth}
-              onMonthChange={setSelectedMonth}
-              captionLayout="dropdown"
-              showOutsideDays={false}
-              modifiers={{}}
-            />
-          </span>
-
-          <input
-            id="filter-btn"
-            type="button"
-            value="Filter"
-            onClick={() => {
-              navigate(
-                `/transactions?month=${
-                  selectedMonth?.getMonth() + 1
-                }&year=${selectedMonth?.getFullYear()}&id=${activeId}`
-              );
-              setisShown(false);
-            }}
-          />
-        </div>
-      ) : (
-        <p></p>
-      )}
+      {/*{activeId != null && isShown === false ? (*/}
+      {/*  <div>*/}
+      {/*    <span id="daypicker">*/}
+      {/*      <DayPicker*/}
+      {/*        month={selectedMonth}*/}
+      {/*        onMonthChange={setSelectedMonth}*/}
+      {/*        captionLayout="dropdown"*/}
+      {/*        showOutsideDays={false}*/}
+      {/*        modifiers={{}}*/}
+      {/*      />*/}
+      {/*    </span>*/}
+      
+      {/*    <input*/}
+      {/*      id="filter-btn"*/}
+      {/*      type="button"*/}
+      {/*      value="Filter"*/}
+      {/*      onClick={() => {*/}
+      {/*        navigate(*/}
+      {/*          `/transactions?month=${*/}
+      {/*            selectedMonth?.getMonth() + 1*/}
+      {/*          }&year=${selectedMonth?.getFullYear()}&id=${activeId}`*/}
+      {/*        );*/}
+      {/*        setisShown(false);*/}
+      {/*      }}*/}
+      {/*    />*/}
+      {/*  </div>*/}
+      {/*) : (*/}
+      {/*  <p></p>*/}
+      {/*)}*/}
     </>
   );
 };
