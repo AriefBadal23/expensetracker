@@ -11,6 +11,18 @@ interface TransactionTableProps {
 }
 const TransactionTable = ({ transactions, setTransactions,ErrorMessage }: TransactionTableProps) => {
     const [showModal, setShowModal] = useState(false);
+    
+    const ErrorMessageStyle = {
+        color: "#B00020",           
+        backgroundColor: "#FFEBEE", 
+        borderLeft: "4px solid #D32F2F", 
+        padding: "8px 12px",        
+        borderRadius: "4px",        
+        fontSize: "16px",           
+        lineHeight: "1.4",
+        fontFamily: "Segoe UI, Tahoma, sans-serif", 
+        marginTop: "6px"
+    };
     return (
     <>
         
@@ -21,21 +33,33 @@ const TransactionTable = ({ transactions, setTransactions,ErrorMessage }: Transa
         }
 
         {/*Show error message if any*/}
-        {ErrorMessage && <div>{ErrorMessage.message}</div>}
+        {ErrorMessage && <div className={'text-danger'}><p style={ErrorMessageStyle}>{ErrorMessage.message}</p></div>}
         
         {/*If no error message and data is fetched show table.*/}
         {!ErrorMessage && transactions.length > 0  &&
             <div>
-                <button
-                    type="button"
-                    className="btn btn-primary"
-                    onClick={() => {    
-                        setShowModal(true)
+                <span>
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => {
+                            setShowModal(true)
 
-                    }}
-                >
+                        }}
+                    >
                     Add new transaction
                 </button>
+                </span>
+                <span style={{ color: 'blue', padding: 15 }}>
+                    <a href="/overview">
+                        <button
+                            type="button"
+                            className="btn btn-info"
+                        >
+                            Overview by month
+                        </button>
+                    </a>
+                </span>
                 <table className="table">
                     <thead>
                     <tr>

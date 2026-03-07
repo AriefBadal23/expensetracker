@@ -17,6 +17,17 @@ const BucketList = ({transactions}:BucketListProps) => {
   
   const [error, setError] = useState<Error | undefined>();
 
+  const ErrorMessageStyle = {
+    color: "#B00020",
+    backgroundColor: "#FFEBEE",
+    borderLeft: "4px solid #D32F2F",
+    padding: "8px 12px",
+    borderRadius: "4px",
+    fontSize: "16px",
+    lineHeight: "1.4",
+    fontFamily: "Segoe UI, Tahoma, sans-serif",
+    marginTop: "6px"
+  };
 
   useEffect(() => {
     const fetchBuckets = async () => {
@@ -50,7 +61,7 @@ const BucketList = ({transactions}:BucketListProps) => {
       </div>
       }
 
-      {error && <div>{error.message}</div>}
+      {error && <div><p style={ErrorMessageStyle}>{error.message}</p></div>}
 
       {!error &&
       <div className="bucket-list">
