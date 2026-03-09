@@ -3,17 +3,18 @@ import type { Transaction } from "../types/Transaction";
 import { useSearchParams } from "react-router-dom";
 import "react-day-picker/dist/style.css";
 import type { Dispatch, SetStateAction } from "react";
-import {SortTransactions} from "../utils/SortTransactions.ts";
+import {getErrorMessage} from "../utils/utils.ts";
 
 
 interface PaginationProps {
     // Type for useState setter function is Dispatch<SetStateAction>
     setTransactions: Dispatch<SetStateAction<Transaction[]>>
+    setErrorMessage: Dispatch<SetStateAction<Error | undefined>>
 }
 
-const Pagination = ({ setTransactions }: PaginationProps) => {
+const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
   const [page, SetPage] = useState(1);
-  const [error, setError] = useState<string>();
+  const [error, setError] = useState<Error | undefined>();
   const [total, setTotal] = useState<number>(1);
 
   const [search] = useSearchParams();
@@ -40,50 +41,58 @@ const Pagination = ({ setTransactions }: PaginationProps) => {
               url = url + `&bucket=${bucketId}`
           }
           
+          
           const response = await fetch(url);
-
-        const data = await response.json();
-        setTotal(data["total"]);
-        setTransactions(data["transactions"].sort(SortTransactions));
+          if(!response.ok){
+              setErrorMessage(new Error("Failed to fetch from endpoint"))
+          }
+          const data = await response.json();
+          
+          setTotal(data["total"]);
+          setTransactions(data["transactions"]);
         
-      } catch (error) {
-        if (error instanceof Error) {
-          setError(error.message);
-        } else {
-          setError("Something went wrong");
-          console.log(error);
+      } catch (err) {
+          // 1. Log the actual error to the console.
+          // 2. Show an generic message in the UI for the user.
+          const message = getErrorMessage(err)
+          setError(new Error("Failed to fetch transactions data"));
+          setErrorMessage(error)
+          console.error(message);
         }
-      }
+      
     };
     fetchTransactions();
-  }, [page, search, setTransactions]); //! beide als dependancy
+  }, [error, page, search, setErrorMessage, setTransactions]); //! beide als dependancy
 
   return (
-    <div>
-      <p>
-        Page: {page}/{Math.ceil(TOTALPAGES)}
-      </p>
-      <input
-        type="button"
-        value="Prev"
-        disabled={page === 1}
-        onClick={() => {
-          if (page > 0) {
-            SetPage(page - 1);
-          }
-        }}
-      />
-      <input
-        type="button"
-        value="Next"
-        disabled={page === Math.ceil(TOTALPAGES)} // why does it work only with ===
-        onClick={() => {
-          if (page <= TOTALPAGES) {
-            SetPage(page + 1);
-          }
-        }}
-      />
-    </div>
+      <>
+          
+        <div>
+          <p>
+            Page: {page}/{Math.ceil(TOTALPAGES)}
+          </p>
+          <input
+            type="button"
+            value="Prev"
+            disabled={page === 1}
+            onClick={() => {
+              if (page > 0) {
+                SetPage(page - 1);
+              }
+            }}
+          />
+          <input
+            type="button"
+            value="Next"
+            disabled={page === Math.ceil(TOTALPAGES)} // why does it work only with === (loose/strict equality in JS?)
+            onClick={() => {
+              if (page <= TOTALPAGES) {
+                SetPage(page + 1);
+              }
+            }}
+          />
+        </div>
+      </>
   );
 };
 

@@ -11,6 +11,8 @@ import Overview from "./components/Overview"
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [errorMessage, setErrorMessage] = useState<Error | undefined>();
+  
   return (
     <>
       <BrowserRouter>
@@ -26,8 +28,8 @@ function App() {
                 <BucketList transactions={transactions} />
                 <CreateFormModal isUpdateForm={false} setTransactions={setTransactions}  />
                 <Filter />
-                <TransactionTable transactions={transactions} setTransactions={setTransactions} />
-                <Pagination  setTransactions={setTransactions}/>
+                <TransactionTable transactions={transactions} setTransactions={setTransactions} ErrorMessage={errorMessage} />
+                <Pagination  setTransactions={setTransactions} setErrorMessage={setErrorMessage}/>
               </>
             }
           />
