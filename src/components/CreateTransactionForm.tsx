@@ -3,13 +3,12 @@ import type {Transaction} from "../types/Transaction";
 import {Buckets} from "../types/Buckets";
 import type {NewTransactionRow} from "../types/NewTransactionRow.tsx";
 import {BucketToId, IdToBucket} from "../utils/BucketMap.ts";
-import {isValidDateRange, validateAmount, validateCreatedDate, validateNameValue} from "../utils/utils.ts"; // named export
+import {validateCreateDate, validateAmount, validateDescription, validateBucketId} from "../utils/utils.ts"; // named export
 
 const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showModal, setTransactions }: NewTransactionRow) => {
   
   // NOTE: Voor een transaction is het niet nodig om een ID mee te geven. 
   // Dit omdat EFC en PostgreSQL een auto-incremented ID aanmaken.
-    
   const [formdata, setFormData] = useState<Transaction>({
     bucketId: 0,
     userId: 1,
@@ -18,8 +17,17 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
     created_at: new Date(),
   });
   
-  const [errors, setErrors] = useState({description: "", amount: "", created_at:""})
-
+  const [errors, setErrors] = useState({description: "", amount: "", created_at:"", bucket_id: ""})
+    
+  const canSubmit = Object.values(errors).every(value => value === "");
+  const errorStyle = {
+        borderRadius: "5px",
+            border: "1px solid #ced4da",
+            boxShadow: errors["description"]
+            ? "0 0 5px rgba(220, 53, 69, 0.5)"
+            : "none",
+            transition: "box-shadow 0.2s, border 0.2s"
+    }
   useEffect(() => {
     if (isUpdateForm && transactionID) {
       const fetchData = async () => {
@@ -34,25 +42,31 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
       fetchData();
     }
   }, [isUpdateForm, transactionID]); // alleen aanroepen als deze veranderen
-  
-
+    
   // 💡 force keys to be enum values
   const bucketKeys = Object.values(Buckets) as Buckets[];
   
   
-    const handleCreationDateChange = () => {
-        const isValid = validateCreatedDate(formdata.created_at) && isValidDateRange(formdata.created_at)
-        console.log(isValid)
+    const handleCreationDateChange =  (date:string) => {
+        const isValid =   validateCreateDate(new Date(date))
         if(isValid){
             setErrors(prev => ({
                 ...prev,
                 created_at : "Incorrect date for new transaction"
             }))
         }
+        else{
+            setErrors(prev => ({
+                ...prev,
+                created_at : ""
+            }))
+        }
     }
     
-    const handleDescriptionChange = () => {
-      if(!validateNameValue(formdata.description)){
+    const handleDescriptionChange = (description:string) => {
+        console.log(`handleDescriptionChange: ${!validateDescription(description)}`)
+        
+      if(!validateDescription(description)){
         setErrors(prev => ({
             ...prev,
             description : "Incorrect name for transaction"
@@ -67,18 +81,33 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
     }
     }
     
-    const handleAmountChange = () => {
-    if (!validateAmount(formdata.amount.toString())) {
+    const handleAmountChange = (amount:string) => {
+    if (!validateAmount(amount)) {
       setErrors(prev => ({
         ...prev,
-        amount: "Incorrect amount"
+        amount: "Amount should be more then 0 and less then 100.000"
       }))
-    } else {
+    } 
+    else {
       setErrors(prev => ({
         ...prev,
         amount: ""
       }))
     }
+    }
+    
+    const handleBucketIdChange = (bucket:number) => {
+        if (!validateBucketId(bucket)) {
+            setErrors(prev => ({
+                ...prev,
+                bucket_id: "Invalid bucket"
+            }))
+        } else {
+            setErrors(prev => ({
+                ...prev,
+                bucket_id: ""
+            }))
+        }
     }
 
   async function SubmitData() {
@@ -131,26 +160,38 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
     
     }
   }
-  const change = (
+
+    
+
+    const change = (
     e:
       | React.ChangeEvent<HTMLInputElement>
       | React.ChangeEvent<HTMLSelectElement>
   ) => {
+
+      const { name, value } = e.target;
+
+      switch(name) {
+          case "amount":
+              handleAmountChange(value);
+              break;
+          case "description":
+              handleDescriptionChange(value);
+              break;
+          case "created_at":
+              handleCreationDateChange(value);
+              break;
+          case "bucketId":
+              handleBucketIdChange(Number(value))
+      }
+      
+      
     
-    handleDescriptionChange()
-    handleAmountChange()
-    handleCreationDateChange()
-    
-    
-    
-    //!   wat doet [e.target.name]: e.target.value
-    setFormData(() => (
-        {
-          ...formdata,
-          [e.target.name]:
-          e.target.value,
-        }
-    ));
+    //!   wat doet [e.target.name]: e.target.value => computed property name
+      setFormData(prev => ({
+          ...prev,
+          [name]: value,
+      }));
   };
   
   
@@ -177,14 +218,7 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
       >
         <div
             className="form-floating mb-3"
-            style={{
-              borderRadius: "5px",
-              border: "1px solid #ced4da",
-              boxShadow: errors["description"]
-                  ? "0 0 5px rgba(220, 53, 69, 0.5)" 
-                  : "none",
-              transition: "box-shadow 0.2s, border 0.2s"
-            }}
+            style={errorStyle}
         >
           <input
               className="form-control"
@@ -192,12 +226,13 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
               type="text"
               name="description"
               value={formdata.description}
-              onChange={change}
+              onChange={(e) => {
+                  change(e)
+              }}
               style={{
                 border: "none", 
                 boxShadow: "none"
               }}
-              pattern="[A-Za-z0-9][A-Za-z0-9\s'-]{1,49}"
               title="Beschrijving moet beginnen met een letter of cijfer, 1-50 tekens lang, alleen letters, cijfers, spaties, apostrof en streepje toegestaan"
           />
           <label htmlFor="name">Name</label>
@@ -207,20 +242,15 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
         </div>  
         <div
             className="form-floating mb-3"
-            style={{
-              borderRadius: "5px", 
-              border: "1px solid #ced4da",
-              boxShadow: errors["amount"]
-                  ? "0 0 5px rgba(220, 53, 69, 0.5)" 
-                  : "none",
-              transition: "box-shadow 0.2s, border 0.2s"
-            }}
+            style={errorStyle}
         >
           <input
               className="form-control"
               required
-              type="text"
-              onChange={change}
+              type="number"
+              onChange={(e) => {
+                  change(e)
+              }}
               name="amount"
               placeholder="amount"
               value={formdata.amount}
@@ -235,12 +265,17 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
           {errors["amount"] && <p style={{ color: "red", marginTop: "0.25rem" }}>{errors["amount"]}</p>}
         </div>
 
-        <div className="form-floating mb-3">
+        <div className="form-floating mb-3" style={errorStyle}>
           <select
             className="form-select"
             required
             name="bucketId"
+            title = "Select an bucket for the transaction"
             onChange={(e) => change(e)}
+            style={{
+                    border: "none",
+                    boxShadow: "none"
+                }}
           >
             {isUpdateForm ? <option>{IdToBucket[formdata.bucketId]}</option> : <option value={0}>Choose a bucket</option>}
             {bucketKeys.map((key) => {
@@ -248,10 +283,17 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
             })}
           </select>
           <label htmlFor="bucketId">Bucket</label>
+            {errors["bucket_id"] && (
+                <p style={{ color: "red", marginTop: "0.25rem" }}>{errors["bucket_id"]}</p>
+            )}
         </div>
 
-        <div className="form-floating mb-3">
-          {/*  No pattern for this input field used because of the date attribute which already takes care of the corect YYYY-MM-DD format.*/}
+          
+          
+        <div className="form-floating mb-3"
+             style={errorStyle}
+        >
+            {/*  No pattern for this input field used because of the date attribute which already takes care of the corect YYYY-MM-DD format.*/}
           <input
             type="date"
             className="form-control"
@@ -272,12 +314,13 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
 
         <input
           type="submit"
+          disabled={!canSubmit}
           onChange={(e) => {
             change(e)
           }
         }
           value="Save transaction"
-          className="btn btn-primary"
+          className="btn btn-primary"   
         />
       </form>
     </>
