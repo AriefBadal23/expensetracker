@@ -10,12 +10,11 @@ public static class DbIntializer
         {
             return;
         }
-
         var buckets = new Bucket[]
         {
-                new Bucket{Name=Buckets.Salary,Icon="💰", Type = BucketTypes.Income},
-                new Bucket{Name=Buckets.Groceries,Icon="🏪", Type = BucketTypes.Expense},
-                new Bucket{Name=Buckets.Shopping,Icon="🛒", Type = BucketTypes.Expense}
+            new Bucket{Name=Buckets.Salary,Icon="💰", Type = BucketTypes.Income},
+            new Bucket{Name=Buckets.Groceries,Icon="🏪", Type = BucketTypes.Expense},
+            new Bucket{Name=Buckets.Shopping,Icon="🛒", Type = BucketTypes.Expense}
         };
 
         context.Buckets.AddRange(buckets);
