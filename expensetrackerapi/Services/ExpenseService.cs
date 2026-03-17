@@ -9,15 +9,18 @@ namespace expensetrackerapi.Services
     {
         private readonly ExpenseTrackerContext _db;
         private TransactionMapper _mapper = new();
+        private ILogger<IExpenseService> _logger;
 
-        public ExpenseService(ExpenseTrackerContext db)
+        public ExpenseService(ExpenseTrackerContext db, ILogger<IExpenseService> logger)
         {
             _db = db;
+            _logger = logger;
         }
 
         public ResponseTransactionDTo? GetTransactionByID(int id)
         {
             var transaction = _db.Transactions.FirstOrDefault(t => t.Id == id);
+            _logger.LogInformation("GET request for transaction with ID: {id}",transaction.Id);
             return _mapper.TransactionToResponseTransaction(transaction);
 
         }
@@ -157,7 +160,11 @@ namespace expensetrackerapi.Services
             Bucket? transactionBucket = _db.Buckets.FirstOrDefault(b => b.Id == mappedTransaction.BucketId);
 
             // Guard clauses, always start with null check first.
-            if (transactionBucket == null || mappedTransaction.Amount <= 0) return new ResponseTransactionDTo();
+            if (transactionBucket == null || mappedTransaction.Amount <= 0)
+            {
+                _logger.LogWarning("Failed to create new transaction, incorrect amount or bucket was provided.");
+                return new ResponseTransactionDTo();
+            };
             
             if (transactionBucket.Type == BucketTypes.Income && mappedTransaction.BucketId == 1)
             {

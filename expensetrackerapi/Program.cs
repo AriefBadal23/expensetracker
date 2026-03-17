@@ -5,85 +5,125 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
+using Serilog;
+using Serilog.Core;
+using Serilog.Events;
 
-var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
-var builder = WebApplication.CreateBuilder(args);
 
-
-// Add services to the container.
-
-builder.Services.AddScoped<IExpenseService, ExpenseService>();
-builder.Services.AddScoped<IBucketService, BucketService>();
-
-// CORS setup between React FE and C# BE
-builder.Services.AddCors(
-options =>
+Log.Logger = new LoggerConfiguration()
+    // Configure logs to see only certain type of logs by the namespace
+    .MinimumLevel.Information()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .MinimumLevel.Override("Microsoft.Hosting.Lifetime", LogEventLevel.Information)
+    .MinimumLevel.Override("Microsoft.EntityFrameworkCore", LogEventLevel.Warning)
+    // To capture and include contextual information from the current logging scope.
+    // logging scope; an completed operation and start an logging scope with different logs.
+    .Enrich.FromLogContext()
+    .WriteTo.Console()
+    // Files will be created each day.
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day).CreateBootstrapLogger();
+try
 {
-    options.AddPolicy(name: MyAllowSpecificOrigins,
-    policy =>
-    {
-        policy.WithOrigins("http://localhost:5173")
-             .WithHeaders(HeaderNames.ContentType)
-             .WithMethods("PUT", "DELETE", "GET", "POST");
-    });
-}
+    Log.Information("Starting ExpenseTracker API");
+    var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+    var builder = WebApplication.CreateBuilder(args);
 
-);
-builder.Services.AddControllers()
-// Zorgt ervoor dat de enums correct worden getoond ipv van de id.
-.AddJsonOptions(options =>
-{
-    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
-    // !Required for nodatime deserialization otherwise 400 bad request
-    options.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
-});
+    // Add services to the container.
+    
+    // Inject Serilog as a service to the Dependancy Injection Container to use it in the application.
+    // to configure it to work with the Ilogger service
+    builder.Host.UseSerilog((context, services, configuration) => configuration
+        // Read from configuration file with the sinks it should use.
+        .ReadFrom.Configuration(context.Configuration)
+        .ReadFrom.Services(services)
+    );
+    builder.Services.AddScoped<IExpenseService, ExpenseService>();
+    builder.Services.AddScoped<IBucketService, BucketService>();
 
-// Make use of the PostgreSQL database as a service we inject in the DI container.
-var password = builder.Configuration["DbPassword"];
+    // CORS setup between React FE and C# BE
+    builder.Services.AddCors(options =>
+        {
+            options.AddPolicy(name: MyAllowSpecificOrigins,
+                policy =>
+                {
+                    policy.WithOrigins("http://localhost:5173")
+                        .WithHeaders(HeaderNames.ContentType)
+                        .WithMethods("PUT", "DELETE", "GET", "POST");
+                });
+        }
 
-Npgsql.NpgsqlConnectionStringBuilder npgsqlConnectionStringBuilder = new (builder.Configuration.GetConnectionString("ExpenseTrackerContext"))
-    {
-        Password = password
-    };
+    );
+    builder.Services.AddControllers()
+        // Zorgt ervoor dat de enums correct worden getoond ipv van de id.
+        .AddJsonOptions(options =>
+        {
+            options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+            // !Required for nodatime deserialization otherwise 400 bad request
+            options.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
+        });
 
-var connectionstring = npgsqlConnectionStringBuilder.ConnectionString;
+    // Make use of the PostgreSQL database as a service we inject in the DI container.
+    var password = builder.Configuration["DbPassword"];
 
-builder.Services.AddDbContext<ExpenseTrackerContext>(options => options
+    Npgsql.NpgsqlConnectionStringBuilder npgsqlConnectionStringBuilder =
+        new(builder.Configuration.GetConnectionString("ExpenseTrackerContext"))
+        {
+            Password = password
+        };
+
+    var connectionstring = npgsqlConnectionStringBuilder.ConnectionString;
+
+    builder.Services.AddDbContext<ExpenseTrackerContext>(options => options
         .UseNpgsql(connectionstring,
-         o =>
-         {
-             o.MapEnum<Buckets>("buckets");
-             o.UseNodaTime();
-         }
+            o =>
+            {
+                o.MapEnum<Buckets>("buckets");
+                o.UseNodaTime();
+            }
 
-         ));
+        ));
 
 
-// Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
-builder.Services.AddOpenApi();
+    // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
+    builder.Services.AddOpenApi();
 
-var app = builder.Build();
+    var app = builder.Build();
 
-// Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
+    // Configure the HTTP request pipeline.
+    if (app.Environment.IsDevelopment())
+    {
+        app.MapOpenApi();
+
+    }
+
+    using (var scope = app.Services.CreateScope())
+    {
+        var services = scope.ServiceProvider;
+        var context = services.GetRequiredService<ExpenseTrackerContext>();
+        context.Database.EnsureCreated();
+        DbIntializer.Initialize(context);
+    }
+
+    app.UseHttpsRedirection();
+
+    app.UseAuthorization();
+    app.UseCors(MyAllowSpecificOrigins);
+
+    app.MapControllers();
+
+    Log.Information("Expense Tracker API started successfully");
+
+    app.Run();
 
 }
-
-using (var scope = app.Services.CreateScope())
+catch (Exception ex)
 {
-    var services = scope.ServiceProvider;
-    var context = services.GetRequiredService<ExpenseTrackerContext>();
-    context.Database.EnsureCreated();
-    DbIntializer.Initialize(context);
+    Log.Fatal(ex, "Application terminated unexpectedly");
 }
 
-app.UseHttpsRedirection();
+finally
+{
+    Log.CloseAndFlush();
+}
 
-app.UseAuthorization();
-app.UseCors(MyAllowSpecificOrigins);
 
-app.MapControllers();
-
-app.Run();
