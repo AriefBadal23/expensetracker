@@ -1,35 +1,31 @@
-# Expense Tracker
+## 💸ExpenseFlow
+A full-stack application for tracking personal expenses using a bucket-based system.
+The application consists of a React frontend and an ASP.NET Core backend API, where transactions are categorized into buckets and summarized into monthly insights.
 
-## Project Overview
-This is a personal side project built with **React + TypeScript** using **Vite** for the frontend, and an **ASP.NET Core 9.0 Web API** for the backend. For the database I make use of Postgres and Entity Framework Core 9.0 as the ORM.
+## 🛠️ Technologies
 
-The goal of this project is to strengthen my skills and gain more hands-on experience with these technologies.  
-
-The application functions as an **expense tracker**, allowing users to record both expenses and income to better manage their finances.
-
-
-## Entity Relationship Diagram
-![alt text](docs/img/Expesense_tracker.png)
-
-## Features
-### Implemented Features:
-- Add a transaction (expense or income) to a specific category.
-- List all transactions in a specific category.
-- List all transactions across all categories.
+- React 19
+- Typescript 5
+- Vite 7
+- Asp.Net Core 9
+- .NET 9
+- Jet Brains Rider IDE
 
 
-### Planned Features:
-- Filter transactions by date or category.
-- Authentication and authorization.
-- Export a PDF report of transactions.
+## 🚀 Features
+- Create, read, update, delete operations for bucket/categorized based transactions.
+- Summary insights of transactions grouped by bucket for a specific month and year.
 
-## How to run the project
-### Database and API
-1. Run: `dotnet restore or dotnet build`
-2. Create the database: `dotnet ef database update`
-3. Run the back-end: `dotnet run`
+## 📍 The Process
+I started by designing the backend API using ASP.NET Core, focusing on a clear separation between controllers, services, and data access. The initial implementation covered core functionality for managing transactions, including creating, updating, and retrieving expense data.
 
-### Frontend
-1. Run: `npm run dev`
+On the frontend, I built React components to interact with the API, managing state to display and update transaction data in a structured way.
+
+As the project evolved, I focused on improving the overall design by applying secure coding practices learned during my cybersecurity minor. This included input validation, safe handling of user data, and preparing the application for authentication and authorization.
+
+The main goal of the process was not just to build a working application, but to structure it in a way that is maintainable, secure, and closer to real-world backend systems.
+
+## 🚦 Running the project
 
 
+## 🎞️ Preview
