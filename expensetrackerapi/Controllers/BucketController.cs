@@ -21,7 +21,7 @@ public class BucketsController : ControllerBase
     }
 
 
-    [HttpGet("summary/{bucket?}")]
+    [HttpGet("summary")]
     public IActionResult Get([FromQuery] int month, [FromQuery] int year)
     {
         var transactions = _service.GetSummary(month, year);
