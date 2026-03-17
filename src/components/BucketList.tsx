@@ -15,7 +15,7 @@ const BucketList = ({transactions}:BucketListProps) => {
   const [isPending, setPending] = useState(true);
 
   
-  const [error, setError] = useState<Error | undefined>();
+  const [errorMessage, setErrorMessage] = useState<Error | undefined>();
 
   const ErrorMessageStyle = {
     color: "#B00020",
@@ -45,9 +45,9 @@ const BucketList = ({transactions}:BucketListProps) => {
         setPending(false)
         const message = getErrorMessage(err)
         // 1. Log the actual error to the console.
-        // 2. Show an generic message in the UI for the user.
         console.error(message)
-        setError(new Error("Failed to retrieve buckets data."))
+        // 2. Show an generic message in the UI for the user.
+        setErrorMessage(new Error("Failed to retrieve buckets data."))
       }
     }
     fetchBuckets();
@@ -61,9 +61,9 @@ const BucketList = ({transactions}:BucketListProps) => {
       </div>
       }
 
-      {error && <div><p style={ErrorMessageStyle}>{error.message}</p></div>}
+      {errorMessage && <div><p style={ErrorMessageStyle}>{errorMessage.message}</p></div>}
 
-      {!error &&
+      {!errorMessage &&
       <div className="bucket-list">
         {buckets !== null &&
           buckets.map((b: BucketType) => {

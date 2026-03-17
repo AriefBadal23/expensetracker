@@ -3,6 +3,7 @@ import type {TransactionsSummary} from "../components/OverviewRow"
 import OverviewRow from "./OverviewRow"
 import TotalCard from "./TotalCard"
 import {TransactionType} from "../types/TransactionType"
+import {getErrorMessage} from "../utils/utils.ts";
 
 const OverviewTable = () => {
     // fetch doen naar:
@@ -14,7 +15,19 @@ const OverviewTable = () => {
         month:"1",
         year: "2025"
     })
-    
+    const [errorMessage, setErrorMessage] = useState<Error | undefined>()
+    const [isPending, setPending] = useState<boolean>(true)
+    const ErrorMessageStyle = {
+        color: "#B00020",
+        backgroundColor: "#FFEBEE",
+        borderLeft: "4px solid #D32F2F",
+        padding: "8px 12px",
+        borderRadius: "4px",
+        fontSize: "16px",
+        lineHeight: "1.4",
+        fontFamily: "Segoe UI, Tahoma, sans-serif",
+        marginTop: "6px"
+    };
     // useEffect()
     useEffect(() => {
         const fetchSummary =  async () =>
@@ -25,71 +38,87 @@ const OverviewTable = () => {
                 const response = await fetch(url)
                 
                 if (!response.ok) {
-                    throw new Error(`HTTP error: ${response.status}`);
+                    return;
                 }
                 const result = await response.json();
+                setPending(false)
                 setTransactionsData(result)
             }
             catch(error) {
-                console.log(error)
+                const message = getErrorMessage(error)
+                // show generic message in the UI for the user.
+                setErrorMessage(new Error("Failed to fetch transactions data"))
+                setPending(false)
+                // log actual message
+                console.log(message)
             }
         }
         
         fetchSummary()
     },
     [data])
-
-    
-    
     return (
-        <div>
+        <>
+        
             <div className="bucket-list">
-                {/*TODO verander dit.*/}
                 <TotalCard  icon="💰" name="Income" type={TransactionType.Income} data={transactions}/>
                 <TotalCard icon="💸"  name="Expenses" type={TransactionType.Expense}  data={transactions}/>
             </div>
-            <div>
-                {/*Predefined values*/}
-                <select name="months" onChange={(e) => {
-                    setData({...data, month: e.target.value})
-                }}>
-                    <option value="1">January</option>
-                    <option value="2">February</option>
-                    <option value="3">March</option>
-                    <option value="4">April</option>
-                    <option value="5">May</option>
-                    <option value="6">June</option>
-                    <option value="7">July</option>
-                    <option value="8">August</option>
-                    <option value="9">September</option>
-                    <option value="10">October</option>
-                    <option value="11">November</option>
-                    <option value="12">December</option>
-                </select>
-                
-                <select name="year" onChange={(e) => {
-                    setData({...data, year: e.target.value})
-                }}>
-                    <option value="2025">2025</option>
-                    <option value="2026">2026</option>
-                </select>
-            </div>
-            <table className="table">
-            <thead>
-                <tr>
-                    <th scope="col">Bucket</th>
-                    <th scope="col">Transaction</th>
-                    <th scope="col">Date</th>
-                    <th scope="col">Type</th>
-                    <th scope="col">Amount</th>
-                </tr>
-            </thead>
-                <tbody>
-                    <OverviewRow data={transactions}/>
-                </tbody>
-            </table>
-               
-        </div>
+                <div>
+                    
+                    {isPending &&  <div className="spinner-border" role="status">
+                        <span className="visually-hidden">Loading...</span>
+                    </div>}
+                    {errorMessage && !isPending && <div className={'text-danger'}><p style={ErrorMessageStyle}>{errorMessage.message}</p></div>}
+
+                    {
+                        !errorMessage && !isPending &&
+                        <>
+                            <div>
+                                {/*Predefined values*/}
+                                <select name="months" onChange={(e) => {
+                                    setData({...data, month: e.target.value})
+                                }}>
+                                    <option value="1">January</option>
+                                    <option value="2">February</option>
+                                    <option value="3">March</option>
+                                    <option value="4">April</option>
+                                    <option value="5">May</option>
+                                    <option value="6">June</option>
+                                    <option value="7">July</option>
+                                    <option value="8">August</option>
+                                    <option value="9">September</option>
+                                    <option value="10">October</option>
+                                    <option value="11">November</option>
+                                    <option value="12">December</option>
+                                </select>
+
+                                <select name="year" onChange={(e) => {
+                                    setData({...data, year: e.target.value})
+                                }}>
+                                    <option value="2025">2025</option>
+                                    <option value="2026">2026</option>
+                                </select>
+                            </div>
+                        <table className="table">
+                            <thead>
+                            <tr>
+                                <th scope="col">Bucket</th>
+                                <th scope="col">Transaction</th>
+                                <th scope="col">Date</th>
+                                <th scope="col">Type</th>
+                                <th scope="col">Amount</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <OverviewRow data={transactions}/>
+                            </tbody>
+                        </table>
+                        </>
+                    }
+
+                </div>
+        </>
     )
 }
 

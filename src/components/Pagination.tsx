@@ -14,7 +14,6 @@ interface PaginationProps {
 
 const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
   const [page, SetPage] = useState(1);
-  const [error, setError] = useState<Error | undefined>();
   const [total, setTotal] = useState<number>(1);
 
   const [search] = useSearchParams();
@@ -55,14 +54,13 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
           // 1. Log the actual error to the console.
           // 2. Show an generic message in the UI for the user.
           const message = getErrorMessage(err)
-          setError(new Error("Failed to fetch transactions data"));
-          setErrorMessage(error)
+          setErrorMessage(new Error("Failed to fetch transactions data"))
           console.error(message);
         }
       
     };
     fetchTransactions();
-  }, [error, page, search, setErrorMessage, setTransactions]); //! beide als dependancy
+  }, [page, search, setErrorMessage, setTransactions]); //! beide als dependancy
 
   return (
       <>
