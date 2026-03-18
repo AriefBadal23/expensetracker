@@ -1,6 +1,9 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using expensetrackerapi.DTO;
 using expensetrackerapi.Validation;
+using Microsoft.Extensions.Logging;
+using Moq;
+using Xunit.Abstractions;
 
 namespace ExpenseTrackerTests;
 
@@ -33,14 +36,17 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
     private readonly TestDbFixture _fixture;
 
-    public ExpenseTrackerTests(TestDbFixture fixture) => _fixture = fixture;
+    public ExpenseTrackerTests(TestDbFixture fixture)
+    {
+        _fixture = fixture;
+    }
 
     [Fact]
     public void TestCreateTransaction()
     {
         // Arrange
         using var db = _fixture.CreateContext();
-
+        
         // Act
 
         var buckets = new[]
@@ -52,8 +58,8 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
         db.Buckets.AddRange(buckets);
         db.SaveChanges();
-
-        var service = new ExpenseService(db);
+        var loggerMock = new Mock<ILogger<IExpenseService>>();
+        var service = new ExpenseService(db, loggerMock.Object);
 
         ResponseTransactionDTo[] transactionArrayResult = new ResponseTransactionDTo[3];
 
@@ -167,7 +173,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         // Assert
         Assert.Equal(33, db.Transactions.Count());
         Assert.Equal(firstFiveTransactions, db.Transactions.OrderBy(transaction => transaction.Id).Take(5));
-        // asserts op waarde niet hele object!
+        // asserts op de waarde niet eenhele object!
     }
 
 
@@ -177,16 +183,17 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         // Arrange
 
         using var db = _fixture.CreateContext();
-
+        var loggerMock = new Mock<ILogger<IExpenseService>>();
+        
         DbIntializer.Initialize(db);
 
         // Act
         // 3-> 80
         // 4 -> 95
         // 8 -> 110
-        var T_3_isDeleted = new ExpenseService(db).DeleteTransaction(3);
-        var T_4_isDeleted = new ExpenseService(db).DeleteTransaction(5);
-        var T_8_isDeleted = new ExpenseService(db).DeleteTransaction(8);
+        var T_3_isDeleted = new ExpenseService(db,loggerMock.Object).DeleteTransaction(3);
+        var T_4_isDeleted = new ExpenseService(db, loggerMock.Object).DeleteTransaction(5);
+        var T_8_isDeleted = new ExpenseService(db, loggerMock.Object).DeleteTransaction(8);
         
         var currentShoppingTotal =  db.Buckets.First(_ => _.Name == Buckets.Shopping).Total;
         var currentSalaryTotal = db.Buckets.First(_ => _.Name == Buckets.Salary).Total;
@@ -203,7 +210,9 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     public void TestDeleteAllTransactions_Zero_As_Totals()
     {
         using var db = _fixture.CreateContext();
-        var expenseService = new ExpenseService(db);
+        var loggerMock = new Mock<ILogger<IExpenseService>>();
+        
+        var expenseService = new ExpenseService(db, loggerMock.Object);
         var bucketService = new BucketService(db);
 
         DbIntializer.Initialize(db);
@@ -371,3 +380,5 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     // UpdateTransaction    
 
 }
+
+
