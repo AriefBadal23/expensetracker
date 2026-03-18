@@ -22,8 +22,10 @@ jobs:
         dotnet-version: 9.0.x
         cache: true
     - name: Restore dependencies
+      working-directory: ./expensetrackerapi
       run: dotnet restore
     - name: Build
+      working-directory: ./expensetrackerapi
       run: dotnet build --no-restore
     - name: Test
       working-directory: ./ExpenseTrackerTests
