@@ -9,7 +9,7 @@ namespace expensetrackerapi.Services
     {
         private readonly ExpenseTrackerContext _db;
         private TransactionMapper _mapper = new();
-        private ILogger<IExpenseService> _logger;
+        private readonly ILogger<IExpenseService> _logger;
 
         public ExpenseService(ExpenseTrackerContext db, ILogger<IExpenseService> logger)
         {
