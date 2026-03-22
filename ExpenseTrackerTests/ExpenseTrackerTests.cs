@@ -42,10 +42,10 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     }
 
     [Fact]
-    public void TestCreateTransaction()
+    public async Task TestCreateTransaction()
     {
         // Arrange
-        using var db = _fixture.CreateContext();
+        await using var db = _fixture.CreateContext();
         
         // Act
 
@@ -57,7 +57,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         };
 
         db.Buckets.AddRange(buckets);
-        db.SaveChanges();
+        await db.SaveChangesAsync();
         var loggerMock = new Mock<ILogger<IExpenseService>>();
         var service = new ExpenseService(db, loggerMock.Object);
 
@@ -94,14 +94,14 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
         for (var i = 0; i < transactionArrayResult.Length; i++)
         {
-            var transactionIsCreated = service.CreateTransaction(transactions[i]);
+            var transactionIsCreated = await service.CreateTransaction(transactions[i]);
 
             if (transactionIsCreated is not null)
             {
                 transactionArrayResult[i] = transactionIsCreated;
             }
         }
-        db.SaveChanges();
+        await db.SaveChangesAsync();
 
         // Assert
         Assert.Equal(3, transactionArrayResult.Count()); // Service method returns 3x true
@@ -173,16 +173,16 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         // Assert
         Assert.Equal(33, db.Transactions.Count());
         Assert.Equal(firstFiveTransactions, db.Transactions.OrderBy(transaction => transaction.Id).Take(5));
-        // asserts op de waarde niet eenhele object!
+        // asserts op de waarde niet een heel object!
     }
 
 
     [Fact]
-    public void TestDeletingTransactionById_Correct_Totals()
+    public async Task TestDeletingTransactionById_Correct_Totals()
     {
         // Arrange
 
-        using var db = _fixture.CreateContext();
+        await using var db = _fixture.CreateContext();
         var loggerMock = new Mock<ILogger<IExpenseService>>();
         
         DbIntializer.Initialize(db);
@@ -191,9 +191,9 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         // 3-> 80
         // 4 -> 95
         // 8 -> 110
-        var T_3_isDeleted = new ExpenseService(db,loggerMock.Object).DeleteTransaction(3);
-        var T_4_isDeleted = new ExpenseService(db, loggerMock.Object).DeleteTransaction(5);
-        var T_8_isDeleted = new ExpenseService(db, loggerMock.Object).DeleteTransaction(8);
+        var T_3_isDeleted = await new ExpenseService(db,loggerMock.Object).DeleteTransaction(3);
+        var T_4_isDeleted = await new ExpenseService(db, loggerMock.Object).DeleteTransaction(5);
+        var T_8_isDeleted = await new ExpenseService(db, loggerMock.Object).DeleteTransaction(8);
         
         var currentShoppingTotal =  db.Buckets.First(_ => _.Name == Buckets.Shopping).Total;
         var currentSalaryTotal = db.Buckets.First(_ => _.Name == Buckets.Salary).Total;
@@ -207,9 +207,9 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     }
 
     [Fact]
-    public void TestDeleteAllTransactions_Zero_As_Totals()
+    public async Task TestDeleteAllTransactions_Zero_As_Totals()
     {
-        using var db = _fixture.CreateContext();
+        await using var db = _fixture.CreateContext();
         var loggerMock = new Mock<ILogger<IExpenseService>>();
         
         var expenseService = new ExpenseService(db, loggerMock.Object);
@@ -219,10 +219,11 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
         foreach (var transaction in db.Transactions)
         {
-            expenseService.DeleteTransaction(transaction.Id);
+            await expenseService.DeleteTransaction(transaction.Id);
         }
 
-        int bucketsTotals = bucketService.GetBuckets().Count(_ => _.Total == 0);
+        var buckets = await bucketService.GetBuckets();
+        var bucketsTotals = buckets.Count(_ => _.Total == 0);
         
         Assert.Equal(3, bucketsTotals);
     }
@@ -265,10 +266,10 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     }
 
     [Fact]
-    public void TestCorrectBucketSummaryJanuary2025()
+    public async Task TestCorrectBucketSummaryJanuary2025()
     {
         // Arrange
-        using var db = _fixture.CreateContext();
+        await using var db = _fixture.CreateContext();
         DbIntializer.Initialize(db);
         var bucketService = new BucketService(db);
         
@@ -278,7 +279,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         const int year = 2025;
         
         // Uses the db to retrieve summary of transactions of the given month-year
-        var summary = bucketService.GetSummary(month, year);
+        var summary = await bucketService.GetSummary(month, year);
         var summaryTotalIncome = summary.TotalIncome;
         var summaryTotalExpenses = summary.TotalExpenses;
 
@@ -293,10 +294,10 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         
     }
     [Fact]
-    public void TestCorrectBucketSummaryMarch2025()
+    public async Task TestCorrectBucketSummaryMarch2025()
     {
         // Arrange
-        using var db = _fixture.CreateContext();
+        await using var db = _fixture.CreateContext();
         DbIntializer.Initialize(db);
         var bucketService = new BucketService(db);
         
@@ -306,7 +307,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         const int year = 2025;
         
         // Uses the db to retrieve summary of transactions of the given month-year
-        var summary = bucketService.GetSummary(month, year);
+        var summary = await bucketService.GetSummary(month, year);
         var summaryTotalIncome = summary.TotalIncome;
         var summaryTotalExpenses = summary.TotalExpenses;
 
@@ -321,10 +322,10 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         
     }
     [Fact]
-    public void TestCorrectBucketSummaryAugust2025()
+    public async Task TestCorrectBucketSummaryAugust2025()
     {
         // Arrange
-        using var db = _fixture.CreateContext();
+        await using var db = _fixture.CreateContext();
         DbIntializer.Initialize(db);
         var bucketService = new BucketService(db);
         
@@ -334,7 +335,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         const int year = 2025;
         
         // Uses the db to retrieve summary of transactions of the given month-year
-        var summary = bucketService.GetSummary(month, year);
+        var summary = await bucketService.GetSummary(month, year);
         var summaryTotalIncome = summary.TotalIncome;
         var summaryTotalExpenses = summary.TotalExpenses;
 
@@ -349,10 +350,10 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         
     }
     [Fact]
-    public void TestInCorrectBucketSummaryAugust2025()
+    public async Task TestInCorrectBucketSummaryAugust2025()
     {
         // Arrange
-        using var db = _fixture.CreateContext();
+        await using var db = _fixture.CreateContext();
         DbIntializer.Initialize(db);
         var bucketService = new BucketService(db);
         
@@ -362,7 +363,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         const int year = 2026;
         
         // Uses the db to retrieve summary of transactions of the given month-year
-        var summary = bucketService.GetSummary(month, year);
+        var summary = await bucketService.GetSummary(month, year);
         var summaryTotalIncome = summary.TotalIncome;
         var summaryTotalExpenses = summary.TotalExpenses;
         
