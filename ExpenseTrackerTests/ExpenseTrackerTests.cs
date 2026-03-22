@@ -267,10 +267,10 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     }
 
     [Fact]
-    public void TestCorrectBucketSummaryJanuary2025()
+    public async Task TestCorrectBucketSummaryJanuary2025()
     {
         // Arrange
-        using var db = _fixture.CreateContext();
+        await using var db = _fixture.CreateContext();
         DbIntializer.Initialize(db);
         var bucketService = new BucketService(db);
         
