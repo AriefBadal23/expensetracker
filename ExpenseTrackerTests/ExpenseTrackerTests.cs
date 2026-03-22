@@ -47,6 +47,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         // Arrange
         await using var db = _fixture.CreateContext();
         
+
         // Act
 
         var buckets = new[]
@@ -64,7 +65,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         ResponseTransactionDTo[] transactionArrayResult = new ResponseTransactionDTo[3];
 
         RequestTransactionDto[] transactions = new[] {
-            
+
         new RequestTransactionDto
         {
             BucketId = 1,
@@ -266,10 +267,10 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     }
 
     [Fact]
-    public async Task TestCorrectBucketSummaryJanuary2025()
+    public void TestCorrectBucketSummaryJanuary2025()
     {
         // Arrange
-        await using var db = _fixture.CreateContext();
+        using var db = _fixture.CreateContext();
         DbIntializer.Initialize(db);
         var bucketService = new BucketService(db);
         
@@ -378,7 +379,39 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         Assert.Equal(year,summary.Year);
         
     }
-    // UpdateTransaction    
+    
+    [Fact]
+    public async Task TestTransactionUpdateById()
+    {
+        //Arrange
+        await using var db = _fixture.CreateContext();
+        DbIntializer.Initialize(db);
+
+        var logger = new Mock<ILogger<IExpenseService>>();
+
+        var expenseService = new ExpenseService(db, logger.Object);
+
+        //Act
+        await expenseService.UpdateTransaction(
+            new Transaction
+            {
+                Id= 1,
+                BucketId = 1,
+                Description = "Weekly Salary",
+                UserId = 1,
+                Amount = 100,
+                Created_at = new LocalDate(2025, 1, 10)
+            });
+            
+        var transaction = db.Transactions.First(transaction => transaction.Id == 1);
+
+        // Assert
+        Assert.Equal("Weekly Salary",transaction.Description );
+        Assert.Equal(100,transaction.Amount );
+        Assert.Equal(new LocalDate(2025,1, 10),transaction.Created_at );
+        
+       
+    }
 
 }
 
