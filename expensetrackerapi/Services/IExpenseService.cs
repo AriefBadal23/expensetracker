@@ -4,12 +4,12 @@ using expensetrackerapi.Models;
 
 public interface IExpenseService
 {
-    public object GetTransactions(int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3);
-    public ResponseTransactionDTo? CreateTransaction(RequestTransactionDto transaction);
+    public Task<object> GetTransactions(int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3);
+    public Task<ResponseTransactionDTo?> CreateTransaction(RequestTransactionDto transaction);
 
-    public bool DeleteTransaction(int transactionID);
+    public Task<bool> DeleteTransaction(int transactionID);
 
-    public ResponseTransactionDTo? GetTransactionByID(int Id);
+    public Task<ResponseTransactionDTo?> GetTransactionByID(int Id); // Task is enough; no async modifier required.
 
-    public ResponseTransactionDTo? UpdateTransaction(Transaction transaction);
+    public Task<ResponseTransactionDTo?> UpdateTransaction(Transaction transaction);
 }

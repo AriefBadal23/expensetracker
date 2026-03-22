@@ -1,6 +1,7 @@
 ﻿using expensetrackerapi.DTO;
 using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 
 namespace expensetrackerapi.Services;
 
@@ -14,12 +15,12 @@ public class BucketService : IBucketService
         _db = context;
     }
 
-    public List<Bucket> GetBuckets()
+    public async Task<List<Bucket>> GetBuckets()
     {
-        return _db.Buckets.OrderBy(b => b.Name).ToList();
+        return await _db.Buckets.OrderBy(b => b.Name).ToListAsync();
     }
 
-    public BucketResponseDto GetSummary(int month, int year)
+    public async Task<BucketResponseDto> GetSummary(int month, int year)
     {
         if (month == 0 || year == 0) return 
             new BucketResponseDto
@@ -27,7 +28,7 @@ public class BucketService : IBucketService
                 Buckets = new List<BucketTransaction>()
             };
 
-        var query = (from buck in _db.Buckets
+        var query = await (from buck in _db.Buckets
             join transaction in _db.Transactions on buck.Id equals transaction.BucketId
                 into bucketTransactions
             
@@ -38,7 +39,7 @@ public class BucketService : IBucketService
                 
             select 
                     new BucketTransaction(buck.Id, buck.Name,monthBucketTotal, BuckTransactionsResult.ToArray())
-            ).ToList();
+            ).ToListAsync();
 
         
         // Make use of the query but change the return type so it matches the required output for the front-end.

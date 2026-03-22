@@ -22,9 +22,9 @@ public class BucketsController : ControllerBase
 
 
     [HttpGet("summary")]
-    public IActionResult Get([FromQuery] int month, [FromQuery] int year)
+    public async Task<ActionResult> Get([FromQuery] int month, [FromQuery] int year)
     {
-        var transactions = _service.GetSummary(month, year);
+        var transactions = await _service.GetSummary(month, year);
         if (transactions.Buckets.Count > 0)
         {
             return Ok(transactions);
@@ -34,14 +34,13 @@ public class BucketsController : ControllerBase
     }
     
     [HttpGet]
-    public IActionResult GetBuckets()
+    public async Task<ActionResult> GetBuckets()
     {
-        var buckets = _service.GetBuckets();
+        var buckets = await _service.GetBuckets();
         if (buckets.Count > 0)
         {
             return Ok(buckets);
         }
-
         return BadRequest("No buckets found.");
     }
 }
