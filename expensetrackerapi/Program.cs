@@ -6,8 +6,8 @@ using Microsoft.Net.Http.Headers;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
 using Serilog;
-using Serilog.Core;
 using Serilog.Events;
+using Scalar.AspNetCore;
 
 
 Log.Logger = new LoggerConfiguration()
@@ -31,7 +31,7 @@ try
     // Add services to the container.
     
     // Inject Serilog as a service to the Dependancy Injection Container to use it in the application.
-    // to configure it to work with the Ilogger service
+    // to configure it to work with the ILogger service
     builder.Host.UseSerilog((context, services, configuration) => configuration
         // Read from configuration file with the sinks it should use.
         .ReadFrom.Configuration(context.Configuration)
@@ -88,13 +88,13 @@ try
     builder.Services.AddOpenApi();
 
     var app = builder.Build();
-
+    
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
+        app.MapControllers();
+        app.MapScalarApiReference();
         app.MapOpenApi();
-        app.UseHsts();
-
     }
 
     using (var scope = app.Services.CreateScope())
@@ -105,12 +105,12 @@ try
         DbIntializer.Initialize(context);
     }
 
+    app.UseHsts();
     app.UseHttpsRedirection();
 
     app.UseAuthorization();
     app.UseCors(MyAllowSpecificOrigins);
 
-    app.MapControllers();
 
     Log.Information("Expense Tracker API started successfully");
 
