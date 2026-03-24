@@ -36,7 +36,7 @@ public static class DbIntializer
         {
             new Transaction
             {
-                
+
                 BucketId = 1,
                 Description = "Monthly Salary",
                 UserId = 1,
@@ -49,7 +49,7 @@ public static class DbIntializer
                 Description = "Groceries at the AH",
                 UserId = 1,
                 Amount = 120,
-                
+
                 Created_at = new LocalDate(2025, 1, 12)
             },
             new Transaction
@@ -58,7 +58,7 @@ public static class DbIntializer
                 Description = "Shopping - clothing",
                 UserId = 1,
                 Amount = 80,
-                
+
                 Created_at = new LocalDate(2025, 1, 20)
             },
             new Transaction
@@ -67,7 +67,7 @@ public static class DbIntializer
                 Description = "Weekly groceries",
                 UserId = 1,
                 Amount = 95,
-                
+
                 Created_at = new LocalDate(2025, 2, 14)
             },
             new Transaction
@@ -76,7 +76,7 @@ public static class DbIntializer
                 Description = "Shopping - online order",
                 UserId = 1,
                 Amount = 150,
-                
+
                 Created_at = new LocalDate(2025, 3, 2)
             },
             new Transaction
@@ -85,7 +85,7 @@ public static class DbIntializer
                 Description = "Monthly Salary",
                 UserId = 1,
                 Amount = 1000,
-            
+
                 Created_at = new LocalDate(2025, 3, 5)
             },
             new Transaction
@@ -94,7 +94,7 @@ public static class DbIntializer
                 Description = "Groceries at the AH",
                 UserId = 1,
                 Amount = 110,
-                
+
                 Created_at = new LocalDate(2025, 4, 10)
             },
             new Transaction
@@ -103,7 +103,7 @@ public static class DbIntializer
                 Description = "Shopping - electronics",
                 UserId = 1,
                 Amount = 60,
-                
+
                 Created_at = new LocalDate(2025, 4, 18)
             },
             new Transaction
@@ -112,7 +112,7 @@ public static class DbIntializer
                 Description = "Monthly Salary",
                 UserId = 1,
                 Amount = 1000,
-               
+
                 Created_at = new LocalDate(2025, 5, 5)
             },
             new Transaction

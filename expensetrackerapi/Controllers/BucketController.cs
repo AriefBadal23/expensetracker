@@ -32,7 +32,7 @@ public class BucketsController : ControllerBase
 
         return BadRequest("No transactions found.");
     }
-    
+
     [HttpGet]
     public async Task<ActionResult> GetBuckets()
     {

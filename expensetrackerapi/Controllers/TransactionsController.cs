@@ -28,8 +28,8 @@ namespace expensetrackerapi.Controllers
 
             return Ok(await transaction);
         }
-        
-        
+
+
         [HttpGet]
         public async Task<ActionResult> Get(
             [FromQuery] int? month, int? year,
@@ -65,9 +65,9 @@ namespace expensetrackerapi.Controllers
             }
             return NotFound();
         }
-        
+
         [HttpPut]
-        public async Task<ActionResult> Update([FromBody]Transaction updatedTransaction)
+        public async Task<ActionResult> Update([FromBody] Transaction updatedTransaction)
         {
             var transaction = await _expenseService.UpdateTransaction(updatedTransaction);
             if (transaction != null)

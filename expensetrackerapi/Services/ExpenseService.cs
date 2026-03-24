@@ -21,33 +21,33 @@ namespace expensetrackerapi.Services
         public async Task<ResponseTransactionDTo?> GetTransactionByID(int id)
         {
             var transaction = await _db.Transactions.FirstOrDefaultAsync(t => t.Id == id);
-            _logger.LogInformation("GET request for transaction with ID: {id}",id);
+            _logger.LogInformation("GET request for transaction with ID: {id}", id);
             return _mapper.TransactionToResponseTransaction(transaction);
 
         }
 
         public async Task<ResponseTransactionDTo?> UpdateTransaction(Transaction transaction)
         {
-            
-            if (transaction.Id <= 0 ) return null;
-            
+
+            if (transaction.Id <= 0) return null;
+
             var t = await _db.Transactions.FindAsync(transaction.Id);
-            
+
             if (t == null)
             {
                 return null;
             }
-            
+
             t.Amount = transaction.Amount;
             t.BucketId = transaction.BucketId;
             t.Created_at = transaction.Created_at;
             t.Description = transaction.Description;
-            
-            
+
+
             _db.Transactions.Update(t);
             await _db.SaveChangesAsync();
             var response = _mapper.TransactionToResponseTransaction(t);
-            return  response;
+            return response;
         }
 
         public async Task<object> GetTransactions(int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3)
@@ -72,7 +72,7 @@ namespace expensetrackerapi.Services
             else if (!month.HasValue && bucket.HasValue)
             {
                 var bucketTransactions = await _db.Transactions
-                .Where(b=> b.BucketId == bucket)
+                .Where(b => b.BucketId == bucket)
                 .OrderByDescending(t => t.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).ToListAsync();
@@ -89,7 +89,7 @@ namespace expensetrackerapi.Services
             else if (month.HasValue && year.HasValue && bucket.HasValue)
             {
                 var monthTransactions = await _db.Transactions
-                .Where(t=> t.Created_at.Month == month && t.Created_at.Year == year && t.BucketId == bucket)
+                .Where(t => t.Created_at.Month == month && t.Created_at.Year == year && t.BucketId == bucket)
                 .OrderByDescending(t => t.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
@@ -116,7 +116,7 @@ namespace expensetrackerapi.Services
                     Transactions = monthTransactions
                 };
             }
-            
+
             else if (year.HasValue)
             {
                 var monthTransactions = await _db.Transactions
@@ -140,7 +140,7 @@ namespace expensetrackerapi.Services
                 .OrderByDescending(t => t.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).ToListAsync();
-               
+
             return new
             {
                 transactions,
@@ -153,7 +153,7 @@ namespace expensetrackerapi.Services
         public async Task<ResponseTransactionDTo?> CreateTransaction(RequestTransactionDto transaction)
         {
             var mappedTransaction = _mapper.TransactionDtoToRequestTransaction(transaction);
-            
+
             Bucket salary = await _db.Buckets.FirstAsync(x => x.Name == Buckets.Salary);
             Bucket? transactionBucket = await _db.Buckets.FirstOrDefaultAsync(b => b.Id == mappedTransaction.BucketId);
 
@@ -163,7 +163,7 @@ namespace expensetrackerapi.Services
                 _logger.LogWarning("Failed to create new transaction, incorrect amount or bucket was provided.");
                 return new ResponseTransactionDTo();
             }
-            
+
             if (transactionBucket.Type == BucketTypes.Income && mappedTransaction.BucketId == 1)
             {
                 salary.Total += mappedTransaction.Amount;
@@ -171,14 +171,14 @@ namespace expensetrackerapi.Services
             else
             {
                 salary.Total -= mappedTransaction.Amount;
-                    
+
             }
 
             if (transactionBucket.Total >= 0 && transactionBucket.Name != Buckets.Salary)
             {
                 transactionBucket.Total += mappedTransaction.Amount;
             }
-                
+
             _db.Transactions.Add(mappedTransaction);
             _db.Buckets.UpdateRange([salary, transactionBucket]);
             await _db.SaveChangesAsync();
@@ -189,9 +189,9 @@ namespace expensetrackerapi.Services
         public async Task<bool> DeleteTransaction(int transactionId)
         {
             var deletedTransaction = await _db.Transactions.FindAsync(transactionId);
-            
+
             var transactionBucket = await _db.Buckets.FirstOrDefaultAsync(bucket => deletedTransaction != null && bucket.Id == deletedTransaction.BucketId);
-            
+
             Bucket income = await _db.Buckets.FirstAsync(b => b.Name == Buckets.Salary);
 
 
@@ -214,7 +214,7 @@ namespace expensetrackerapi.Services
                 {
                     income.Total -= deletedTransaction.Amount;
                 }
-                
+
                 await _db.SaveChangesAsync();
                 return true;
             }

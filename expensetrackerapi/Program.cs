@@ -1,6 +1,7 @@
 using System.Text.Json.Serialization;
 using expensetrackerapi.Models;
 using expensetrackerapi.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using NodaTime;
@@ -29,7 +30,7 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
     // Add services to the container.
-    
+
     // Inject Serilog as a service to the Dependancy Injection Container to use it in the application.
     // to configure it to work with the ILogger service
     builder.Host.UseSerilog((context, services, configuration) => configuration
@@ -39,6 +40,13 @@ try
     );
     builder.Services.AddScoped<IExpenseService, ExpenseService>();
     builder.Services.AddScoped<IBucketService, BucketService>();
+
+    builder.Services.AddIdentityCore<IdentityUser>(options =>
+    {
+    })
+        .AddRoles<IdentityRole>()
+        .AddEntityFrameworkStores<ExpenseTrackerContext>();
+
 
     // CORS setup between React FE and C# BE
     builder.Services.AddCors(options =>
@@ -88,7 +96,7 @@ try
     builder.Services.AddOpenApi();
 
     var app = builder.Build();
-    
+
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
