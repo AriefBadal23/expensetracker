@@ -19,18 +19,17 @@ const TransactionRow = ({transaction, setTransactions }: TransactionRowProps) =>
     
   }, [selectedTransaction]);
   
-  function DeleteTransaction(id: number | undefined) {
+  async function DeleteTransaction(id: number | undefined) {
     try {
-      fetch(`http://localhost:5286/api/v1/transactions/${id}`, {
-        method: "Delete",
-  
-        headers: {
-          "Content-type": "application/json; charset=UTF-8"
-        },
-      })
-      // trigger a re-render and show the new array.
-      setTransactions((prev) => prev.filter(t => t.id !== id) )
+          await fetch(`http://localhost:5286/api/v1/transactions/${id}`, {
+          method: "Delete",
 
+          headers: {
+            "Content-type": "application/json; charset=UTF-8"
+          },
+        })
+        // trigger a re-render and show the new array.
+        setTransactions((prev) => prev.filter(t => t.id !== id) )
     }
     catch (err) {
       console.log(err)
