@@ -1,4 +1,6 @@
-﻿namespace expensetrackerapi.Results;
+﻿using expensetrackerapi.DTO.Auth;
+
+namespace expensetrackerapi.Results;
 
 public readonly record struct Error(string Code, string Description)
 {
@@ -40,6 +42,8 @@ public readonly record struct Result<T>
     public static Result<T> Success(T value) => new(true, value, Array.Empty<Error>());
     public static Result<T> Failure(params Error[] errors) => new(false, default, errors);
     public static Result<T> NotFound() => new(false, default, []);
+    public static Result<T> BadRequest() => new(false, default,[]);
+    public static Result<T> BadRequest(params Error[] errors) => new(false, default,errors);
 
     // functional helpers
     public Result<K> Map<K>(Func<T, K> map)
@@ -53,4 +57,5 @@ public readonly record struct Result<T>
     public Result<T> Ensure(Func<T, bool> predicate, Error error)
         => IsSuccess && !predicate(Value!) ? Failure(error) : this;
 
+    
 }

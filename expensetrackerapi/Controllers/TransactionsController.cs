@@ -1,3 +1,4 @@
+using expensetrackerapi.Contracts;
 using expensetrackerapi.DTO;
 using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -37,7 +38,7 @@ namespace expensetrackerapi.Controllers
             int pageNumber = 1, int pageSize = 3)
         {
             var transactions = await _expenseService.GetTransactions(month, year, bucket, pageNumber, pageSize);
-            if (transactions is null)
+            if (!transactions.IsSuccess)
             {
                 return NotFound();
             }
@@ -59,7 +60,7 @@ namespace expensetrackerapi.Controllers
         public async Task<ActionResult> Delete(int transactionID)
         {
             var isDeleted = await _expenseService.DeleteTransaction(transactionID);
-            if (isDeleted)
+            if (!isDeleted.IsSuccess)
             {
                 return Ok();
             }

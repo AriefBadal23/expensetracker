@@ -1,3 +1,4 @@
+using expensetrackerapi.Contracts;
 using expensetrackerapi.DTO;
 using expensetrackerapi.Mapper;
 using expensetrackerapi.Models;

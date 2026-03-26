@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace expensetrackerapi.Models;
 
-public class ExpenseTrackerContext : IdentityDbContext<IdentityUser> // Takes care of Identity related tables.
+public class ExpenseTrackerContext : IdentityDbContext<ApplicationUser> // Takes care of Identity related tables.
 {
     public ExpenseTrackerContext(DbContextOptions<ExpenseTrackerContext> options) : base(options)
     {
