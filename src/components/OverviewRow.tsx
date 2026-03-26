@@ -1,10 +1,12 @@
-﻿import type { Transaction } from "../types/Transaction";
+﻿import type {Transaction} from "../types/Transaction";
+import {BucketType} from "../types/BucketType.tsx";
 
 
 export type BucketTransactions = {
     bucketId: string,
     bucketName:string,
     transactions: Transaction[],
+    bucketType: BucketType
    
     
 }
@@ -35,7 +37,7 @@ const OverviewRow = ({ data }:OverviewRowProps) => {
                     {index === 0 && <td rowSpan={transactions.length}><strong>{bucket.bucketName}</strong></td>}
                     <td>{x.description}</td>
                     <td>{new Date(x.created_at).toLocaleDateString()}</td>
-                    <td>{x.isIncome ? "Income" : "Expense"}</td>
+                    <td>{bucket.bucketType}</td>
                     <td>€{x.amount}</td>
                 </tr>
             ));

@@ -20,7 +20,6 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
 
   const PAGESIZE = 10;
   const TOTALPAGES = total / PAGESIZE;
-
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -46,9 +45,15 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
               setErrorMessage(new Error("Failed to fetch from endpoint"))
           }
           const data = await response.json();
-          
-          setTotal(data["total"]);
-          setTransactions(data["transactions"]);
+
+          if(Array.isArray(data.value.transactions)){
+            setTransactions(data.value.transactions);
+            setTotal(data.value.total)
+            
+          }
+          else{
+              throw new Error("invalid type of fetched data")
+          }
         
       } catch (err) {
           // 1. Log the actual error to the console.

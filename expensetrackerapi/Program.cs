@@ -1,6 +1,8 @@
 using System.Text.Json.Serialization;
+using expensetrackerapi.Contracts;
 using expensetrackerapi.Models;
 using expensetrackerapi.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Net.Http.Headers;
 using NodaTime;
@@ -29,7 +31,7 @@ try
     var builder = WebApplication.CreateBuilder(args);
 
     // Add services to the container.
-    
+
     // Inject Serilog as a service to the Dependancy Injection Container to use it in the application.
     // to configure it to work with the ILogger service
     builder.Host.UseSerilog((context, services, configuration) => configuration
@@ -39,6 +41,13 @@ try
     );
     builder.Services.AddScoped<IExpenseService, ExpenseService>();
     builder.Services.AddScoped<IBucketService, BucketService>();
+    builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddIdentityCore<ApplicationUser>(options =>
+        {
+        })
+        .AddRoles<IdentityRole>()
+        .AddEntityFrameworkStores<ExpenseTrackerContext>();
+    builder.Services.AddIdentityApiEndpoints<ApplicationUser>();
 
     // CORS setup between React FE and C# BE
     builder.Services.AddCors(options =>
@@ -54,9 +63,9 @@ try
 
     );
     builder.Services.AddControllers()
-        // Zorgt ervoor dat de enums correct worden getoond ipv van de id.
         .AddJsonOptions(options =>
         {
+            // Zorgt ervoor dat de enums correct worden getoond ipv van de id.
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             // !Required for nodatime deserialization otherwise 400 bad request
             options.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
@@ -83,12 +92,14 @@ try
 
         ));
 
+    // Add authorization service
+    builder.Services.AddAuthorization();
 
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
 
     var app = builder.Build();
-    
+
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
@@ -96,6 +107,9 @@ try
         app.MapScalarApiReference();
         app.MapOpenApi();
     }
+
+    // Add Identity API for the authN and authZ endpoints
+    app.MapGroup("api/v1/defaultauth").MapIdentityApi<ApplicationUser>();
 
     using (var scope = app.Services.CreateScope())
     {

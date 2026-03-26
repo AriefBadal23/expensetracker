@@ -9,6 +9,6 @@ public partial class TransactionMapper
 {
     [MapperIgnoreTarget(nameof(Transaction.Id))]
     public partial Transaction TransactionDtoToRequestTransaction(RequestTransactionDto dto);
-    
+
     public partial ResponseTransactionDTo TransactionToResponseTransaction(Transaction? transaction);
 }

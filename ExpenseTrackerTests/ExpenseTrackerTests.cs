@@ -1,9 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using expensetrackerapi.Contracts;
 using expensetrackerapi.DTO;
+using expensetrackerapi.Results;
 using expensetrackerapi.Validation;
 using Microsoft.Extensions.Logging;
 using Moq;
-using Xunit.Abstractions;
 
 namespace ExpenseTrackerTests;
 
@@ -62,7 +63,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         var loggerMock = new Mock<ILogger<IExpenseService>>();
         var service = new ExpenseService(db, loggerMock.Object);
 
-        ResponseTransactionDTo[] transactionArrayResult = new ResponseTransactionDTo[3];
+        Result<ResponseTransactionDTo>[] transactionArrayResult = new Result<ResponseTransactionDTo>[3];
 
         RequestTransactionDto[] transactions = new[] {
 
@@ -97,7 +98,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         {
             var transactionIsCreated = await service.CreateTransaction(transactions[i]);
 
-            if (transactionIsCreated is not null)
+            if (transactionIsCreated.IsSuccess)
             {
                 transactionArrayResult[i] = transactionIsCreated;
             }
@@ -196,13 +197,13 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         var T_4_isDeleted = await new ExpenseService(db, loggerMock.Object).DeleteTransaction(5);
         var T_8_isDeleted = await new ExpenseService(db, loggerMock.Object).DeleteTransaction(8);
         
-        var currentShoppingTotal =  db.Buckets.First(_ => _.Name == Buckets.Shopping).Total;
-        var currentSalaryTotal = db.Buckets.First(_ => _.Name == Buckets.Salary).Total;
+        var currentShoppingTotal =  db.Buckets.First(bucket => bucket.Name == Buckets.Shopping).Total;
+        var currentSalaryTotal = db.Buckets.First(bucket => bucket.Name == Buckets.Salary).Total;
 
         // Assert
-        Assert.True(T_3_isDeleted);
-        Assert.True(T_4_isDeleted);
-        Assert.True(T_8_isDeleted);
+        Assert.True(T_3_isDeleted.Value);
+        Assert.True(T_4_isDeleted.Value);
+        Assert.True(T_8_isDeleted.Value);
         Assert.Equal(815, currentShoppingTotal);
         Assert.Equal(6020, currentSalaryTotal);
     }
@@ -224,8 +225,9 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         }
 
         var buckets = await bucketService.GetBuckets();
-        var bucketsTotals = buckets.Count(_ => _.Total == 0);
+        Assert.NotNull(buckets.Value);
         
+        var bucketsTotals = buckets.Value?.Count;
         Assert.Equal(3, bucketsTotals);
     }
 
@@ -242,14 +244,14 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
                         UserId=1,
                         Description="TestSalaris",
                         Amount=100,
-                        Created_at= new NodaTime.LocalDate(2030,1,20),
+                        Created_at= new LocalDate(2030,1,20),
                          },
          
          new Transaction{BucketId=3,
                         UserId=1,
                         Description="Shopping - clothing",
                         Amount=80,
-                        Created_at= new NodaTime.LocalDate(2025,1,20),
+                        Created_at= new LocalDate(2025,1,20),
                         },
 
      };
@@ -261,6 +263,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
      var context = new ValidationContext(new { });
      var result = attr.GetValidationResult(newTransactions[0].Created_at, context);
      // ASSERT
+     Assert.NotNull(result);
      Assert.NotEqual(ValidationResult.Success, result);
      Assert.Equal("The created date year must not be later than this year.", result.ErrorMessage);
 
@@ -281,17 +284,21 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         
         // Uses the db to retrieve summary of transactions of the given month-year
         var summary = await bucketService.GetSummary(month, year);
-        var summaryTotalIncome = summary.TotalIncome;
-        var summaryTotalExpenses = summary.TotalExpenses;
 
+        Assert.NotNull(summary.Value);
+        var value = summary.Value;
+        
+        var summaryTotalIncome = summary.Value?.TotalIncome;
+        var summaryTotalExpenses = summary.Value?.TotalExpenses;
+        // Assert
         Assert.Equal(1000, summaryTotalIncome);
         Assert.Equal(385, summaryTotalExpenses);
-        Assert.Equal(3,summary.Buckets.Count);
-        Assert.Contains(Buckets.Salary, summary.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Groceries, summary.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Shopping, summary.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Equal(month,summary.Month);
-        Assert.Equal(year,summary.Year);
+        Assert.Equal(3,value.Buckets.Count);
+        Assert.Contains(Buckets.Salary, value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(Buckets.Groceries, value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(Buckets.Shopping, value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Equal(month,value.Month);
+        Assert.Equal(year,value.Year);
         
     }
     [Fact]
@@ -309,17 +316,21 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         
         // Uses the db to retrieve summary of transactions of the given month-year
         var summary = await bucketService.GetSummary(month, year);
-        var summaryTotalIncome = summary.TotalIncome;
-        var summaryTotalExpenses = summary.TotalExpenses;
+        
+        //Assert
+        Assert.NotNull(summary.Value);
+        
+        var summaryTotalIncome = summary.Value.TotalIncome;
+        var summaryTotalExpenses = summary.Value.TotalExpenses;
 
         Assert.Equal(1000, summaryTotalIncome);
         Assert.Equal(398, summaryTotalExpenses);
-        Assert.Equal(3,summary.Buckets.Count);
-        Assert.Contains(Buckets.Salary, summary.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Groceries, summary.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Shopping, summary.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Equal(month,summary.Month);
-        Assert.Equal(year,summary.Year);
+        Assert.Equal(3,summary.Value.Buckets.Count);
+        Assert.Contains(Buckets.Salary, summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(Buckets.Groceries, summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(Buckets.Shopping, summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Equal(month,summary.Value.Month);
+        Assert.Equal(year,summary.Value.Year);
         
     }
     [Fact]
@@ -337,17 +348,21 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         
         // Uses the db to retrieve summary of transactions of the given month-year
         var summary = await bucketService.GetSummary(month, year);
-        var summaryTotalIncome = summary.TotalIncome;
-        var summaryTotalExpenses = summary.TotalExpenses;
+        
+        //Assert
+        Assert.NotNull(summary.Value);
+        
+        var summaryTotalIncome = summary.Value.TotalIncome;
+        var summaryTotalExpenses = summary.Value.TotalExpenses;
 
         Assert.Equal(0, summaryTotalIncome);
         Assert.Equal(108, summaryTotalExpenses);
-        Assert.Equal(3,summary.Buckets.Count);
-        Assert.Contains(Buckets.Salary, summary.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Groceries, summary.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Shopping, summary.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Equal(month,summary.Month);
-        Assert.Equal(year,summary.Year);
+        Assert.Equal(3,summary.Value.Buckets.Count);
+        Assert.Contains(Buckets.Salary, summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(Buckets.Groceries, summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(Buckets.Shopping, summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Equal(month,summary.Value.Month);
+        Assert.Equal(year,summary.Value.Year);
         
     }
     [Fact]
@@ -365,18 +380,21 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         
         // Uses the db to retrieve summary of transactions of the given month-year
         var summary = await bucketService.GetSummary(month, year);
-        var summaryTotalIncome = summary.TotalIncome;
-        var summaryTotalExpenses = summary.TotalExpenses;
+        //Assert
+        Assert.NotNull(summary.Value);
+        
+        var summaryTotalIncome = summary.Value.TotalIncome;
+        var summaryTotalExpenses = summary.Value.TotalExpenses;
         
 
         Assert.Equal(0, summaryTotalIncome);
         Assert.Equal(0, summaryTotalExpenses);
-        Assert.Equal(3,summary.Buckets.Count);
-        Assert.Contains(Buckets.Salary, summary.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Groceries, summary.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Shopping, summary.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Equal(month,summary.Month);
-        Assert.Equal(year,summary.Year);
+        Assert.Equal(3,summary.Value.Buckets.Count);
+        Assert.Contains(Buckets.Salary, summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(Buckets.Groceries, summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(Buckets.Shopping, summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Equal(month,summary.Value.Month);
+        Assert.Equal(year,summary.Value.Year);
         
     }
     

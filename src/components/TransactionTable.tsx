@@ -11,7 +11,6 @@ interface TransactionTableProps {
 }
 const TransactionTable = ({ transactions, setTransactions,ErrorMessage }: TransactionTableProps) => {
     const [showModal, setShowModal] = useState(false);
-    
     const ErrorMessageStyle = {
         color: "#B00020",           
         backgroundColor: "#FFEBEE", 
