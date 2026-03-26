@@ -20,17 +20,7 @@ public static class DbIntializer
         context.Buckets.AddRange(buckets);
         context.SaveChanges();
 
-        var users = new User[]
-        {
-            new User{Role=Role.User, Username="Arief", Password="Test1234"}
-        };
-
-
-        context.AddRange(users);
-        context.SaveChanges();
-
-
-
+        
 
         var transactions = new Transaction[]
         {
