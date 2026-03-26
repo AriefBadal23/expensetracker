@@ -1,6 +1,7 @@
 using expensetrackerapi.DTO;
 using expensetrackerapi.Mapper;
 using expensetrackerapi.Models;
+using expensetrackerapi.Results;
 using Microsoft.EntityFrameworkCore;
 
 
@@ -18,24 +19,27 @@ namespace expensetrackerapi.Services
             _logger = logger;
         }
 
-        public async Task<ResponseTransactionDTo?> GetTransactionByID(int id)
+        public async Task<Result<ResponseTransactionDTo?>> GetTransactionByID(int id)
         {
             var transaction = await _db.Transactions.FirstOrDefaultAsync(t => t.Id == id);
             _logger.LogInformation("GET request for transaction with ID: {id}", id);
-            return _mapper.TransactionToResponseTransaction(transaction);
+
+            return Result<ResponseTransactionDTo?>.Success(
+                _mapper.TransactionToResponseTransaction(transaction)
+                );
 
         }
 
-        public async Task<ResponseTransactionDTo?> UpdateTransaction(Transaction transaction)
+        public async Task<Result<ResponseTransactionDTo?>> UpdateTransaction(Transaction transaction)
         {
 
-            if (transaction.Id <= 0) return null;
+            if (transaction.Id <= 0) return Result<ResponseTransactionDTo?>.NotFound();
 
             var t = await _db.Transactions.FindAsync(transaction.Id);
 
             if (t == null)
             {
-                return null;
+                return Result<ResponseTransactionDTo?>.NotFound();
             }
 
             t.Amount = transaction.Amount;
@@ -47,10 +51,12 @@ namespace expensetrackerapi.Services
             _db.Transactions.Update(t);
             await _db.SaveChangesAsync();
             var response = _mapper.TransactionToResponseTransaction(t);
-            return response;
+            return Result<ResponseTransactionDTo?>.Success(
+                response
+            );
         }
 
-        public async Task<object> GetTransactions(int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3)
+        public async Task<Result<object>> GetTransactions(int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3)
         {
             // bucket query string = bucket ID
             var totalRecords = await _db.Transactions.CountAsync();
@@ -63,11 +69,12 @@ namespace expensetrackerapi.Services
                     .Take(pageSize).ToListAsync();
 
                 // TODO: ResponseDTO
-                return new
+                return Result<object>.Success(new
                 {
                     Total = monthTransactions.Count,
                     Transactions = monthTransactions
-                };
+                })
+               ;
             }
             else if (!month.HasValue && bucket.HasValue)
             {
@@ -78,11 +85,12 @@ namespace expensetrackerapi.Services
                 .Take(pageSize).ToListAsync();
 
                 // TODO: ResponseDTO
-                return new
+                return Result<object>.Success(
+                new
                 {
                     Total = totalRecords,
                     Transactions = bucketTransactions
-                };
+                });
             }
 
 
@@ -94,11 +102,11 @@ namespace expensetrackerapi.Services
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-                return new
+                return Result<object>.Success(new
                 {
                     Total = monthTransactions.Count,
                     Transactions = monthTransactions
-                };
+                });
             }
             else if (month.HasValue && year.HasValue)
             {
@@ -110,11 +118,13 @@ namespace expensetrackerapi.Services
                 .ToListAsync();
 
                 // TODO: ResponseDTO
-                return new
-                {
-                    Total = monthTransactions.Count,
-                    Transactions = monthTransactions
-                };
+                return Result<object>.Success(
+                    new
+                    {
+                        Total = monthTransactions.Count,
+                        Transactions = monthTransactions
+                    }
+                );
             }
 
             else if (year.HasValue)
@@ -127,11 +137,13 @@ namespace expensetrackerapi.Services
                     .ToListAsync();
 
                 // TODO: ResponseDTO
-                return new
-                {
-                    Total = monthTransactions.Count,
-                    Transactions = monthTransactions
-                };
+                return Result<object>.Success(
+                    new
+                    {
+                        Total = monthTransactions.Count,
+                        Transactions = monthTransactions
+                    }
+                    );
             }
 
 
@@ -141,16 +153,18 @@ namespace expensetrackerapi.Services
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).ToListAsync();
 
-            return new
-            {
-                transactions,
-                Total = totalRecords,
+            return Result<object>.Success(
+                new
+                {
+                    transactions,
+                    Total = totalRecords,
 
-            };
+                }
+            );
 
         }
 
-        public async Task<ResponseTransactionDTo?> CreateTransaction(RequestTransactionDto transaction)
+        public async Task<Result<ResponseTransactionDTo?>> CreateTransaction(RequestTransactionDto transaction)
         {
             var mappedTransaction = _mapper.TransactionDtoToRequestTransaction(transaction);
 
@@ -161,7 +175,7 @@ namespace expensetrackerapi.Services
             if (transactionBucket == null || mappedTransaction.Amount <= 0)
             {
                 _logger.LogWarning("Failed to create new transaction, incorrect amount or bucket was provided.");
-                return new ResponseTransactionDTo();
+                return Result<ResponseTransactionDTo?>.Failure();
             }
 
             if (transactionBucket.Type == BucketTypes.Income && mappedTransaction.BucketId == 1)
@@ -183,10 +197,11 @@ namespace expensetrackerapi.Services
             _db.Buckets.UpdateRange([salary, transactionBucket]);
             await _db.SaveChangesAsync();
             var response = _mapper.TransactionToResponseTransaction(mappedTransaction);
-            return response;
+            return Result<ResponseTransactionDTo?>.Success(response);
+            
         }
 
-        public async Task<bool> DeleteTransaction(int transactionId)
+        public async Task<Result<bool>> DeleteTransaction(int transactionId)
         {
             var deletedTransaction = await _db.Transactions.FindAsync(transactionId);
 
@@ -216,9 +231,9 @@ namespace expensetrackerapi.Services
                 }
 
                 await _db.SaveChangesAsync();
-                return true;
+                return Result<bool>.Success(true);
             }
-            return false;
+            return Result<bool>.Failure();
 
         }
 

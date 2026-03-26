@@ -1,9 +1,10 @@
 ﻿using expensetrackerapi.DTO;
+using expensetrackerapi.Results;
 
 namespace expensetrackerapi.Services;
 
 public interface IBucketService
 {
-    public Task<BucketResponseDto> GetSummary(int month, int year);
-    public Task<List<Bucket>> GetBuckets();
+    public Task<Result<BucketResponseDto>> GetSummary(int month, int year);
+    public Task<Result<List<Bucket>>> GetBuckets();
 }
