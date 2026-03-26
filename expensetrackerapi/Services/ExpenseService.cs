@@ -165,7 +165,7 @@ namespace expensetrackerapi.Services
 
         }
 
-        public async Task<Result<ResponseTransactionDTo?>> CreateTransaction(RequestTransactionDto transaction)
+        public async Task<Result<ResponseTransactionDTo>> CreateTransaction(RequestTransactionDto transaction)
         {
             var mappedTransaction = _mapper.TransactionDtoToRequestTransaction(transaction);
 
@@ -176,7 +176,7 @@ namespace expensetrackerapi.Services
             if (transactionBucket == null || mappedTransaction.Amount <= 0)
             {
                 _logger.LogWarning("Failed to create new transaction, incorrect amount or bucket was provided.");
-                return Result<ResponseTransactionDTo?>.Failure();
+                return Result<ResponseTransactionDTo>.Failure();
             }
 
             if (transactionBucket.Type == BucketTypes.Income && mappedTransaction.BucketId == 1)
@@ -198,7 +198,7 @@ namespace expensetrackerapi.Services
             _db.Buckets.UpdateRange([salary, transactionBucket]);
             await _db.SaveChangesAsync();
             var response = _mapper.TransactionToResponseTransaction(mappedTransaction);
-            return Result<ResponseTransactionDTo?>.Success(response);
+            return Result<ResponseTransactionDTo>.Success(response);
             
         }
 
