@@ -42,7 +42,7 @@ public class BucketService : IBucketService
                            let monthBucketTotal = BuckTransactionsResult.Sum(x => x.Amount)
 
                            select
-                                   new BucketTransaction(buck.Id, buck.Name, monthBucketTotal, BuckTransactionsResult.ToArray())
+                                   new BucketTransaction(buck.Id, buck.Name,buck.Type, monthBucketTotal, BuckTransactionsResult.ToArray())
             ).ToListAsync();
 
 
