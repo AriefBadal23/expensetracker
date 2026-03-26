@@ -1,7 +1,7 @@
 ﻿using expensetrackerapi.DTO;
 using expensetrackerapi.Results;
 
-namespace expensetrackerapi.Services;
+namespace expensetrackerapi.Contracts;
 
 public interface IBucketService
 {

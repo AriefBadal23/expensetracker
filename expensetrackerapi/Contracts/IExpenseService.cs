@@ -3,6 +3,8 @@ using expensetrackerapi.DTO;
 using expensetrackerapi.Models;
 using expensetrackerapi.Results;
 
+namespace expensetrackerapi.Contracts;
+
 public interface IExpenseService
 {
     public Task<Result<object>> GetTransactions(int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3);
