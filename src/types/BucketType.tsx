@@ -1,4 +1,4 @@
-﻿export  enum TransactionType {
+﻿export  enum BucketType {
     Income="Income",
     Expense="Expense"
 
