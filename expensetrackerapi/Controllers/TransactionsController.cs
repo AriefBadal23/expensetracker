@@ -3,6 +3,7 @@ using expensetrackerapi.DTO;
 using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Mvc;
 using expensetrackerapi.Services;
+using Microsoft.AspNetCore.Authorization;
 
 namespace expensetrackerapi.Controllers
 {
@@ -32,6 +33,7 @@ namespace expensetrackerapi.Controllers
 
 
         [HttpGet]
+        [Authorize]
         public async Task<ActionResult> Get(
             [FromQuery] int? month, int? year,
             [FromQuery] int? bucket,

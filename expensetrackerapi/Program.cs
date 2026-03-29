@@ -1,9 +1,12 @@
+using System.Text;
 using System.Text.Json.Serialization;
 using expensetrackerapi.Contracts;
 using expensetrackerapi.Models;
 using expensetrackerapi.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.Net.Http.Headers;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
@@ -27,7 +30,7 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     Log.Information("Starting ExpenseTracker API");
-    var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+    var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
     var builder = WebApplication.CreateBuilder(args);
 
     // Add services to the container.
@@ -52,7 +55,7 @@ try
     // CORS setup between React FE and C# BE
     builder.Services.AddCors(options =>
         {
-            options.AddPolicy(name: MyAllowSpecificOrigins,
+            options.AddPolicy(name: myAllowSpecificOrigins,
                 policy =>
                 {
                     policy.WithOrigins("http://localhost:5173")
@@ -95,6 +98,32 @@ try
     // Add authorization service
     builder.Services.AddAuthorization();
 
+    builder.Services.AddAuthentication((options) =>
+    {
+        // Wat doet dit precies???!?!
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+        // add new scheme
+        .AddJwtBearer(options =>
+    {
+        // handler to handle authentication
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            // validates our secret key
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+            // encrypting our (encoded) secret key
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
+            // 5-min window (by default) between duration, we change it here to 0.
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
 
@@ -123,7 +152,7 @@ try
     app.UseHttpsRedirection();
 
     app.UseAuthorization();
-    app.UseCors(MyAllowSpecificOrigins);
+    app.UseCors(myAllowSpecificOrigins);
 
 
     Log.Information("Expense Tracker API started successfully");
