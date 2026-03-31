@@ -59,12 +59,12 @@ try
                 policy =>
                 {
                     policy.WithOrigins("http://localhost:5173")
-                        .WithHeaders(HeaderNames.ContentType)
-                        .WithMethods("PUT", "DELETE", "GET", "POST");
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
                 });
-        }
-
-    );
+        });
+    
     builder.Services.AddControllers()
         .AddJsonOptions(options =>
         {
@@ -106,7 +106,21 @@ try
     })
         // add new scheme
         .AddJwtBearer(options =>
-    {
+        {
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    context.Token = context.Request.Cookies["jwt"];
+                    var cookie = context.Request.Cookies["jwt"];
+                    return Task.CompletedTask;
+                },
+                OnAuthenticationFailed = context =>
+                {
+                    return Task.CompletedTask;
+                }
+            };
+            
         // handler to handle authentication
         options.TokenValidationParameters = new TokenValidationParameters
         {
@@ -123,11 +137,15 @@ try
             ClockSkew = TimeSpan.Zero
         };
     });
-
+    
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
 
     var app = builder.Build();
+    app.UseCors(myAllowSpecificOrigins);
+    
+    app.UseAuthentication();
+    app.UseAuthorization();
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
@@ -151,8 +169,6 @@ try
     app.UseHsts();
     app.UseHttpsRedirection();
 
-    app.UseAuthorization();
-    app.UseCors(myAllowSpecificOrigins);
 
 
     Log.Information("Expense Tracker API started successfully");

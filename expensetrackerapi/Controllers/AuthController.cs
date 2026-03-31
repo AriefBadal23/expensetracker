@@ -58,6 +58,16 @@ public class AuthController : ControllerBase
 
             return BadRequest(errors);
         }
+
+        CookieOptions CookieOptions = new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Lax,
+            Expires = DateTime.UtcNow.AddMinutes(10)
+        };
+        Response.Cookies.Append("jwt", result.Value, CookieOptions);
+        Console.WriteLine("LOGIN HIT");
         return Ok(result);
     }
 

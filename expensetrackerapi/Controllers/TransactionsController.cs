@@ -12,34 +12,37 @@ namespace expensetrackerapi.Controllers
     public class Transactions : Controller
     {
 
-        private readonly IExpenseService _expenseService;
+        private readonly IExpenseService _expenseExpenseService;
+        private readonly ILogger<IExpenseService> _logger;
 
-        public Transactions(IExpenseService service)
+        public Transactions(IExpenseService expenseService, ILogger<IExpenseService> logger)
         {
-            _expenseService = service;
+            _expenseExpenseService = expenseService;
+            _logger = logger;
         }
 
         [HttpGet("details")]
         public async Task<ActionResult> GetTransactionById([FromQuery] int id)
         {
-            var transaction = _expenseService.GetTransactionByID(id);
-            if (await transaction == null)
+            var transaction = await _expenseExpenseService.GetTransactionByID(id);
+            
+            if (transaction == null)
             {
                 return NotFound();
             }
 
-            return Ok(await transaction);
+            return Ok(transaction);
         }
 
 
-        [HttpGet]
         [Authorize]
+        [HttpGet]
         public async Task<ActionResult> Get(
             [FromQuery] int? month, int? year,
             [FromQuery] int? bucket,
             int pageNumber = 1, int pageSize = 3)
         {
-            var transactions = await _expenseService.GetTransactions(month, year, bucket, pageNumber, pageSize);
+            var transactions = await _expenseExpenseService.GetTransactions(month, year, bucket, pageNumber, pageSize);
             if (!transactions.IsSuccess)
             {
                 return NotFound();
@@ -52,7 +55,7 @@ namespace expensetrackerapi.Controllers
         public async Task<ActionResult> Post([FromBody] RequestTransactionDto transaction)
         {
 
-            var transactionCreated = await _expenseService.CreateTransaction(transaction);
+            var transactionCreated = await _expenseExpenseService.CreateTransaction(transaction);
             if (transactionCreated == null) return BadRequest();
             return Ok(transactionCreated);
 
@@ -61,7 +64,7 @@ namespace expensetrackerapi.Controllers
         [HttpDelete("{transactionID}")]
         public async Task<ActionResult> Delete(int transactionID)
         {
-            var isDeleted = await _expenseService.DeleteTransaction(transactionID);
+            var isDeleted = await _expenseExpenseService.DeleteTransaction(transactionID);
             if (!isDeleted.IsSuccess)
             {
                 return Ok();
@@ -72,7 +75,7 @@ namespace expensetrackerapi.Controllers
         [HttpPut]
         public async Task<ActionResult> Update([FromBody] Transaction updatedTransaction)
         {
-            var transaction = await _expenseService.UpdateTransaction(updatedTransaction);
+            var transaction = await _expenseExpenseService.UpdateTransaction(updatedTransaction);
             if (transaction != null)
             {
                 return Ok(transaction);
