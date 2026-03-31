@@ -33,9 +33,11 @@ const BucketOverviewTable = () => {
         const fetchSummary =  async () =>
         {
             try{
-                const url = `http://localhost:5286/api/v1/buckets/summary?month=${data.month}&year=${data.year}`
+                const url = `https://localhost:7118/api/v1/buckets/summary?month=${data.month}&year=${data.year}`
                 
-                const response = await fetch(url)
+                const response = await fetch(url, {
+                    credentials: "include"
+                })
                 
                 if (!response.ok) {
                     return;

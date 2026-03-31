@@ -27,7 +27,7 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
           const year = search.get("year") 
           const bucketId = search.get("id") 
           
-          let url = `http://localhost:5286/api/v1/transactions?pageNumber=${page}&pageSize=${PAGESIZE}`
+          let url = `https://localhost:7118/api/v1/transactions?pageNumber=${page}&pageSize=${PAGESIZE}`
           
           if(year !== null ){
               url = url + `&year=${year}`
@@ -39,8 +39,10 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
               url = url + `&bucket=${bucketId}`
           }
           
-          
-          const response = await fetch(url);
+          const response = await fetch(url, {
+              credentials: 'include'
+              
+          });
           if(!response.ok){
               setErrorMessage(new Error("Failed to fetch from endpoint"))
           }
