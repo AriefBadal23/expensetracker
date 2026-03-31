@@ -32,9 +32,12 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
     if (isUpdateForm && transactionID) {
       const fetchData = async () => {
         try {
-          const response = await fetch(`http://localhost:5286/api/v1/transactions/details?id=${transactionID}`);
+          const response = await fetch(`https://localhost:7118/api/v1/transactions/details?id=${transactionID}`, 
+          {
+              credentials: "include"
+          });
           const data = await response.json();
-          setFormData(data);
+          setFormData(data.value);
         } catch (e) {
           console.log(e);
         }
@@ -45,7 +48,6 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
     
   // 💡 force keys to be enum values
   const bucketKeys = Object.values(Buckets) as Buckets[];
-  
   
     const handleCreationDateChange =  (date:string) => {
         const isValid =   validateCreateDate(new Date(date))
@@ -64,7 +66,6 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
     }
     
     const handleDescriptionChange = (description:string) => {
-        console.log(`handleDescriptionChange: ${!validateDescription(description)}`)
         
       if(!validateDescription(description)){
         setErrors(prev => ({
@@ -113,12 +114,13 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
   async function SubmitData() {
     if(isUpdateForm){
       try{
-           await fetch("http://localhost:5286/api/v1/transactions",{
+           const response = await fetch("https://localhost:718/api/v1/transactions",{
            method: "Put",
            body: JSON.stringify(formdata),
            headers: {
              "Content-type": "application/json; charset=UTF-8",
            },
+           credentials: "include"
          })
        }
       catch(e){
@@ -127,23 +129,25 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
      }
     else{
       try{
-        const response = await fetch("http://localhost:5286/api/v1/transactions", {
+        const response = await fetch("https://localhost:7118/api/v1/transactions", {
           method: "Post",
           body: JSON.stringify(formdata),
           headers: {
             "Content-type": "application/json; charset=UTF-8",
           },
+            credentials: "include"
+            
         });
         
         const data = await response.json()
 
         const newTransaction: Transaction = {
-          id: data.id,
-          bucketId: data.bucketId,
-          userId: data.userId,
-          description: data.description,
-          amount: data.amount,
-          created_at: new Date(data.created_at), 
+          id: data.value.id,
+          bucketId: data.value.bucketId,
+          userId: data.value.userId,
+          description: data.value.description,
+          amount: data.value.amount,
+          created_at: new Date(data.value.created_at), 
         };
 
 
@@ -151,6 +155,7 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
         // Dit maakt een nieuwe array door oude values van de huidige state te kopieeren
         // naar een de nieuwe array met de nieuwe transactie.
         // Hiervoor heb ik een spread operator gebruikt. Door dit doen wordt er re-render gedaan.
+          
         setTransactions((prev) => [newTransaction, ...prev]);
         
       }
@@ -329,4 +334,4 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
 
 export default CreateTransactionForm;
 
-// Enum key/id => string naam van de bucket
+// Enum key/id → string naam van de bucket
