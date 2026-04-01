@@ -39,18 +39,32 @@ const BucketList = ({transactions}:BucketListProps) => {
         });
         
         if(!response.ok){
+          let message = "Something went wrong."
+          
+          // log for debugging purposes.
+          console.error("GET /buckets failed", {
+            status: response.status,
+            statusText: response.statusText
+          });
+          
+          if(response.status === 401){
+            message = "Unauthorized access."
+          }
+          setErrorMessage(new Error(message))
+          setPending(false)
+          
+          // early return stop flow.
           return;
+          
         }
         const data = await response.json()
         if(BucketsisArray(data.value)){
           SetBuckets(data.value);
           setPending(false)
         }
-        else{
-          throw new Error("Invalid type of fetched data")
-        }
         
-      } catch (err) {
+      } 
+      catch (err) {
         setPending(false)
         const message = getErrorMessage(err)
         // 1. Log the actual error to the console.

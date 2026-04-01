@@ -44,18 +44,27 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
               
           });
           if(!response.ok){
-              setErrorMessage(new Error("Failed to fetch from endpoint"))
+              let message = "Something went wrong."
+              console.error("GET /transactions failed", {
+                  status: response.status,
+                  statusText: response.statusText
+              });
+              
+              if(response.status === 401){
+                  message  = "Unauthorized access"
+              }
+              setErrorMessage(new Error(message))
+              return;
           }
           const data = await response.json();
 
           if(Array.isArray(data.value.transactions)){
             setTransactions(data.value.transactions);
             setTotal(data.value.total)
-            
+            return;
           }
-          else{
-              throw new Error("invalid type of fetched data")
-          }
+          setErrorMessage(new Error("invalid type of fetched data"));
+          
         
       } catch (err) {
           // 1. Log the actual error to the console.
