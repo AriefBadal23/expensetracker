@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { DayPicker } from "react-day-picker";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import "../styles/Filter.css";
 
@@ -9,11 +8,7 @@ const Filter = () => {
   const [search] = useSearchParams();
   const activeId = search.get("id");
   const navigate = useNavigate();
-
-  const [selectedMonth, setSelectedMonth] = useState<Date | undefined>(
-    () => new Date()
-  );
-
+  
   return (
     <>
       <div

@@ -6,6 +6,7 @@ using expensetrackerapi.Results;
 using Microsoft.EntityFrameworkCore;
 
 
+
 namespace expensetrackerapi.Services
 {
     public class ExpenseService : IExpenseService
@@ -56,7 +57,7 @@ namespace expensetrackerapi.Services
                 response
             );
         }
-
+        
         public async Task<Result<object>> GetTransactions(int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3)
         {
             // bucket query string = bucket ID
@@ -153,7 +154,6 @@ namespace expensetrackerapi.Services
                 .OrderByDescending(t => t.Created_at)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).ToListAsync();
-
             return Result<object>.Success(
                 new
                 {

@@ -21,7 +21,7 @@ const TransactionRow = ({transaction, setTransactions }: TransactionRowProps) =>
   
   async function DeleteTransaction(id: number | undefined) {
     try {
-          await fetch(`http://localhost:5286/api/v1/transactions/${id}`, {
+          await fetch(`https://localhost:7118/api/v1/transactions/${id}`, {
           method: "Delete",
 
           headers: {
