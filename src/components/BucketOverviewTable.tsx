@@ -60,7 +60,7 @@ const BucketOverviewTable = () => {
                 setErrorMessage(new Error("Failed to fetch transactions data"))
                 setPending(false)
                 // log actual message
-                console.log(message)
+                console.error(message)
             }
         }
         
