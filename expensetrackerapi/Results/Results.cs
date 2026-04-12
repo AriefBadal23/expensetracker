@@ -50,7 +50,7 @@ public readonly record struct Result<T>
         => IsSuccess ? Result<K>.Success(map(Value!)) : Result<K>.Failure(Errors);
 
 
-    // 
+    // optional
     public Result<K> Bind<K>(Func<T, Result<K>> next)
         => IsSuccess ? next(Value!) : Result<K>.Failure(Errors);
 

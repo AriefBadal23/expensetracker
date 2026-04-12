@@ -7,9 +7,9 @@ public record Transaction
 {
     public int Id { get; set; }
     public int BucketId { get; set; }
-    
+
     [Required(ErrorMessage = "UserID is required.")]
-    public string ApplicationUserId { get; set; }
+    public string ApplicationUserId { get; set; } = string.Empty;
     
     [Required(ErrorMessage = "The Description is required.")]
     [StringLength(50, ErrorMessage = "The description must be less than 50 characters.")]
