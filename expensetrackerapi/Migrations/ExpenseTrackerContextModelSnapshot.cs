@@ -265,10 +265,14 @@ namespace expensetrackerapi.Migrations
                     b.Property<int>("Amount")
                         .HasColumnType("integer");
 
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
                     b.Property<int>("BucketId")
                         .HasColumnType("integer");
 
-                    b.Property<LocalDate>("Created_at")
+                    b.Property<LocalDate>("CreatedAt")
                         .HasColumnType("date");
 
                     b.Property<string>("Description")
@@ -276,10 +280,9 @@ namespace expensetrackerapi.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
-                    b.Property<int>("UserId")
-                        .HasColumnType("integer");
-
                     b.HasKey("Id");
+
+                    b.HasIndex("ApplicationUserId");
 
                     b.HasIndex("BucketId");
 
@@ -339,6 +342,12 @@ namespace expensetrackerapi.Migrations
 
             modelBuilder.Entity("expensetrackerapi.Models.Transaction", b =>
                 {
+                    b.HasOne("expensetrackerapi.Models.ApplicationUser", null)
+                        .WithMany()
+                        .HasForeignKey("ApplicationUserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
                     b.HasOne("expensetrackerapi.Bucket", null)
                         .WithMany()
                         .HasForeignKey("BucketId")

@@ -7,8 +7,10 @@ public record Transaction
 {
     public int Id { get; set; }
     public int BucketId { get; set; }
-    public int UserId { get; set; }
-
+    
+    [Required(ErrorMessage = "UserID is required.")]
+    public string ApplicationUserId { get; set; }
+    
     [Required(ErrorMessage = "The Description is required.")]
     [StringLength(50, ErrorMessage = "The description must be less than 50 characters.")]
     public string? Description { get; set; }
@@ -18,6 +20,6 @@ public record Transaction
 
     [CreatedAtValidation]
     [Required(ErrorMessage = "Created_at is required.")]
-    public LocalDate Created_at { get; set; }
+    public LocalDate CreatedAt { get; set; }
 
 }

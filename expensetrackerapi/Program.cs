@@ -7,7 +7,6 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
-using Microsoft.Net.Http.Headers;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
 using Serilog;
@@ -42,6 +41,9 @@ try
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
     );
+    
+    // Als iemand IDbInitializer vraagt → geef een DbInitializer
+    builder.Services.AddScoped<IDbInitializer, DbIntializer>();
     builder.Services.AddScoped<IExpenseService, ExpenseService>();
     builder.Services.AddScoped<IBucketService, BucketService>();
     builder.Services.AddScoped<IUserService, UserService>();
@@ -163,7 +165,10 @@ try
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ExpenseTrackerContext>();
         context.Database.EnsureCreated();
-        DbIntializer.Initialize(context);
+        // seed the database.
+        var initializer = services.GetRequiredService<IDbInitializer>();
+        await initializer.SeedAsync(context);
+
     }
 
     app.UseHsts();

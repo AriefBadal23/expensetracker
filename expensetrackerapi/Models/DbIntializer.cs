@@ -1,10 +1,22 @@
+using expensetrackerapi.Contracts;
+using expensetrackerapi.DTO.Auth;
+using expensetrackerapi.Services;
+using Microsoft.AspNetCore.Identity;
 using NodaTime;
 
 namespace expensetrackerapi.Models;
 
-public static class DbIntializer
+public class DbIntializer:IDbInitializer
 {
-    public static void Initialize(ExpenseTrackerContext context)
+    private readonly IUserService _userService;
+    
+    public DbIntializer(IUserService userService)
+    {
+        _userService = userService;
+
+    }
+    
+    public async Task SeedAsync(ExpenseTrackerContext context)
     {
         if (context.Buckets.Any())
         {
@@ -12,290 +24,298 @@ public static class DbIntializer
         }
         var buckets = new Bucket[]
         {
-            new Bucket{Name=Buckets.Salary,Icon="💰", Type = BucketTypes.Income},
-            new Bucket{Name=Buckets.Groceries,Icon="🏪", Type = BucketTypes.Expense},
-            new Bucket{Name=Buckets.Shopping,Icon="🛒", Type = BucketTypes.Expense}
+            new() {Name=Buckets.Salary,Icon="💰", Type = BucketTypes.Income},
+            new() {Name=Buckets.Groceries,Icon="🏪", Type = BucketTypes.Expense},
+            new() {Name=Buckets.Shopping,Icon="🛒", Type = BucketTypes.Expense}
         };
 
-        context.Buckets.AddRange(buckets);
-        context.SaveChanges();
+        await context.Buckets.AddRangeAsync(buckets);
+        await context.SaveChangesAsync();
 
-        
+
+        var user = await _userService.RegisterAsync(new RegisterUserDto
+        {
+            Email = "arief@outlook.nl",
+            FirstName = "Arief",
+            LastName = "Badal",
+            Password = "Marvel01@"
+        });
+
+      
 
         var transactions = new Transaction[]
         {
-            new Transaction
+            new()
             {
-
+                ApplicationUserId = user.Value!.Id,
                 BucketId = 1,
                 Description = "Monthly Salary",
-                UserId = 1,
                 Amount = 1000,
-                Created_at = new LocalDate(2025, 1, 5)
+                CreatedAt = new LocalDate(2025, 1, 5)
             },
-            new Transaction
+            new()
             {
+                ApplicationUserId = user.Value!.Id,
                 BucketId = 2,
                 Description = "Groceries at the AH",
-                UserId = 1,
                 Amount = 120,
 
-                Created_at = new LocalDate(2025, 1, 12)
+                CreatedAt = new LocalDate(2025, 1, 12)
             },
-            new Transaction
+            new()
             {
                 BucketId = 3,
                 Description = "Shopping - clothing",
-                UserId = 1,
+                ApplicationUserId = user.Value!.Id,
                 Amount = 80,
 
-                Created_at = new LocalDate(2025, 1, 20)
+                CreatedAt = new LocalDate(2025, 1, 20)
             },
-            new Transaction
+            new()
             {
                 BucketId = 2,
                 Description = "Weekly groceries",
-                UserId = 1,
+                ApplicationUserId = user.Value!.Id,
                 Amount = 95,
 
-                Created_at = new LocalDate(2025, 2, 14)
+                CreatedAt = new LocalDate(2025, 2, 14)
             },
-            new Transaction
+            new()
             {
                 BucketId = 3,
                 Description = "Shopping - online order",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 150,
 
-                Created_at = new LocalDate(2025, 3, 2)
+                CreatedAt = new LocalDate(2025, 3, 2)
             },
-            new Transaction
+            new()
             {
                 BucketId = 1,
                 Description = "Monthly Salary",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 1000,
 
-                Created_at = new LocalDate(2025, 3, 5)
+                CreatedAt = new LocalDate(2025, 3, 5)
             },
-            new Transaction
+            new()
             {
                 BucketId = 2,
                 Description = "Groceries at the AH",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 110,
 
-                Created_at = new LocalDate(2025, 4, 10)
+                CreatedAt = new LocalDate(2025, 4, 10)
             },
-            new Transaction
+            new()
             {
                 BucketId = 3,
                 Description = "Shopping - electronics",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 60,
 
-                Created_at = new LocalDate(2025, 4, 18)
+                CreatedAt = new LocalDate(2025, 4, 18)
             },
-            new Transaction
+            new()
             {
                 BucketId = 1,
                 Description = "Monthly Salary",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 1000,
 
-                Created_at = new LocalDate(2025, 5, 5)
+                CreatedAt = new LocalDate(2025, 5, 5)
             },
-            new Transaction
+            new()
             {
                 BucketId = 2,
                 Description = "Groceries",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 105,
-                Created_at = new LocalDate(2025, 1, 28)
+                CreatedAt = new LocalDate(2025, 1, 28)
             },
-            new Transaction
+            new()
             {
                 BucketId = 3,
                 Description = "Shopping - shoes",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 140,
-                Created_at = new LocalDate(2025, 2, 22)
+                CreatedAt = new LocalDate(2025, 2, 22)
             },
-            new Transaction
+            new()
             {
                 BucketId = 2,
                 Description = "Groceries",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 98,
-                Created_at = new LocalDate(2025, 3, 18)
+                CreatedAt = new LocalDate(2025, 3, 18)
             },
-            new Transaction
+            new()
             {
                 BucketId = 3,
                 Description = "Shopping - gadgets",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 75,
-                Created_at = new LocalDate(2025, 4, 25)
+                CreatedAt = new LocalDate(2025, 4, 25)
             },
-            new Transaction
+            new()
             {
                 BucketId = 2,
                 Description = "Groceries",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 115,
-                Created_at = new LocalDate(2025, 5, 19)
+                CreatedAt = new LocalDate(2025, 5, 19)
             },
-            new Transaction
+            new()
             {
                 BucketId = 1,
                 Description = "Monthly Salary",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 1000,
-                Created_at = new LocalDate(2025, 6, 5)
+                CreatedAt = new LocalDate(2025, 6, 5)
             },
-            new Transaction
+            new()
             {
                 BucketId = 2,
                 Description = "Groceries",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 102,
-                Created_at = new LocalDate(2025, 6, 21)
+                CreatedAt = new LocalDate(2025, 6, 21)
             },
-            new Transaction
+            new()
             {
                 BucketId = 3,
                 Description = "Shopping - summer sale",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 160,
-                Created_at = new LocalDate(2025, 7, 9)
+                CreatedAt = new LocalDate(2025, 7, 9)
             },
-            new Transaction
+            new()
             {
                 BucketId = 1,
                 Description = "Monthly Salary",
-                UserId = 1,
+                ApplicationUserId = user.Value!.Id,
                 Amount = 1000,
-                Created_at = new LocalDate(2025, 7, 5)
+                CreatedAt = new LocalDate(2025, 7, 5)
             },
-            new Transaction
+            new()
             {
                 BucketId = 2,
                 Description = "Groceries",
-                UserId = 1,
+                ApplicationUserId = user.Value!.Id,
                 Amount = 108,
-                Created_at = new LocalDate(2025, 8, 14)
+                CreatedAt = new LocalDate(2025, 8, 14)
             },
-            new Transaction
+            new()
             {
                 BucketId = 3,
                 Description = "Shopping - backpack",
-                UserId = 1,
+                ApplicationUserId = user.Value!.Id,
                 Amount = 90,
-                Created_at = new LocalDate(2025, 9, 3)
+                CreatedAt = new LocalDate(2025, 9, 3)
             },
-            new Transaction
+            new()
             {
                 BucketId = 1,
                 Description = "Monthly Salary",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 1000,
-                Created_at = new LocalDate(2025, 9, 5)
+                CreatedAt = new LocalDate(2025, 9, 5)
             },
-            new Transaction
+            new()
             {
                 BucketId = 2,
                 Description = "Groceries",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 112,
-                Created_at = new LocalDate(2025, 10, 11)
+                CreatedAt = new LocalDate(2025, 10, 11)
             },
-            new Transaction
+            new()
             {
                 BucketId = 3,
                 Description = "Shopping - jacket",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 180,
-                Created_at = new LocalDate(2025, 11, 6)
+                CreatedAt = new LocalDate(2025, 11, 6)
             },
-            new Transaction
+            new()
             {
                 BucketId = 1,
                 Description = "Monthly Salary",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 1000,
-                Created_at = new LocalDate(2025, 2, 5)
+                CreatedAt = new LocalDate(2025, 2, 5)
             },
-            new Transaction
+            new()
             {
                 BucketId = 1,
                 Description = "Monthly Salary",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 1000,
-                Created_at = new LocalDate(2025, 12, 5)
+                CreatedAt = new LocalDate(2025, 12, 5)
             },
-            new Transaction
+            new()
             {
                 BucketId = 2,
                 Description = "Extra groceries",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 45,
-                Created_at = new LocalDate(2025, 1, 8)
+                CreatedAt = new LocalDate(2025, 1, 8)
             },
-            new Transaction
+            new()
             {
                 BucketId = 3,
                 Description = "Shopping - small items",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 35,
-                Created_at = new LocalDate(2025, 1, 18)
+                CreatedAt = new LocalDate(2025, 1, 18)
             },
-            new Transaction
+            new()
             {
                 BucketId = 2,
                 Description = "Extra groceries",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 55,
-                Created_at = new LocalDate(2025, 3, 10)
+                CreatedAt = new LocalDate(2025, 3, 10)
             },
-            new Transaction
+            new()
             {
                 BucketId = 3,
                 Description = "Shopping - accessories",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 65,
-                Created_at = new LocalDate(2025, 3, 22)
+                CreatedAt = new LocalDate(2025, 3, 22)
             },
-            new Transaction
+            new()
             {
                 BucketId = 2,
                 Description = "Groceries",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 48,
-                Created_at = new LocalDate(2025, 7, 12)
+                CreatedAt = new LocalDate(2025, 7, 12)
             },
-            new Transaction
+            new()
             {
                 BucketId = 3,
                 Description = "Shopping - sale item",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 40,
-                Created_at = new LocalDate(2025, 7, 20)
+                CreatedAt = new LocalDate(2025, 7, 20)
             },
-            new Transaction
+            new()
             {
                 BucketId = 2,
                 Description = "Late groceries",
-                UserId = 1,
+               ApplicationUserId = user.Value!.Id,
                 Amount = 52,
-                Created_at = new LocalDate(2025, 7, 27)
+                CreatedAt = new LocalDate(2025, 7, 27)
             },
-            new Transaction
+            new()
             {
                 BucketId = 3,
                 Description = "Impulse buy",
-                UserId = 1,
+                ApplicationUserId = user.Value!.Id,
                 Amount = 30,
-                Created_at = new LocalDate(2025, 3, 28)
+                CreatedAt = new LocalDate(2025, 3, 28)
             }
 
 
@@ -306,9 +326,9 @@ public static class DbIntializer
 
         // Make sure the Total is up-to-date of the buckets.
 
-        var Newbuckets = context.Buckets.ToDictionary(b => b.Id);
-        var salaryBucket = Newbuckets.Values.First(b => b.Name == Buckets.Salary);
-        foreach (var bucket in Newbuckets.Values)
+        var newbuckets = context.Buckets.ToDictionary(b => b.Id);
+        var salaryBucket = newbuckets.Values.First(b => b.Name == Buckets.Salary);
+        foreach (var bucket in newbuckets.Values)
         {
             bucket.Total = 0;
         }
@@ -319,7 +339,7 @@ public static class DbIntializer
 
             if (bucket.Name == Buckets.Salary && bucket.Type == BucketTypes.Income)
             {
-                // Update Salary total if its an income.
+                // Update Salary total if it's an income.
                 bucket.Total += t.Amount;
             }
             else
@@ -331,7 +351,7 @@ public static class DbIntializer
 
 
         }
-        context.Transactions.AddRange(transactions);
-        context.SaveChanges();
+        await context.Transactions.AddRangeAsync(transactions);
+        await context.SaveChangesAsync();
     }
 }

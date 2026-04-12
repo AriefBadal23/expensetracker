@@ -4,9 +4,11 @@ using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Mvc;
 using expensetrackerapi.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 
 namespace expensetrackerapi.Controllers
 {
+    [Authorize]
     [ApiController]
     [Route("api/v1/[controller]")]
     public class Transactions : Controller
@@ -14,11 +16,13 @@ namespace expensetrackerapi.Controllers
 
         private readonly IExpenseService _expenseExpenseService;
         private readonly ILogger<IExpenseService> _logger;
+        private readonly UserManager<ApplicationUser> _userManager;
 
-        public Transactions(IExpenseService expenseService, ILogger<IExpenseService> logger)
+        public Transactions(IExpenseService expenseService, ILogger<IExpenseService> logger, UserManager<ApplicationUser> userManager)
         {
             _expenseExpenseService = expenseService;
             _logger = logger;
+            _userManager = userManager;
         }
 
         [HttpGet("details")]
@@ -26,23 +30,23 @@ namespace expensetrackerapi.Controllers
         {
             var transaction = await _expenseExpenseService.GetTransactionByID(id);
             
-            if (transaction == null)
+            if (transaction.Value == null)
             {
-                return NotFound();
+                return NotFound(transaction);
             }
 
             return Ok(transaction);
         }
 
 
-        [Authorize]
         [HttpGet]
         public async Task<ActionResult> Get(
             [FromQuery] int? month, int? year,
             [FromQuery] int? bucket,
             int pageNumber = 1, int pageSize = 3)
         {
-            var transactions = await _expenseExpenseService.GetTransactions(month, year, bucket, pageNumber, pageSize);
+            var id = _userManager.GetUserId(User);
+            var transactions = await _expenseExpenseService.GetTransactions(id, month, year, bucket, pageNumber, pageSize);
             if (!transactions.IsSuccess)
             {
                 return NotFound();
@@ -54,11 +58,11 @@ namespace expensetrackerapi.Controllers
         [HttpPost]
         public async Task<ActionResult> Post([FromBody] RequestTransactionDto transaction)
         {
-
-            var transactionCreated = await _expenseExpenseService.CreateTransaction(transaction);
-            if (transactionCreated == null) return BadRequest();
+            var userId = _userManager.GetUserId(User);
+            var transactionCreated = await _expenseExpenseService.CreateTransaction(userId,transaction);
+            if (transactionCreated.Value == null) return BadRequest();
             return Ok(transactionCreated);
-
+            
         }
 
         [HttpDelete("{transactionID}")]
@@ -76,7 +80,7 @@ namespace expensetrackerapi.Controllers
         public async Task<ActionResult> Update([FromBody] Transaction updatedTransaction)
         {
             var transaction = await _expenseExpenseService.UpdateTransaction(updatedTransaction);
-            if (transaction != null)
+            if (transaction.Value != null)
             {
                 return Ok(transaction);
             }

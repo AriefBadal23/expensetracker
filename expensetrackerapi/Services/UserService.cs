@@ -22,6 +22,7 @@ public class UserService:IUserService
         _userManager = userManager;
         _configuration = configuration;
     }
+    
 
     public async Task<Result<RegisteredUserDto>> RegisterAsync(RegisterUserDto registerUserDto)
     {
@@ -69,6 +70,7 @@ public class UserService:IUserService
         var token = await GenerateToken(user);
         return Result<string>.Success(token);
     }
+    
 
     private async Task<string> GenerateToken(ApplicationUser user)
     {
