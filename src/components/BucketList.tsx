@@ -14,9 +14,11 @@ const BucketList = ({transactions}:BucketListProps) => {
   const [buckets, SetBuckets] = useState<BucketType[]>([]);
   const [isPending, setPending] = useState(true);
 
-  
+  const BucketsisArray = (buckets:BucketType[]) => {
+    return Array.isArray(buckets)
+    
+  }
   const [errorMessage, setErrorMessage] = useState<Error | undefined>();
-
   const ErrorMessageStyle = {
     color: "#B00020",
     backgroundColor: "#FFEBEE",
@@ -32,16 +34,37 @@ const BucketList = ({transactions}:BucketListProps) => {
   useEffect(() => {
     const fetchBuckets = async () => {
       try {
-        const response = await fetch("http://localhost:5286/api/v1/buckets");
+        const response = await fetch("https://localhost:7118/api/v1/buckets", {
+          credentials: "include"
+        });
         
         if(!response.ok){
-          return;
-        }
-          const data = await response.json()
-          SetBuckets(data);
+          let message = "Something went wrong."
+          
+          // log for debugging purposes.
+          console.error("GET /buckets failed", {
+            status: response.status,
+            statusText: response.statusText
+          });
+          
+          if(response.status === 401){
+            message = "Unauthorized access."
+          }
+          setErrorMessage(new Error(message))
           setPending(false)
+          
+          // early return stop flow.
+          return;
+          
+        }
+        const data = await response.json()
+        if(BucketsisArray(data.value)){
+          SetBuckets(data.value);
+          setPending(false)
+        }
         
-      } catch (err) {
+      } 
+      catch (err) {
         setPending(false)
         const message = getErrorMessage(err)
         // 1. Log the actual error to the console.
@@ -63,7 +86,7 @@ const BucketList = ({transactions}:BucketListProps) => {
 
       {errorMessage && <div><p style={ErrorMessageStyle}>{errorMessage.message}</p></div>}
 
-      {!errorMessage &&
+      {!errorMessage && BucketsisArray(buckets) &&
       <div className="bucket-list">
         {buckets !== null &&
           buckets.map((b: BucketType) => {
@@ -76,7 +99,7 @@ const BucketList = ({transactions}:BucketListProps) => {
               />
             );
           })}
-      </div>
+      </div>  
       }
     </>
   );

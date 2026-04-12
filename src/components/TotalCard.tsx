@@ -1,17 +1,17 @@
 ﻿import "../styles/Bucket.css";
 import type {TransactionsSummary} from "./OverviewRow.tsx"
-import {TransactionType} from "../types/TransactionType"
+import {BucketType} from "../types/BucketType.tsx"
 
 interface ITotalCard{
     name:string,
-    type: TransactionType,
+    type: BucketType,
     icon: string,
     data?: TransactionsSummary
 }
 const TotalCard = ({name, type, icon, data}:ITotalCard) => {
     let amount: number;
 
-    if (type === TransactionType.Income) {
+    if (type === BucketType.Income) {
         amount = data ? data.totalIncome : 0;
     } else {
         amount = data ? data.totalExpenses : 0;

@@ -2,10 +2,10 @@
 import type {TransactionsSummary} from "../components/OverviewRow"
 import OverviewRow from "./OverviewRow"
 import TotalCard from "./TotalCard"
-import {TransactionType} from "../types/TransactionType"
+import {BucketType} from "../types/BucketType.tsx"
 import {getErrorMessage} from "../utils/utils.ts";
 
-const OverviewTable = () => {
+const BucketOverviewTable = () => {
     // fetch doen naar:
     // http://localhost:5286/api/v1/buckets/summary?month=3&year=2027
     
@@ -33,16 +33,26 @@ const OverviewTable = () => {
         const fetchSummary =  async () =>
         {
             try{
-                const url = `http://localhost:5286/api/v1/buckets/summary?month=${data.month}&year=${data.year}`
+                const url = `https://localhost:7118/api/v1/buckets/summary?month=${data.month}&year=${data.year}`
                 
-                const response = await fetch(url)
+                const response = await fetch(url, {
+                    credentials: "include"
+                })
                 
                 if (!response.ok) {
                     return;
                 }
                 const result = await response.json();
-                setPending(false)
-                setTransactionsData(result)
+
+                if(typeof result.value !== 'object'){
+                    throw new Error("Failed to fetch summary of bucket data")
+                    
+                }
+                else{
+                    setPending(false)
+                    setTransactionsData(result.value)
+                    
+                }
             }
             catch(error) {
                 const message = getErrorMessage(error)
@@ -50,7 +60,7 @@ const OverviewTable = () => {
                 setErrorMessage(new Error("Failed to fetch transactions data"))
                 setPending(false)
                 // log actual message
-                console.log(message)
+                console.error(message)
             }
         }
         
@@ -61,8 +71,8 @@ const OverviewTable = () => {
         <>
         
             <div className="bucket-list">
-                <TotalCard  icon="💰" name="Income" type={TransactionType.Income} data={transactions}/>
-                <TotalCard icon="💸"  name="Expenses" type={TransactionType.Expense}  data={transactions}/>
+                <TotalCard icon="💰" name="Income" type={BucketType.Income} data={transactions}/>
+                <TotalCard icon="💸" name="Expenses" type={BucketType.Expense} data={transactions}/>
             </div>
                 <div>
                     
@@ -122,4 +132,4 @@ const OverviewTable = () => {
     )
 }
 
-export default OverviewTable;
+export default BucketOverviewTable;

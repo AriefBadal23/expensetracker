@@ -11,7 +11,6 @@ interface TransactionTableProps {
 }
 const TransactionTable = ({ transactions, setTransactions,ErrorMessage }: TransactionTableProps) => {
     const [showModal, setShowModal] = useState(false);
-    
     const ErrorMessageStyle = {
         color: "#B00020",           
         backgroundColor: "#FFEBEE", 
@@ -36,8 +35,8 @@ const TransactionTable = ({ transactions, setTransactions,ErrorMessage }: Transa
         {ErrorMessage && <div className={'text-danger'}><p style={ErrorMessageStyle}>{ErrorMessage.message}</p></div>}
         
         {/*If no error message and data is fetched show table.*/}
-        {!ErrorMessage && transactions.length > 0  &&
-            <div>
+        {!ErrorMessage  &&
+            <div className="container mt-4">
                 <span>
                     <button
                         type="button"

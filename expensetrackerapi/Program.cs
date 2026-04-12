@@ -1,13 +1,17 @@
+using System.Text;
 using System.Text.Json.Serialization;
+using expensetrackerapi.Contracts;
 using expensetrackerapi.Models;
 using expensetrackerapi.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Net.Http.Headers;
+using Microsoft.IdentityModel.Tokens;
 using NodaTime;
 using NodaTime.Serialization.SystemTextJson;
 using Serilog;
-using Serilog.Core;
 using Serilog.Events;
+using Scalar.AspNetCore;
 
 
 Log.Logger = new LoggerConfiguration()
@@ -25,38 +29,48 @@ Log.Logger = new LoggerConfiguration()
 try
 {
     Log.Information("Starting ExpenseTracker API");
-    var MyAllowSpecificOrigins = "_myAllowSpecificOrigins";
+    var myAllowSpecificOrigins = "_myAllowSpecificOrigins";
     var builder = WebApplication.CreateBuilder(args);
 
     // Add services to the container.
-    
+
     // Inject Serilog as a service to the Dependancy Injection Container to use it in the application.
-    // to configure it to work with the Ilogger service
+    // to configure it to work with the ILogger service
     builder.Host.UseSerilog((context, services, configuration) => configuration
         // Read from configuration file with the sinks it should use.
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
     );
+    
+    // Als iemand IDbInitializer vraagt → geef een DbInitializer
+    builder.Services.AddScoped<IDbInitializer, DbIntializer>();
     builder.Services.AddScoped<IExpenseService, ExpenseService>();
     builder.Services.AddScoped<IBucketService, BucketService>();
+    builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddIdentityCore<ApplicationUser>(options =>
+        {
+        })
+        .AddRoles<IdentityRole>()
+        .AddEntityFrameworkStores<ExpenseTrackerContext>();
+    builder.Services.AddIdentityApiEndpoints<ApplicationUser>();
 
     // CORS setup between React FE and C# BE
     builder.Services.AddCors(options =>
         {
-            options.AddPolicy(name: MyAllowSpecificOrigins,
+            options.AddPolicy(name: myAllowSpecificOrigins,
                 policy =>
                 {
                     policy.WithOrigins("http://localhost:5173")
-                        .WithHeaders(HeaderNames.ContentType)
-                        .WithMethods("PUT", "DELETE", "GET", "POST");
+                        .AllowAnyHeader()
+                        .AllowAnyMethod()
+                        .AllowCredentials();
                 });
-        }
-
-    );
+        });
+    
     builder.Services.AddControllers()
-        // Zorgt ervoor dat de enums correct worden getoond ipv van de id.
         .AddJsonOptions(options =>
         {
+            // Zorgt ervoor dat de enums correct worden getoond ipv van de id.
             options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
             // !Required for nodatime deserialization otherwise 400 bad request
             options.JsonSerializerOptions.ConfigureForNodaTime(DateTimeZoneProviders.Tzdb);
@@ -83,34 +97,84 @@ try
 
         ));
 
+    // Add authorization service
+    builder.Services.AddAuthorization();
 
+    builder.Services.AddAuthentication((options) =>
+    {
+        // Wat doet dit precies???!?!
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+        // add new scheme
+        .AddJwtBearer(options =>
+        {
+            options.Events = new JwtBearerEvents
+            {
+                OnMessageReceived = context =>
+                {
+                    context.Token = context.Request.Cookies["jwt"];
+                    var cookie = context.Request.Cookies["jwt"];
+                    return Task.CompletedTask;
+                },
+                OnAuthenticationFailed = context =>
+                {
+                    return Task.CompletedTask;
+                }
+            };
+            
+        // handler to handle authentication
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            // validates our secret key
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+            // encrypting our (encoded) secret key
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
+            // 5-min window (by default) between duration, we change it here to 0.
+            ClockSkew = TimeSpan.Zero
+        };
+    });
+    
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
 
     var app = builder.Build();
+    app.UseCors(myAllowSpecificOrigins);
+    
+    app.UseAuthentication();
+    app.UseAuthorization();
 
     // Configure the HTTP request pipeline.
     if (app.Environment.IsDevelopment())
     {
+        app.MapControllers();
+        app.MapScalarApiReference();
         app.MapOpenApi();
-        app.UseHsts();
-
     }
+
+    // Add Identity API for the authN and authZ endpoints
+    app.MapGroup("api/v1/defaultauth").MapIdentityApi<ApplicationUser>();
 
     using (var scope = app.Services.CreateScope())
     {
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ExpenseTrackerContext>();
         context.Database.EnsureCreated();
-        DbIntializer.Initialize(context);
+        // seed the database.
+        var initializer = services.GetRequiredService<IDbInitializer>();
+        await initializer.SeedAsync(context);
+
     }
 
+    app.UseHsts();
     app.UseHttpsRedirection();
 
-    app.UseAuthorization();
-    app.UseCors(MyAllowSpecificOrigins);
 
-    app.MapControllers();
 
     Log.Information("Expense Tracker API started successfully");
 

@@ -20,7 +20,6 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
 
   const PAGESIZE = 10;
   const TOTALPAGES = total / PAGESIZE;
-
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -28,7 +27,7 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
           const year = search.get("year") 
           const bucketId = search.get("id") 
           
-          let url = `http://localhost:5286/api/v1/transactions?pageNumber=${page}&pageSize=${PAGESIZE}`
+          let url = `https://localhost:7118/api/v1/transactions?pageNumber=${page}&pageSize=${PAGESIZE}`
           
           if(year !== null ){
               url = url + `&year=${year}`
@@ -40,15 +39,32 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
               url = url + `&bucket=${bucketId}`
           }
           
-          
-          const response = await fetch(url);
+          const response = await fetch(url, {
+              credentials: 'include'
+              
+          });
           if(!response.ok){
-              setErrorMessage(new Error("Failed to fetch from endpoint"))
+              let message = "Something went wrong."
+              console.error("GET /transactions failed", {
+                  status: response.status,
+                  statusText: response.statusText
+              });
+              
+              if(response.status === 401){
+                  message  = "Unauthorized access"
+              }
+              setErrorMessage(new Error(message))
+              return;
           }
           const data = await response.json();
+
+          if(Array.isArray(data.value.transactions)){
+            setTransactions(data.value.transactions);
+            setTotal(data.value.total)
+            return;
+          }
+          setErrorMessage(new Error("invalid type of fetched data"));
           
-          setTotal(data["total"]);
-          setTransactions(data["transactions"]);
         
       } catch (err) {
           // 1. Log the actual error to the console.
