@@ -17,10 +17,9 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
   // Dit omdat EFC en PostgreSQL een auto-incremented ID aanmaken.
   const [formdata, setFormData] = useState<Transaction>({
     bucketId: 0,
-    userId: 1,
     description: "",
     amount: 0,
-    created_at: new Date(),
+    createdAt: new Date(),
   });
   
   const [errors, setErrors] = useState({description: "", amount: "", created_at:"", bucket_id: "", uiMessage: ""})
@@ -260,10 +259,9 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
             const newTransaction: Transaction = {
                 id: data.value.id,
                 bucketId: data.value.bucketId,
-                userId: data.value.userId,
                 description: data.value.description,
                 amount: data.value.amount,
-                created_at: new Date(data.value.created_at),
+                createdAt: new Date(data.value.created_at),
             }
 
             // Dit maakt een nieuwe array door oude values van de huidige state te kopieeren
@@ -357,7 +355,7 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
             amount: 0,
             bucketId: 0,
             description: "",
-            created_at: new Date(),
+            createdAt: new Date(),
           });
         }}
       >
@@ -448,7 +446,7 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
             className="form-control"
             name="created_at"
             onChange={change}
-            value={formdata.created_at.toString()}
+            value={formdata.createdAt.toString()}
             required
             style={{
                 border: "none",

@@ -37,7 +37,7 @@ public class BucketService : IBucketService
                                into bucketTransactions
 
                            let BuckTransactionsResult = bucketTransactions
-                               .Where(t => t.Created_at.Month == month && t.Created_at.Year == year)
+                               .Where(t => t.CreatedAt.Month == month && t.CreatedAt.Year == year)
 
                            let monthBucketTotal = BuckTransactionsResult.Sum(x => x.Amount)
 

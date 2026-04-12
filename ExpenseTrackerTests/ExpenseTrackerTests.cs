@@ -1,8 +1,10 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using expensetrackerapi.Contracts;
 using expensetrackerapi.DTO;
+using expensetrackerapi.DTO.Auth;
 using expensetrackerapi.Results;
 using expensetrackerapi.Validation;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -61,7 +63,40 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         db.Buckets.AddRange(buckets);
         await db.SaveChangesAsync();
         var loggerMock = new Mock<ILogger<IExpenseService>>();
-        var service = new ExpenseService(db, loggerMock.Object);
+        var userServiceMock = new Mock<IUserService>();
+
+        
+        userServiceMock
+            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
+                dto.Email == "arief@outlook.nl" &&
+                dto.FirstName == "John" &&
+                dto.LastName == "Doe")))
+            .ReturnsAsync(Result<RegisteredUserDto>.Success(new RegisteredUserDto
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = "arief@outlook.nl",
+                FirstName = "John",
+                LastName = "Doe"
+            }));
+
+        var service = new ExpenseService(db, loggerMock.Object, userServiceMock.Object);
+        var newUser = new ApplicationUser
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            Email = "johndoe@outlook.nl",
+            PasswordHash = "Marvel01@"
+        };
+        var hasher = new PasswordHasher<ApplicationUser>();
+        var hashedPassword = hasher.HashPassword(newUser,newUser.PasswordHash);
+        newUser.PasswordHash = hashedPassword;
+        
+        
+        await db.Users.AddAsync(newUser);
+        await db.SaveChangesAsync();
+        
+        var user = await db.Users.FirstAsync(user => user.Email == "johndoe@outlook.nl");
+        
 
         Result<ResponseTransactionDTo>[] transactionArrayResult = new Result<ResponseTransactionDTo>[3];
 
@@ -72,7 +107,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
             BucketId = 1,
             Description = "Salary payment",
             Amount = 1000,
-            Created_at = new LocalDate(2025, 1, 20),
+            CreatedAt = new LocalDate(2025, 1, 20),
         },
 
         new RequestTransactionDto
@@ -80,14 +115,14 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
             BucketId = 2,
             Description = "Groceries at AH",
             Amount = 120,
-            Created_at = new LocalDate(2025, 1, 12),
+            CreatedAt = new LocalDate(2025, 1, 12),
         },
         new RequestTransactionDto
         {
             BucketId = 3,
             Description = "Shopping - Clothing",
             Amount = 80,
-            Created_at = new LocalDate(2025, 1, 29),
+            CreatedAt = new LocalDate(2025, 1, 29),
         }
 
 
@@ -96,13 +131,15 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
         for (var i = 0; i < transactionArrayResult.Length; i++)
         {
-            var transactionIsCreated = await service.CreateTransaction(transactions[i]);
+            var transactionIsCreated = await service.CreateTransaction(user.Id,transactions[i] );
 
             if (transactionIsCreated.IsSuccess)
             {
                 transactionArrayResult[i] = transactionIsCreated;
             }
         }
+        
+        
         await db.SaveChangesAsync();
 
         // Assert
@@ -114,11 +151,15 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     }
 
     [Fact]
-    public void GetTransactions_ReturnsAllTransactions()
+    public async Task GetTransactions_ReturnsAllTransactions()
     {
         // Arrange
-        using var db = _fixture.CreateContext();
-        DbIntializer.Initialize(db);
+        await using  var db = _fixture.CreateContext();
+
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
+        var user = await db.Users.FirstAsync(user => user.Email == "arief@outlook.nl");
+
 
 
 
@@ -131,45 +172,47 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
                 Id=1,
                 BucketId = 1,
                 Description = "Monthly Salary",
-                UserId = 1,
+                ApplicationUserId = user.Id,
                 Amount = 1000,
-                Created_at = new LocalDate(2025, 1, 5)
+                CreatedAt = new LocalDate(2025, 1, 5)
             },
             new Transaction
             {
                 Id=2,
                 BucketId = 2,
                 Description = "Groceries at the AH",
-                UserId = 1,
+                ApplicationUserId = user.Id,
+
                 Amount = 120,
-                Created_at = new LocalDate(2025, 1, 12)
+                CreatedAt = new LocalDate(2025, 1, 12)
             },
             new Transaction
             {
                 Id=3,
                 BucketId = 3,
                 Description = "Shopping - clothing",
-                UserId = 1,
+                ApplicationUserId = user.Id,
+
                 Amount = 80,
-                Created_at = new LocalDate(2025, 1, 20)
+                CreatedAt = new LocalDate(2025, 1, 20)
             },
             new Transaction
             {
                 Id=4,
                 BucketId = 2,
                 Description = "Weekly groceries",
-                UserId = 1,
+                ApplicationUserId = user.Id,
                 Amount = 95,
-                Created_at = new LocalDate(2025, 2, 14)
+                CreatedAt = new LocalDate(2025, 2, 14)
             },
             new Transaction
             {
                 Id=5,
                 BucketId = 3,
                 Description = "Shopping - online order",
-                UserId = 1,
+                ApplicationUserId = user.Id,
                 Amount = 150,
-                Created_at = new LocalDate(2025, 3, 2)
+                CreatedAt = new LocalDate(2025, 3, 2)
             } };
         
         // Assert
@@ -187,15 +230,32 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         await using var db = _fixture.CreateContext();
         var loggerMock = new Mock<ILogger<IExpenseService>>();
         
-        DbIntializer.Initialize(db);
+        var userServiceMock = new Mock<IUserService>();
+
+        userServiceMock
+            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
+                dto.Email == "arief@outlook.nl" &&
+                dto.FirstName == "John" &&
+                dto.LastName == "Doe")))
+            .ReturnsAsync(Result<RegisteredUserDto>.Success(new RegisteredUserDto
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = "arief@outlook.nl",
+                FirstName = "John",
+                LastName = "Doe"
+            }));
+
+
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
 
         // Act
         // 3-> 80
         // 4 -> 95
         // 8 -> 110
-        var T_3_isDeleted = await new ExpenseService(db,loggerMock.Object).DeleteTransaction(3);
-        var T_4_isDeleted = await new ExpenseService(db, loggerMock.Object).DeleteTransaction(5);
-        var T_8_isDeleted = await new ExpenseService(db, loggerMock.Object).DeleteTransaction(8);
+        var T_3_isDeleted = await new ExpenseService(db,loggerMock.Object, userServiceMock.Object).DeleteTransaction(3);
+        var T_4_isDeleted = await new ExpenseService(db, loggerMock.Object, userServiceMock.Object).DeleteTransaction(5);
+        var T_8_isDeleted = await new ExpenseService(db, loggerMock.Object, userServiceMock.Object).DeleteTransaction(8);
         
         var currentShoppingTotal =  db.Buckets.First(bucket => bucket.Name == Buckets.Shopping).Total;
         var currentSalaryTotal = db.Buckets.First(bucket => bucket.Name == Buckets.Salary).Total;
@@ -213,11 +273,29 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     {
         await using var db = _fixture.CreateContext();
         var loggerMock = new Mock<ILogger<IExpenseService>>();
+        var userServiceMock = new Mock<IUserService>();
+
+        userServiceMock
+            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
+                dto.Email == "arief@outlook.nl" &&
+                dto.FirstName == "John" &&
+                dto.LastName == "Doe")))
+            .ReturnsAsync(Result<RegisteredUserDto>.Success(new RegisteredUserDto
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = "arief@outlook.nl",
+                FirstName = "John",
+                LastName = "Doe"
+            }));
+
+
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
         
-        var expenseService = new ExpenseService(db, loggerMock.Object);
+        var expenseService = new ExpenseService(db, loggerMock.Object, userServiceMock.Object);
         var bucketService = new BucketService(db);
 
-        DbIntializer.Initialize(db);
+       
 
         foreach (var transaction in db.Transactions)
         {
@@ -232,36 +310,55 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     }
 
     [Fact]
-    public void TestInvalidCreationDateValidationAttribute()
+    public async Task TestInvalidCreationDateValidationAttribute()
     {
      // ARRANGE
-     using var db = _fixture.CreateContext();
-     DbIntializer.Initialize(db);
+     await using var db = _fixture.CreateContext();
+     var userServiceMock = new Mock<IUserService>();
+
+     userServiceMock
+         .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
+             dto.Email == "arief@outlook.nl" &&
+             dto.FirstName == "John" &&
+             dto.LastName == "Doe")))
+         .ReturnsAsync(Result<RegisteredUserDto>.Success(new RegisteredUserDto
+         {
+             Id = Guid.NewGuid().ToString(),
+             Email = "arief@outlook.nl",
+             FirstName = "John",
+             LastName = "Doe"
+         }));
+
+
+     var seeder = new DbIntializer();
+     await seeder.SeedAsync(db);
+     
+     var user = await db.Users.FirstAsync(user => user.Email == "arief@outlook.nl");
      
      Transaction[] newTransactions =
      {
          new Transaction{BucketId=1,
-                        UserId=1,
+                        ApplicationUserId= user.Id,
                         Description="TestSalaris",
                         Amount=100,
-                        Created_at= new LocalDate(2030,1,20),
+                        CreatedAt= new LocalDate(2030,1,20),
                          },
          
          new Transaction{BucketId=3,
-                        UserId=1,
+                        ApplicationUserId= user.Id,
                         Description="Shopping - clothing",
                         Amount=80,
-                        Created_at= new LocalDate(2025,1,20),
+                        CreatedAt= new LocalDate(2025,1,20),
                         },
 
      };
      // ACT
      db.Transactions.AddRange(newTransactions);
-     db.SaveChanges();
+     await db.SaveChangesAsync();
 
      var attr = new CreatedAtValidation();
      var context = new ValidationContext(new { });
-     var result = attr.GetValidationResult(newTransactions[0].Created_at, context);
+     var result = attr.GetValidationResult(newTransactions[0].CreatedAt, context);
      // ASSERT
      Assert.NotNull(result);
      Assert.NotEqual(ValidationResult.Success, result);
@@ -274,7 +371,26 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     {
         // Arrange
         await using var db = _fixture.CreateContext();
-        DbIntializer.Initialize(db);
+        var userServiceMock = new Mock<IUserService>();
+
+        userServiceMock
+            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
+                dto.Email == "arief@outlook.nl" &&
+                dto.FirstName == "John" &&
+                dto.LastName == "Doe")))
+            .ReturnsAsync(Result<RegisteredUserDto>.Success(new RegisteredUserDto
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = "arief@outlook.nl",
+                FirstName = "John",
+                LastName = "Doe"
+            }));
+
+
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
+        
+        
         var bucketService = new BucketService(db);
         
         
@@ -306,7 +422,24 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     {
         // Arrange
         await using var db = _fixture.CreateContext();
-        DbIntializer.Initialize(db);
+        var userServiceMock = new Mock<IUserService>();
+
+        userServiceMock
+            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
+                dto.Email == "arief@outlook.nl" &&
+                dto.FirstName == "John" &&
+                dto.LastName == "Doe")))
+            .ReturnsAsync(Result<RegisteredUserDto>.Success(new RegisteredUserDto
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = "arief@outlook.nl",
+                FirstName = "John",
+                LastName = "Doe"
+            }));
+
+
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
         var bucketService = new BucketService(db);
         
         
@@ -338,8 +471,25 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     {
         // Arrange
         await using var db = _fixture.CreateContext();
-        DbIntializer.Initialize(db);
+        var userServiceMock = new Mock<IUserService>();
+
+        userServiceMock
+            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
+                dto.Email == "arief@outlook.nl" &&
+                dto.FirstName == "John" &&
+                dto.LastName == "Doe")))
+            .ReturnsAsync(Result<RegisteredUserDto>.Success(new RegisteredUserDto
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = "arief@outlook.nl",
+                FirstName = "John",
+                LastName = "Doe"
+            }));
+
+
+        var seeder = new DbIntializer();
         var bucketService = new BucketService(db);
+        await seeder.SeedAsync(db);
         
         
         // Act
@@ -370,8 +520,25 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     {
         // Arrange
         await using var db = _fixture.CreateContext();
-        DbIntializer.Initialize(db);
+        var userServiceMock = new Mock<IUserService>();
+
+        userServiceMock
+            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
+                dto.Email == "arief@outlook.nl" &&
+                dto.FirstName == "John" &&
+                dto.LastName == "Doe")))
+            .ReturnsAsync(Result<RegisteredUserDto>.Success(new RegisteredUserDto
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = "arief@outlook.nl",
+                FirstName = "John",
+                LastName = "Doe"
+            }));
+
+
+        var seeder = new DbIntializer();
         var bucketService = new BucketService(db);
+        await seeder.SeedAsync(db);
         
         
         // Act
@@ -403,11 +570,29 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     {
         //Arrange
         await using var db = _fixture.CreateContext();
-        DbIntializer.Initialize(db);
+        var userServiceMock = new Mock<IUserService>();
+
+        userServiceMock
+            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
+                dto.Email == "arief@outlook.nl" &&
+                dto.FirstName == "John" &&
+                dto.LastName == "Doe")))
+            .ReturnsAsync(Result<RegisteredUserDto>.Success(new RegisteredUserDto
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = "arief@outlook.nl",
+                FirstName = "John",
+                LastName = "Doe"
+            }));
+        
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
+        
+        var user = await db.Users.FirstAsync(user => user.Email == "arief@outlook.nl");
 
         var logger = new Mock<ILogger<IExpenseService>>();
 
-        var expenseService = new ExpenseService(db, logger.Object);
+        var expenseService = new ExpenseService(db, logger.Object, userServiceMock.Object);
 
         //Act
         await expenseService.UpdateTransaction(
@@ -416,9 +601,9 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
                 Id= 1,
                 BucketId = 1,
                 Description = "Weekly Salary",
-                UserId = 1,
+                ApplicationUserId = user.Id,
                 Amount = 100,
-                Created_at = new LocalDate(2025, 1, 10)
+                CreatedAt = new LocalDate(2025, 1, 10)
             });
             
         var transaction = db.Transactions.First(transaction => transaction.Id == 1);
@@ -426,7 +611,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         // Assert
         Assert.Equal("Weekly Salary",transaction.Description );
         Assert.Equal(100,transaction.Amount );
-        Assert.Equal(new LocalDate(2025,1, 10),transaction.Created_at );
+        Assert.Equal(new LocalDate(2025,1, 10),transaction.CreatedAt );
         
        
     }

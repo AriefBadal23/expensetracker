@@ -8,7 +8,8 @@ import type { Transaction } from "./types/Transaction";
 import Pagination from "./components/Pagination";
 import Filter from "./components/Filter";
 import Overview from "./components/Overview"
-import LoginForm from "../LoginForm.tsx";
+import LoginForm from "./components/LoginForm.tsx";
+import Navbar from "./components/NavBar.tsx";
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -29,6 +30,7 @@ function App() {
             path="/"
             element={
               <>
+                <Navbar/>
                 <BucketList transactions={transactions} />
                 <CreateFormModal isUpdateForm={false} setTransactions={setTransactions}  />
                 <Filter />

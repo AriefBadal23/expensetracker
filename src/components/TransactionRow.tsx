@@ -14,7 +14,7 @@ interface TransactionRowProps {
 const TransactionRow = ({transaction, setTransactions }: TransactionRowProps) => {
   const [showModal, setShowModal] = useState(false);
   const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-
+  
   useEffect(() => {
     
   }, [selectedTransaction]);
@@ -51,7 +51,7 @@ const TransactionRow = ({transaction, setTransactions }: TransactionRowProps) =>
                 {/* TODO: dit kan beter: */}
                 <td>{IdToBucket[transaction.bucketId] === Buckets.Salary ? `   + €${transaction.amount}` : ` - € ${transaction.amount}`}</td>
                 <td>{IdToBucket[transaction.bucketId]}</td>
-                <td>{new Date(transaction.created_at).toLocaleDateString()}</td>
+                <td>{new Date(transaction.createdAt).toLocaleDateString()}</td>
                 <td><button type="button" 
                       aria-label="Delete transaction"
                       onClick={() => DeleteTransaction(transaction.id)}>

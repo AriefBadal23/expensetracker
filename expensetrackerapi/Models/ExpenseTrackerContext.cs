@@ -23,13 +23,19 @@ public class ExpenseTrackerContext : IdentityDbContext<ApplicationUser> // Takes
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.Entity<Transaction>()
-            .Property(x => x.Created_at)
+            .HasOne<ApplicationUser>()
+            .WithMany()
+            .HasForeignKey(transaction => transaction.ApplicationUserId)
+            .OnDelete(DeleteBehavior.Cascade);
+        
+        modelBuilder.Entity<Transaction>()
+            .Property(transaction => transaction.CreatedAt)
             .HasColumnType("date");
 
         modelBuilder.Entity<Bucket>()
             .HasMany<Transaction>()
             .WithOne()
-            .HasForeignKey(_ => _.BucketId)
+            .HasForeignKey(transaction => transaction.BucketId)
             .OnDelete(DeleteBehavior.Cascade);
     }
 

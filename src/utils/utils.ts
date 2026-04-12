@@ -56,3 +56,8 @@ export function validateBucketId(bucket:number){
     }
     return true;
 }
+
+export function UserIsLoggedIn():boolean{
+    const isLoggedIn = localStorage.getItem("isLoggedIn");
+    return !!isLoggedIn;
+}

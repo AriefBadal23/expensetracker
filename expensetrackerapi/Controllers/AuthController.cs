@@ -69,6 +69,14 @@ public class AuthController : ControllerBase
         Response.Cookies.Append("jwt", result.Value, CookieOptions);
         Console.WriteLine("LOGIN HIT");
         return Ok(result);
+    
+    }
+    
+    [HttpPost("logout")]
+    public ActionResult LogOut()
+    {
+        Response.Cookies.Delete("jwt");
+        return Ok();
     }
 
 }
