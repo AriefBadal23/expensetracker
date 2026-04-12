@@ -1,5 +1,6 @@
 using System.ComponentModel.DataAnnotations;
 using System.Text.Json.Serialization;
+using expensetrackerapi.Models;
 using expensetrackerapi.Validation;
 using NodaTime;
 namespace expensetrackerapi.DTO;
@@ -8,9 +9,6 @@ public class RequestTransactionDto
 {
     [JsonPropertyName("bucketId")]
     public int BucketId { get; set; }
-
-    [JsonPropertyName("userId")]
-    public int UserId { get; set; }
 
     [JsonPropertyName("description")]
     [Required(ErrorMessage = "The Description is required.")]
@@ -23,6 +21,6 @@ public class RequestTransactionDto
 
     [CreatedAtValidation]
     [Required(ErrorMessage = "Created_at is required.")]
-    public LocalDate Created_at { get; set; }
+    public LocalDate CreatedAt { get; set; }
 
 }

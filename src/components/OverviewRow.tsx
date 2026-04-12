@@ -36,7 +36,7 @@ const OverviewRow = ({ data }:OverviewRowProps) => {
                 <tr key={`${bucket.bucketId}-${x.id}`}>
                     {index === 0 && <td rowSpan={transactions.length}><strong>{bucket.bucketName}</strong></td>}
                     <td>{x.description}</td>
-                    <td>{new Date(x.created_at).toLocaleDateString()}</td>
+                    <td>{new Date(x.createdAt).toLocaleDateString()}</td>
                     <td>{bucket.bucketType}</td>
                     <td>€{x.amount}</td>
                 </tr>
