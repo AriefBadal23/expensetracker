@@ -1,6 +1,7 @@
 using expensetrackerapi.Constants;
 using expensetrackerapi.Contracts;
 using expensetrackerapi.DTO;
+using expensetrackerapi.helpers;
 using expensetrackerapi.Mapper;
 using expensetrackerapi.Models;
 using expensetrackerapi.Results;
@@ -72,7 +73,7 @@ namespace expensetrackerapi.Services
             if (userId == null) return Result<object>.Failure();
             
             // bucket query string = bucket ID
-            var totalRecords = await _db.Transactions.CountAsync();
+            var totalRecords = await _db.Transactions.Where(t => t.ApplicationUserId == userId).CountAsync();
             if (month.HasValue && year.HasValue && !bucket.HasValue)
             {
                 var monthTransactions = await _db.Transactions
@@ -183,8 +184,12 @@ namespace expensetrackerapi.Services
                 mappedTransaction.ApplicationUserId = userId;
                 
                 Bucket salary = await _db.Buckets.FirstAsync(x => x.Name == Buckets.Salary);
+                
                 Bucket? transactionBucket = await _db.Buckets.FirstOrDefaultAsync(b => b.Id == mappedTransaction.BucketId);
+                
 
+                var totals = await new BucketQueries(_db).GetTotals(userId);
+                
                 // Guard clauses, always start with null check first.
                 if (transactionBucket == null || mappedTransaction.Amount <= 0)
                 {
@@ -192,19 +197,20 @@ namespace expensetrackerapi.Services
                     return Result<ResponseTransactionDTo>.Failure();
                 }
 
+                
+                // if the transaction is Income then we need to update the amount.
                 if (transactionBucket.Type == BucketTypes.Income && mappedTransaction.BucketId == 1)
                 {
-                    salary.Total += mappedTransaction.Amount;
+                    totals[mappedTransaction.BucketId]=totals.GetValueOrDefault(mappedTransaction.BucketId) + mappedTransaction.Amount;
                 }
                 else
                 {
-                    salary.Total -= mappedTransaction.Amount;
-
+                    totals[mappedTransaction.BucketId]=totals.GetValueOrDefault(mappedTransaction.BucketId) - mappedTransaction.Amount;
                 }
 
-                if (transactionBucket.Total >= 0 && transactionBucket.Name != Buckets.Salary)
+                if (totals.GetValueOrDefault(transactionBucket.Id) >= 0 && transactionBucket.Name != Buckets.Salary)
                 {
-                    transactionBucket.Total += mappedTransaction.Amount;
+                    totals[transactionBucket.Id]=totals.GetValueOrDefault(transactionBucket.Id) + mappedTransaction.Amount;
                 }
 
                 _db.Transactions.Add(mappedTransaction);
@@ -222,6 +228,9 @@ namespace expensetrackerapi.Services
                 var transactionBucket = await _db.Buckets.FirstOrDefaultAsync(bucket => deletedTransaction != null && bucket.Id == deletedTransaction.BucketId);
 
                 Bucket income = await _db.Buckets.FirstAsync(b => b.Name == Buckets.Salary);
+                string userId = "111";
+                var totals = await new BucketQueries(_db).GetTotals(userId);
+                
 
 
                 if (deletedTransaction != null && deletedTransaction.Amount > 0 && transactionBucket != null)
@@ -236,12 +245,12 @@ namespace expensetrackerapi.Services
 
                     if (transactionBucket.Type == BucketTypes.Expense)
                     {
-                        transactionBucket.Total -= deletedTransaction.Amount;
-                        income.Total += deletedTransaction.Amount;
+                        totals[deletedTransaction.BucketId] -= deletedTransaction.Amount;
+                        totals[1]+= deletedTransaction.Amount;
                     }
                     else
                     {
-                        income.Total -= deletedTransaction.Amount;
+                        totals[1] -= deletedTransaction.Amount;
                     }
 
                     await _db.SaveChangesAsync();

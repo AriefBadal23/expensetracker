@@ -1,5 +1,6 @@
 ﻿using expensetrackerapi.Contracts;
 using expensetrackerapi.DTO;
+using expensetrackerapi.helpers;
 using expensetrackerapi.Models;
 using expensetrackerapi.Results;
 using Microsoft.EntityFrameworkCore;
@@ -22,6 +23,22 @@ public class BucketService : IBucketService
             await _db.Buckets.OrderBy(b => b.Name).ToListAsync()
         );
     }
+
+    public async Task<Result<List<UserBucketResponseDto>>> GetBucketsByUserId(string? userId)
+    {
+        var helper = new BucketQueries(_db);
+        var totals = await helper.GetTotals(userId);
+
+        return Result<List<UserBucketResponseDto>>.Success(
+            await _db.Buckets.Select(bucket => new UserBucketResponseDto
+            {
+                BucketTotal = totals.GetValueOrDefault(bucket.Id),
+                Bucket = bucket
+            }).OrderBy(b => b.Bucket.Name).ToListAsync()
+
+        );
+    }
+
 
     public async Task<Result<BucketResponseDto>> GetSummary(int month, int year)
     {

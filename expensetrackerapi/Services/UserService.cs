@@ -6,6 +6,7 @@ using expensetrackerapi.Contracts;
 using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Identity;
 using expensetrackerapi.DTO.Auth;
+using expensetrackerapi.helpers;
 using expensetrackerapi.Results;
 using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
@@ -15,12 +16,14 @@ namespace expensetrackerapi.Services;
 public class UserService:IUserService
 {
     private readonly UserManager<ApplicationUser> _userManager;
+    private readonly ExpenseTrackerContext _db;
     private readonly IConfiguration _configuration;
     
-    public UserService(UserManager<ApplicationUser> userManager, IConfiguration configuration)
+    public UserService(UserManager<ApplicationUser> userManager, IConfiguration configuration, ExpenseTrackerContext db)
     {
         _userManager = userManager;
         _configuration = configuration;
+        _db = db;
     }
     
 
@@ -47,6 +50,13 @@ public class UserService:IUserService
             LastName = user.LastName,
             Id = user.Id
         };
+
+        var buckets = _db.Buckets;
+        
+        var userBuckets = buckets.Select(bucket => new UserBuckets { ApplicationUserId = user.Id, BucketId = bucket.Id }).ToList();
+        
+        await _db.AddRangeAsync(userBuckets);
+        await _db.SaveChangesAsync();
         
         return Result<RegisteredUserDto>.Success(registeredUser);
     }
