@@ -1,5 +1,7 @@
+
 using expensetrackerapi.Contracts;
 using expensetrackerapi.DTO.Auth;
+using expensetrackerapi.helpers;
 using expensetrackerapi.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -20,6 +22,27 @@ public class DbIntializer:IDbInitializer
         }
         Console.WriteLine("Database seeding started");
         
+        var hasher = new PasswordHasher<ApplicationUser>();
+        
+        var user = new ApplicationUser()
+        {
+            Email = "arief@outlook.nl",
+            FirstName = "John",
+            LastName = "Doe",
+            UserName = "arief@outlook.nl",
+            NormalizedUserName = "ARIEF@OUTLOOK.NL",
+            NormalizedEmail = "ARIEF@OUTLOOK.NL",
+            EmailConfirmed = false,
+            SecurityStamp = Guid.NewGuid().ToString("D")
+            
+        };
+        
+        user.PasswordHash = hasher.HashPassword(user, "Marvel01@"); ;
+
+        await context.Users.AddAsync(user);
+        
+        Console.WriteLine($"{await context.SaveChangesAsync()} User has been added to the database.");
+        
         var buckets = new Bucket[]
         {
             new() {Name=Buckets.Salary,Icon="💰", Type = BucketTypes.Income},
@@ -28,25 +51,8 @@ public class DbIntializer:IDbInitializer
         };
 
         await context.Buckets.AddRangeAsync(buckets);
-        await context.SaveChangesAsync();
-
-        var hasher = new PasswordHasher<ApplicationUser>();
-        var password = "Marvel01@";
+        Console.WriteLine($"{await context.SaveChangesAsync()} Buckets has been added to the database.");
         
-        var user = new ApplicationUser()
-        {
-            Email = "arief@outlook.nl",
-            FirstName = "John",
-            LastName = "Doe",
-            PasswordHash = password
-        };
-        
-        var hashedPassword = hasher.HashPassword(user, password); // Does hashing and salting
-        user.PasswordHash = hashedPassword;
-
-        await context.AddAsync(user);
-        await context.SaveChangesAsync();
-
         var newUser = await context.Users.FirstAsync(u => u.Email == "arief@outlook.nl");
         
         var transactions = new Transaction[]
@@ -330,9 +336,12 @@ public class DbIntializer:IDbInitializer
 
         var newbuckets = context.Buckets.ToDictionary(b => b.Id);
         var salaryBucket = newbuckets.Values.First(b => b.Name == Buckets.Salary);
+        
+        var totals = await new BucketQueries(context).GetTotals(user.Id);
+        
         foreach (var bucket in newbuckets.Values)
         {
-            bucket.Total = 0;
+             totals[bucket.Id] = 0;
         }
 
         foreach (var t in transactions)
@@ -342,19 +351,19 @@ public class DbIntializer:IDbInitializer
             if (bucket.Name == Buckets.Salary && bucket.Type == BucketTypes.Income)
             {
                 // Update Salary total if it's an income.
-                bucket.Total += t.Amount;
+                totals[bucket.Id] += t.Amount;
             }
             else
             {
                 // Update the bucket & Salary Total
-                bucket.Total += t.Amount;
-                salaryBucket.Total -= t.Amount;
+                totals[bucket.Id] += t.Amount;
+                totals[1]-= t.Amount;
             }
 
 
         }
         await context.Transactions.AddRangeAsync(transactions);
-        await context.SaveChangesAsync();
+        Console.WriteLine($"{await context.SaveChangesAsync()} transactions are added.");
         Console.WriteLine("Database seeding completed");
     }
     
