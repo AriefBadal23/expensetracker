@@ -10,4 +10,9 @@ public class ApplicationUser : IdentityUser
     
     [NotMapped] // EF Core will ignore this property
     public string FullName => $"{LastName}, {FirstName}";
+
+    public List<Bucket> Buckets { get; } = [];
+    // public List<UserBuckets> UserBuckets { get; } = [];
+    
+    
 }

@@ -59,16 +59,25 @@ namespace expensetrackerapi.Controllers
         public async Task<ActionResult> Post([FromBody] RequestTransactionDto transaction)
         {
             var userId = _userManager.GetUserId(User);
+            
+            if (userId is null) return Unauthorized();
+            
             var transactionCreated = await _expenseExpenseService.CreateTransaction(userId,transaction);
+            
             if (transactionCreated.Value == null) return BadRequest();
             return Ok(transactionCreated);
             
+
+
         }
 
-        [HttpDelete("{transactionID}")]
-        public async Task<ActionResult> Delete(int transactionID)
+        [HttpDelete("{transactionId:int}")]
+        public async Task<ActionResult> Delete(int transactionId)
         {
-            var isDeleted = await _expenseExpenseService.DeleteTransaction(transactionID);
+            
+            var userId = _userManager.GetUserId(User);
+            if (userId is null) return Unauthorized();
+            var isDeleted = await _expenseExpenseService.DeleteTransaction(userId, transactionId);
             if (!isDeleted.IsSuccess)
             {
                 return Ok();
@@ -76,10 +85,13 @@ namespace expensetrackerapi.Controllers
             return NotFound();
         }
 
-        [HttpPut]
-        public async Task<ActionResult> Update([FromBody] Transaction updatedTransaction)
+        [HttpPut("{id:int}")]
+        public async Task<ActionResult> Update(int id, [FromBody] UpdateTransactionDto updatedTransaction)
         {
-            var transaction = await _expenseExpenseService.UpdateTransaction(updatedTransaction);
+            var userId = _userManager.GetUserId(User);
+            if (userId is null) return Unauthorized();
+            
+            var transaction = await _expenseExpenseService.UpdateTransaction(userId,id, updatedTransaction);
             if (transaction.Value != null)
             {
                 return Ok(transaction);

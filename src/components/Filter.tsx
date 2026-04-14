@@ -46,6 +46,7 @@ const Filter = () => {
           Salary Bucket
         </label>
 
+        
         <input
           type="radio"
           className="btn-check"
@@ -58,22 +59,25 @@ const Filter = () => {
           }}
         />
         <label className="btn btn-outline-primary" htmlFor="bucket-2">
-          Groceries Bucket
+          Shopping Bucket
         </label>
-        <input
+          
+      <input
           type="radio"
           className="btn-check"
           name="bucket"
           id="bucket-3"
           checked={activeId === "3"}
           onChange={() => {
-            navigate("?id=3&year=2025");
-            setisShown(false);
+              navigate("?id=3&year=2025");
+              setisShown(false);
           }}
-        />
-        <label className="btn btn-outline-primary" htmlFor="bucket-3">
-          Shopping Bucket
-        </label>
+      />
+      <label className="btn btn-outline-primary" htmlFor="bucket-3">
+          Groceries Bucket
+      </label>  
+          
+          
         <input
           type="radio"
           className="btn-check"

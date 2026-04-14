@@ -34,7 +34,7 @@ const BucketList = ({transactions}:BucketListProps) => {
   useEffect(() => {
     const fetchBuckets = async () => {
       try {
-        const response = await fetch("https://localhost:7118/api/v1/buckets", {
+        const response = await fetch("https://localhost:7118/api/v1/buckets/user", {
           credentials: "include"
         });
         
@@ -92,10 +92,10 @@ const BucketList = ({transactions}:BucketListProps) => {
           buckets.map((b: BucketType) => {
             return (
               <Bucket
-                key={b.id}
-                name={b.name}
-                amount={b.total}
-                icon={b.icon}
+                key={b.bucket.id}
+                name={b.bucket.name}
+                amount={b.bucketTotal}
+                icon={b.bucket.icon}
               />
             );
           })}

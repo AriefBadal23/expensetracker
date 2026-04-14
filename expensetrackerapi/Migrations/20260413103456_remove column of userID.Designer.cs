@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using expensetrackerapi.Models;
 namespace expensetrackerapi.Migrations
 {
     [DbContext(typeof(ExpenseTrackerContext))]
-    partial class ExpenseTrackerContextModelSnapshot : ModelSnapshot
+    [Migration("20260413103456_remove column of userID")]
+    partial class removecolumnofuserID
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -243,6 +246,9 @@ namespace expensetrackerapi.Migrations
                     b.Property<Buckets>("Name")
                         .HasColumnType("buckets");
 
+                    b.Property<int>("Total")
+                        .HasColumnType("integer");
+
                     b.Property<int>("Type")
                         .HasColumnType("integer");
 
@@ -292,9 +298,6 @@ namespace expensetrackerapi.Migrations
                         .HasColumnType("text");
 
                     b.Property<int>("BucketId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Total")
                         .HasColumnType("integer");
 
                     b.HasKey("ApplicationUserId", "BucketId");
@@ -379,15 +382,10 @@ namespace expensetrackerapi.Migrations
                         .IsRequired();
 
                     b.HasOne("expensetrackerapi.Models.Bucket", null)
-                        .WithMany("UserBuckets")
+                        .WithMany()
                         .HasForeignKey("BucketId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("expensetrackerapi.Models.Bucket", b =>
-                {
-                    b.Navigation("UserBuckets");
                 });
 #pragma warning restore 612, 618
         }
