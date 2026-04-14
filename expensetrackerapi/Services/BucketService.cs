@@ -26,21 +26,23 @@ public class BucketService : IBucketService
 
     public async Task<Result<List<UserBucketResponseDto>>> GetBucketsByUserId(string? userId)
     {
-        var helper = new BucketQueries(_db);
-        var totals = await helper.GetTotals(userId);
+        var buckets = from bucket in _db.Buckets
+            join userbucket in _db.UserBuckets on bucket.Id equals userbucket.BucketId into Userbucketgroup
+            
+            from userbucket in Userbucketgroup
+            where userbucket.ApplicationUserId == userId
+            select new UserBucketResponseDto
+            {
+                Bucket = bucket,
+                BucketTotal = userbucket.Total
+            };
 
         return Result<List<UserBucketResponseDto>>.Success(
-            await _db.Buckets.Select(bucket => new UserBucketResponseDto
-            {
-                BucketTotal = totals.GetValueOrDefault(bucket.Id),
-                Bucket = bucket
-            }).OrderBy(b => b.Bucket.Name).ToListAsync()
-
-        );
+            await buckets.ToListAsync());
     }
 
 
-    public async Task<Result<BucketResponseDto>> GetSummary(int month, int year)
+    public async Task<Result<BucketResponseDto>> GetSummary(string userId, int month, int year)
     {
         if (month == 0 || year == 0)
             return
@@ -53,13 +55,14 @@ public class BucketService : IBucketService
                            join transaction in _db.Transactions on buck.Id equals transaction.BucketId
                                into bucketTransactions
 
-                           let BuckTransactionsResult = bucketTransactions
-                               .Where(t => t.CreatedAt.Month == month && t.CreatedAt.Year == year)
+                           let userTransactions = bucketTransactions
+                               .Where(t => t.CreatedAt.Month == month && t.CreatedAt.Year == year && t.ApplicationUserId == userId)
+                           
 
-                           let monthBucketTotal = BuckTransactionsResult.Sum(x => x.Amount)
+                           let monthBucketTotal = userTransactions.Sum(x => x.Amount)
 
                            select
-                                   new BucketTransaction(buck.Id, buck.Name,buck.Type, monthBucketTotal, BuckTransactionsResult.ToArray())
+                                   new BucketTransaction(buck.Id, buck.Name,buck.Type, monthBucketTotal, userTransactions.ToArray())
             ).ToListAsync();
 
 

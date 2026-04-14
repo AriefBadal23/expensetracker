@@ -26,7 +26,8 @@ public class BucketsController : ControllerBase
     [HttpGet("summary")]
     public async Task<ActionResult> Get([FromQuery] int month, [FromQuery] int year)
     {
-        var transactions = await _bucketService.GetSummary(month, year);
+        var userId = _manager.GetUserId(User);
+        var transactions = await _bucketService.GetSummary(userId,month, year);
         if (transactions.IsSuccess)
         {
             

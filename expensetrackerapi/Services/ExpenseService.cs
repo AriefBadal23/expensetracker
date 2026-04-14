@@ -42,12 +42,9 @@ namespace expensetrackerapi.Services
 
         }
 
-        public async Task<Result<ResponseTransactionDTo?>> UpdateTransaction(Transaction transaction)
+        public async Task<Result<ResponseTransactionDTo?>> UpdateTransaction(string userId, int id, UpdateTransactionDto transaction)
         {
-
-            if (transaction.Id <= 0) return Result<ResponseTransactionDTo?>.NotFound();
-
-            var t = await _db.Transactions.FindAsync(transaction.Id);
+            var t = await _db.Transactions.FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == userId);
 
             if (t == null)
             {
@@ -179,16 +176,18 @@ namespace expensetrackerapi.Services
 
             public async Task<Result<ResponseTransactionDTo>> CreateTransaction(string userId, RequestTransactionDto transaction)
             {
-                
+                // mapp to Transaction object.
                 var mappedTransaction = _mapper.TransactionDtoToRequestTransaction(transaction);
                 mappedTransaction.ApplicationUserId = userId;
                 
-                Bucket salary = await _db.Buckets.FirstAsync(x => x.Name == Buckets.Salary);
+                // Salary bucket of the current logged in user.
+                UserBuckets salary = await _db.UserBuckets.FirstAsync(ub => ub.BucketId == 1 && ub.ApplicationUserId == userId);
                 
+                // Bucket of the new created transaction.
                 Bucket? transactionBucket = await _db.Buckets.FirstOrDefaultAsync(b => b.Id == mappedTransaction.BucketId);
                 
-
-                var totals = await new BucketQueries(_db).GetTotals(userId);
+                var userBuckets = await _db.UserBuckets.FirstAsync(ub =>
+                    ub.ApplicationUserId == userId && ub.BucketId == mappedTransaction.BucketId); // bucketID: 2
                 
                 // Guard clauses, always start with null check first.
                 if (transactionBucket == null || mappedTransaction.Amount <= 0)
@@ -198,42 +197,53 @@ namespace expensetrackerapi.Services
                 }
 
                 
+                // 💡 GetValueOrDefault()
                 // if the transaction is Income then we need to update the amount.
-                if (transactionBucket.Type == BucketTypes.Income && mappedTransaction.BucketId == 1)
+                // 1. The transaction is an Income transaction
+                // 2. The transaction is an Expense transaction
+                //      2.1 Increment the total of the expense bucket
+                        //2.2 Decrement the Income bucket 
+                        
+                if (userBuckets.BucketId >= 0 && transactionBucket.Name != Buckets.Salary)
                 {
-                    totals[mappedTransaction.BucketId]=totals.GetValueOrDefault(mappedTransaction.BucketId) + mappedTransaction.Amount;
+                    userBuckets.Total+=mappedTransaction.Amount;
+                    salary.Total -= mappedTransaction.Amount;
                 }
                 else
                 {
-                    totals[mappedTransaction.BucketId]=totals.GetValueOrDefault(mappedTransaction.BucketId) - mappedTransaction.Amount;
+                    userBuckets.Total += mappedTransaction.Amount;
+                    
                 }
+                
 
-                if (totals.GetValueOrDefault(transactionBucket.Id) >= 0 && transactionBucket.Name != Buckets.Salary)
-                {
-                    totals[transactionBucket.Id]=totals.GetValueOrDefault(transactionBucket.Id) + mappedTransaction.Amount;
-                }
 
                 _db.Transactions.Add(mappedTransaction);
-                _db.Buckets.UpdateRange([salary, transactionBucket]);
+                _db.UserBuckets.Update(salary);
                 await _db.SaveChangesAsync();
+                
                 var response = _mapper.TransactionToResponseTransaction(mappedTransaction);
                 return Result<ResponseTransactionDTo>.Success(response);
                 
             }
 
-            public async Task<Result<bool>> DeleteTransaction(int transactionId)
+            public async Task<Result<bool>> DeleteTransaction(string userId, int transactionId)
             {
                 var deletedTransaction = await _db.Transactions.FindAsync(transactionId);
 
-                var transactionBucket = await _db.Buckets.FirstOrDefaultAsync(bucket => deletedTransaction != null && bucket.Id == deletedTransaction.BucketId);
+                var transactionBucket = await _db.Buckets.FirstAsync(bucket => deletedTransaction != null && bucket.Id == deletedTransaction.BucketId);
 
-                Bucket income = await _db.Buckets.FirstAsync(b => b.Name == Buckets.Salary);
-                string userId = "111";
-                var totals = await new BucketQueries(_db).GetTotals(userId);
+                // var income = await _db.UserBuckets.FirstAsync(b => b. == Buckets.Salary);
+                
+                var userBuckets = await _db.UserBuckets.FirstAsync(ub =>
+                    ub.BucketId == transactionBucket.Id && ub.ApplicationUserId == userId);
+                
+                var userIncome = await _db.UserBuckets.FirstAsync(ub =>
+                    ub.BucketId == 1 && ub.ApplicationUserId == userId);
+                
                 
 
 
-                if (deletedTransaction != null && deletedTransaction.Amount > 0 && transactionBucket != null)
+                if (deletedTransaction != null && deletedTransaction.Amount > 0)
                 {
                     _db.Transactions.Remove(deletedTransaction);
                     // Je kijkt of the transaction een income of expense is. 
@@ -245,12 +255,12 @@ namespace expensetrackerapi.Services
 
                     if (transactionBucket.Type == BucketTypes.Expense)
                     {
-                        totals[deletedTransaction.BucketId] -= deletedTransaction.Amount;
-                        totals[1]+= deletedTransaction.Amount;
+                        userBuckets.Total -= deletedTransaction.Amount;
+                        userIncome.Total += deletedTransaction.Amount;
                     }
                     else
                     {
-                        totals[1] -= deletedTransaction.Amount;
+                        userIncome.Total -= deletedTransaction.Amount;
                     }
 
                     await _db.SaveChangesAsync();
