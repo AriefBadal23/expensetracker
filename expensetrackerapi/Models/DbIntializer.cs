@@ -1,6 +1,5 @@
 
 using expensetrackerapi.Contracts;
-using expensetrackerapi.helpers;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
@@ -337,16 +336,9 @@ public class DbIntializer:IDbInitializer
 
         // Make sure the Total is up-to-date of the buckets.
 
-        var newbuckets = context.Buckets.ToDictionary(b => b.Id);
         var salaryBucket = await context.UserBuckets.FirstAsync(ub => ub.BucketId == 1 && ub.ApplicationUserId == user.Id);
         
-        var totals = await new BucketQueries(context).GetTotals(user.Id);
         
-        foreach (var bucket in newbuckets.Values)
-        {
-             totals[bucket.Id] = 0;
-        }
-
         foreach (var t in transactions)
         {
             var userBucket =
