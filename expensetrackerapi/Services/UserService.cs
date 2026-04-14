@@ -6,7 +6,6 @@ using expensetrackerapi.Contracts;
 using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Identity;
 using expensetrackerapi.DTO.Auth;
-using expensetrackerapi.helpers;
 using expensetrackerapi.Results;
 using Microsoft.IdentityModel.Tokens;
 using JwtRegisteredClaimNames = Microsoft.IdentityModel.JsonWebTokens.JwtRegisteredClaimNames;
