@@ -6,5 +6,6 @@ public class UserBuckets
     // https://learn.microsoft.com/en-us/ef/core/modeling/relationships/many-to-many#many-to-many-with-class-for-join-entity
     public string ApplicationUserId { get; set; }
     public int BucketId { get; set; }
+    public int Total { get; set; } 
     
 }
