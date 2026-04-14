@@ -294,6 +294,9 @@ namespace expensetrackerapi.Migrations
                     b.Property<int>("BucketId")
                         .HasColumnType("integer");
 
+                    b.Property<int>("Total")
+                        .HasColumnType("integer");
+
                     b.HasKey("ApplicationUserId", "BucketId");
 
                     b.HasIndex("BucketId");
