@@ -1,6 +1,5 @@
+
 using expensetrackerapi.Contracts;
-using expensetrackerapi.DTO.Auth;
-using expensetrackerapi.Services;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using NodaTime;
@@ -20,6 +19,27 @@ public class DbIntializer:IDbInitializer
         }
         Console.WriteLine("Database seeding started");
         
+        var hasher = new PasswordHasher<ApplicationUser>();
+        
+        var user = new ApplicationUser()
+        {
+            Email = "arief@outlook.nl",
+            FirstName = "John",
+            LastName = "Doe",
+            UserName = "arief@outlook.nl",
+            NormalizedUserName = "ARIEF@OUTLOOK.NL",
+            NormalizedEmail = "ARIEF@OUTLOOK.NL",
+            EmailConfirmed = false,
+            SecurityStamp = Guid.NewGuid().ToString("D")
+            
+        };
+        
+        user.PasswordHash = hasher.HashPassword(user, "Marvel01@"); ;
+
+        await context.Users.AddAsync(user);
+        
+        Console.WriteLine($"{await context.SaveChangesAsync()} User has been added to the database.");
+        
         var buckets = new Bucket[]
         {
             new() {Name=Buckets.Salary,Icon="💰", Type = BucketTypes.Income},
@@ -29,24 +49,12 @@ public class DbIntializer:IDbInitializer
 
         await context.Buckets.AddRangeAsync(buckets);
         await context.SaveChangesAsync();
-
-        var hasher = new PasswordHasher<ApplicationUser>();
-        var password = "Marvel01@";
         
-        var user = new ApplicationUser()
-        {
-            Email = "arief@outlook.nl",
-            FirstName = "John",
-            LastName = "Doe",
-            PasswordHash = password
-        };
+        var userBuckets = buckets.Select(bucket => new UserBuckets { ApplicationUserId = user.Id, BucketId = bucket.Id }).ToList();
+        await context.UserBuckets.AddRangeAsync(userBuckets);
+        Console.WriteLine($"{await context.SaveChangesAsync()} Buckets has been added to the database.");
         
-        var hashedPassword = hasher.HashPassword(user, password); // Does hashing and salting
-        user.PasswordHash = hashedPassword;
-
-        await context.AddAsync(user);
-        await context.SaveChangesAsync();
-
+        // Seeding of M:M table (Join Entity Type)
         var newUser = await context.Users.FirstAsync(u => u.Email == "arief@outlook.nl");
         
         var transactions = new Transaction[]
@@ -62,7 +70,7 @@ public class DbIntializer:IDbInitializer
             new()
             {
                 ApplicationUserId = newUser.Id,
-                BucketId = 2,
+                BucketId = 3,
                 Description = "Groceries at the AH",
                 Amount = 120,
 
@@ -70,7 +78,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 3,
+                BucketId = 2,
                 Description = "Shopping - clothing",
                 ApplicationUserId = newUser.Id,
                 Amount = 80,
@@ -79,7 +87,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 2,
+                BucketId = 3,
                 Description = "Weekly groceries",
                 ApplicationUserId = newUser.Id,
                 Amount = 95,
@@ -88,7 +96,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 3,
+                BucketId = 2,
                 Description = "Shopping - online order",
                ApplicationUserId = newUser.Id,
                 Amount = 150,
@@ -106,7 +114,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 2,
+                BucketId = 3,
                 Description = "Groceries at the AH",
                ApplicationUserId = newUser.Id,
                 Amount = 110,
@@ -115,7 +123,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 3,
+                BucketId = 2,
                 Description = "Shopping - electronics",
                ApplicationUserId = newUser.Id,
                 Amount = 60,
@@ -133,7 +141,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 2,
+                BucketId = 3,
                 Description = "Groceries",
                ApplicationUserId = newUser.Id,
                 Amount = 105,
@@ -141,7 +149,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 3,
+                BucketId = 2,
                 Description = "Shopping - shoes",
                ApplicationUserId = newUser.Id,
                 Amount = 140,
@@ -149,7 +157,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 2,
+                BucketId = 3,
                 Description = "Groceries",
                ApplicationUserId = newUser.Id,
                 Amount = 98,
@@ -157,7 +165,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 3,
+                BucketId = 2,
                 Description = "Shopping - gadgets",
                ApplicationUserId = newUser.Id,
                 Amount = 75,
@@ -165,7 +173,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 2,
+                BucketId = 3,
                 Description = "Groceries",
                ApplicationUserId = newUser.Id,
                 Amount = 115,
@@ -181,7 +189,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 2,
+                BucketId = 3,
                 Description = "Groceries",
                ApplicationUserId = newUser.Id,
                 Amount = 102,
@@ -189,7 +197,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 3,
+                BucketId = 2,
                 Description = "Shopping - summer sale",
                ApplicationUserId = newUser.Id,
                 Amount = 160,
@@ -205,7 +213,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 2,
+                BucketId = 3,
                 Description = "Groceries",
                 ApplicationUserId = newUser.Id,
                 Amount = 108,
@@ -213,7 +221,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 3,
+                BucketId = 2,
                 Description = "Shopping - backpack",
                 ApplicationUserId = newUser.Id,
                 Amount = 90,
@@ -229,7 +237,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 2,
+                BucketId = 3,
                 Description = "Groceries",
                ApplicationUserId = newUser.Id,
                 Amount = 112,
@@ -237,7 +245,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 3,
+                BucketId = 2,
                 Description = "Shopping - jacket",
                ApplicationUserId = newUser.Id,
                 Amount = 180,
@@ -261,7 +269,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 2,
+                BucketId = 3,
                 Description = "Extra groceries",
                ApplicationUserId = newUser.Id,
                 Amount = 45,
@@ -269,7 +277,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 3,
+                BucketId = 2,
                 Description = "Shopping - small items",
                ApplicationUserId = newUser.Id,
                 Amount = 35,
@@ -277,7 +285,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 2,
+                BucketId = 3,
                 Description = "Extra groceries",
                ApplicationUserId = newUser.Id,
                 Amount = 55,
@@ -285,7 +293,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 3,
+                BucketId = 2,
                 Description = "Shopping - accessories",
                ApplicationUserId = newUser.Id,
                 Amount = 65,
@@ -293,7 +301,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 2,
+                BucketId = 3,
                 Description = "Groceries",
                ApplicationUserId = newUser.Id,
                 Amount = 48,
@@ -301,7 +309,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 3,
+                BucketId = 2,
                 Description = "Shopping - sale item",
                ApplicationUserId = newUser.Id,
                 Amount = 40,
@@ -309,7 +317,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 2,
+                BucketId = 3,
                 Description = "Late groceries",
                ApplicationUserId = newUser.Id,
                 Amount = 52,
@@ -317,7 +325,7 @@ public class DbIntializer:IDbInitializer
             },
             new()
             {
-                BucketId = 3,
+                BucketId = 2,
                 Description = "Impulse buy",
                 ApplicationUserId = newUser.Id,
                 Amount = 30,
@@ -328,33 +336,37 @@ public class DbIntializer:IDbInitializer
 
         // Make sure the Total is up-to-date of the buckets.
 
-        var newbuckets = context.Buckets.ToDictionary(b => b.Id);
-        var salaryBucket = newbuckets.Values.First(b => b.Name == Buckets.Salary);
-        foreach (var bucket in newbuckets.Values)
-        {
-            bucket.Total = 0;
-        }
-
+        var salaryBucket = await context.UserBuckets.FirstAsync(ub => ub.BucketId == 1 && ub.ApplicationUserId == user.Id);
+        
+        
         foreach (var t in transactions)
         {
+            var userBucket =
+                await context.UserBuckets.FirstAsync(ub => ub.ApplicationUserId == user.Id && ub.BucketId == t.BucketId);
+            
             var bucket = context.Buckets.First(x => x.Id == t.BucketId);
 
             if (bucket.Name == Buckets.Salary && bucket.Type == BucketTypes.Income)
             {
                 // Update Salary total if it's an income.
-                bucket.Total += t.Amount;
+                userBucket.Total += t.Amount;
             }
             else
             {
                 // Update the bucket & Salary Total
-                bucket.Total += t.Amount;
-                salaryBucket.Total -= t.Amount;
+                salaryBucket.Total-= t.Amount;
+                userBucket.Total += t.Amount;
+                
+
             }
 
 
         }
+        
         await context.Transactions.AddRangeAsync(transactions);
-        await context.SaveChangesAsync();
+        
+        
+        Console.WriteLine($"{await context.SaveChangesAsync()} transactions are added.");
         Console.WriteLine("Database seeding completed");
     }
     

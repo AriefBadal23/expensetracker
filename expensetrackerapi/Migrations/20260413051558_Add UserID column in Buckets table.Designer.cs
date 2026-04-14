@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NodaTime;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
@@ -12,9 +13,11 @@ using expensetrackerapi.Models;
 namespace expensetrackerapi.Migrations
 {
     [DbContext(typeof(ExpenseTrackerContext))]
-    partial class ExpenseTrackerContextModelSnapshot : ModelSnapshot
+    [Migration("20260413051558_Add UserID column in Buckets table")]
+    partial class AddUserIDcolumninBucketstable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -156,6 +159,36 @@ namespace expensetrackerapi.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("expensetrackerapi.Bucket", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationUserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("Icon")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<Buckets>("Name")
+                        .HasColumnType("buckets");
+
+                    b.Property<int>("Total")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Type")
+                        .HasColumnType("integer");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Buckets");
+                });
+
             modelBuilder.Entity("expensetrackerapi.Models.ApplicationUser", b =>
                 {
                     b.Property<string>("Id")
@@ -228,29 +261,6 @@ namespace expensetrackerapi.Migrations
                     b.ToTable("AspNetUsers", (string)null);
                 });
 
-            modelBuilder.Entity("expensetrackerapi.Models.Bucket", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Icon")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<Buckets>("Name")
-                        .HasColumnType("buckets");
-
-                    b.Property<int>("Type")
-                        .HasColumnType("integer");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("Buckets");
-                });
-
             modelBuilder.Entity("expensetrackerapi.Models.Transaction", b =>
                 {
                     b.Property<int>("Id")
@@ -284,24 +294,6 @@ namespace expensetrackerapi.Migrations
                     b.HasIndex("BucketId");
 
                     b.ToTable("Transactions");
-                });
-
-            modelBuilder.Entity("expensetrackerapi.Models.UserBuckets", b =>
-                {
-                    b.Property<string>("ApplicationUserId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("BucketId")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Total")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ApplicationUserId", "BucketId");
-
-                    b.HasIndex("BucketId");
-
-                    b.ToTable("UserBuckets");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -363,31 +355,11 @@ namespace expensetrackerapi.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("expensetrackerapi.Models.Bucket", null)
+                    b.HasOne("expensetrackerapi.Bucket", null)
                         .WithMany()
                         .HasForeignKey("BucketId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("expensetrackerapi.Models.UserBuckets", b =>
-                {
-                    b.HasOne("expensetrackerapi.Models.ApplicationUser", null)
-                        .WithMany()
-                        .HasForeignKey("ApplicationUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("expensetrackerapi.Models.Bucket", null)
-                        .WithMany("UserBuckets")
-                        .HasForeignKey("BucketId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("expensetrackerapi.Models.Bucket", b =>
-                {
-                    b.Navigation("UserBuckets");
                 });
 #pragma warning restore 612, 618
         }

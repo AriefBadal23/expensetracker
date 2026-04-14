@@ -22,7 +22,7 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
     createdAt: new Date(),
   });
   
-  const [errors, setErrors] = useState({description: "", amount: "", created_at:"", bucket_id: "", uiMessage: ""})
+  const [errors, setErrors] = useState({description: "", amount: "", createdAt:"", bucket_id: "", uiMessage: ""})
     
   const canSubmit = Object.values(errors).every(value => value === "");
   const errorStyle = {
@@ -167,13 +167,13 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
   
     const updateTransaction = async () => {
         try{
-            const response = await fetch("https://localhost:7118/api/v1/transactions",{
+            const response = await fetch(`https://localhost:7118/api/v1/transactions/${transactionID}`,{
                 method: "Put",
+                credentials: "include",
                 body: JSON.stringify(formdata),
                 headers: {
                     "Content-type": "application/json; charset=UTF-8",
                 },
-                credentials: "include"
             })
            
            let message = "Something went wrong."
@@ -261,7 +261,7 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
                 bucketId: data.value.bucketId,
                 description: data.value.description,
                 amount: data.value.amount,
-                createdAt: new Date(data.value.created_at),
+                createdAt: new Date(data.value.createdAt),
             }
 
             // Dit maakt een nieuwe array door oude values van de huidige state te kopieeren
@@ -319,7 +319,7 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
           case "description":
               handleDescriptionChange(value);
               break;
-          case "created_at":
+          case "createdAt":
               handleCreationDateChange(value);
               break;
           case "bucketId":
@@ -444,7 +444,7 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
           <input
             type="date"
             className="form-control"
-            name="created_at"
+            name="createdAt"
             onChange={change}
             value={formdata.createdAt.toString()}
             required
@@ -455,8 +455,8 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
           />
           <label htmlFor="created_at">Date</label>
             {/* If there is an error for created_at of the form fields show it in the UI */}
-            {errors["created_at"] && (
-                <p style={{ color: "red", marginTop: "0.25rem" }}>{errors["created_at"]}</p>
+            {errors["createdAt"] && (
+                <p style={{ color: "red", marginTop: "0.25rem" }}>{errors["createdAt"]}</p>
             )}
         </div>
 

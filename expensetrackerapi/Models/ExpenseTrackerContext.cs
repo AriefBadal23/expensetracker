@@ -13,6 +13,8 @@ public class ExpenseTrackerContext : IdentityDbContext<ApplicationUser> // Takes
     // DBSet verwijst naar de entities/tables in een database
     public DbSet<Bucket> Buckets { get; set; }
     public DbSet<Transaction> Transactions { get; set; }
+    
+    public DbSet<UserBuckets> UserBuckets { get; set; }
 
 
 
@@ -37,6 +39,13 @@ public class ExpenseTrackerContext : IdentityDbContext<ApplicationUser> // Takes
             .WithOne()
             .HasForeignKey(transaction => transaction.BucketId)
             .OnDelete(DeleteBehavior.Cascade);
+
+        // optional; because the relationship is set with collection navigation properties.
+        // https://learn.microsoft.com/en-us/ef/core/modeling/relationships/many-to-many#many-to-many-with-class-for-join-entity
+        modelBuilder.Entity<Bucket>()
+            .HasMany<ApplicationUser>(x => x.Users)
+            .WithMany(e => e.Buckets)
+            .UsingEntity<UserBuckets>();
     }
 
 }
