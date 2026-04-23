@@ -27,7 +27,6 @@ namespace expensetrackerapi.Services
 
             if (transaction == null)
             {
-                // TODO: De transaction kan niet gevonden worden dat gezocht werd
                 return Result<ResponseTransactionDTo?>.NotFound();
             }
 
@@ -44,7 +43,6 @@ namespace expensetrackerapi.Services
 
             if (t == null)
             {
-                // TODO: Transaction could not be found log it.
                 return Result<ResponseTransactionDTo?>.NotFound();
             }
 
@@ -69,7 +67,7 @@ namespace expensetrackerapi.Services
             if (userId == null)
             {
                 _logger.LogWarning("Unauthorized access by retrieving all transactions of {UserId}",userId);
-                return Result<object>.Failure(); // TODO userID is niet valid log het.
+                return Result<object>.Failure(); 
             }
             
             // bucket query string = bucket ID
@@ -193,7 +191,6 @@ namespace expensetrackerapi.Services
                 // Guard clauses, always start with null check first.
                 if (transactionBucket == null || mappedTransaction.Amount <= 0)
                 {
-                    // TODO: Incorrect format for new transaction, log it.
                     _logger.LogWarning("Failed to create new transaction, incorrect amount or bucket was provided.");
                     return Result<ResponseTransactionDTo>.Failure();
                 }
@@ -266,7 +263,6 @@ namespace expensetrackerapi.Services
                     await _db.SaveChangesAsync();
                     return Result<bool>.Success(true);
                 }
-                // TODO:   DeletedTransaction is not valid and could not be deleted.
             return Result<bool>.Failure();
 
         }

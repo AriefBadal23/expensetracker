@@ -41,7 +41,6 @@ public class UserService:IUserService
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => new Error(ErrorCodes.BadRequest, e.Description)).ToArray();
-            // TODO: ✅ Input validation failed, we have to log it.
             _logger.LogInformation("Failed to register user");
             
             return Result<RegisteredUserDto>.BadRequest(errors);
@@ -68,7 +67,6 @@ public class UserService:IUserService
 
     public  async Task<Result<string>> LoginAsync(LoginUserDto loginUserDto)
     {
-        // TODO: Add logging here for logging success and failed attempts.
         var user = await _userManager.FindByEmailAsync(loginUserDto.Email);
         if (user is null)
         {
@@ -80,7 +78,6 @@ public class UserService:IUserService
         
         if (!passwordIsvalid)
         {
-            // TODO: Add logging here for logging success and failed attempts.
             _logger.LogWarning("User: {UserId} tried to login with incorrect credentials", user.Id);
             return Result<string>.BadRequest(new Error(ErrorCodes.BadRequest, "Invalid Credentials"));
         }
