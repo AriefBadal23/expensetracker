@@ -17,28 +17,32 @@ public class UserService:IUserService
     private readonly UserManager<ApplicationUser> _userManager;
     private readonly ExpenseTrackerContext _db;
     private readonly IConfiguration _configuration;
+    private readonly ILogger<UserService> _logger;
     
-    public UserService(UserManager<ApplicationUser> userManager, IConfiguration configuration, ExpenseTrackerContext db)
+    public UserService(UserManager<ApplicationUser> userManager, IConfiguration configuration,ILogger<UserService> logger, ExpenseTrackerContext db)
     {
         _userManager = userManager;
         _configuration = configuration;
         _db = db;
+        _logger = logger;
     }
     
 
-    public async Task<Result<RegisteredUserDto>> RegisterAsync(RegisterUserDto registerUserDto)
+    public async Task<Result<RegisteredUserDto>> RegisterAsync(RegisterUserDto registerDto)
     {
         var user = new ApplicationUser
         {
-            Email = registerUserDto.Email,
-            FirstName = registerUserDto.FirstName,
-            LastName = registerUserDto.LastName,
-            UserName = registerUserDto.Email
+            Email = registerDto.Email,
+            FirstName = registerDto.FirstName,
+            LastName = registerDto.LastName,
+            UserName = registerDto.Email
         };
-        var result = await _userManager.CreateAsync(user, registerUserDto.Password);
+        var result = await _userManager.CreateAsync(user, registerDto.Password);
         if (!result.Succeeded)
         {
             var errors = result.Errors.Select(e => new Error(ErrorCodes.BadRequest, e.Description)).ToArray();
+            _logger.LogInformation("Failed to register user");
+            
             return Result<RegisteredUserDto>.BadRequest(errors);
         }
         
@@ -56,7 +60,8 @@ public class UserService:IUserService
         
         await _db.AddRangeAsync(userBuckets);
         await _db.SaveChangesAsync();
-        
+        _logger.LogInformation(
+            "User: {UserId} has created an account", user.Id);
         return Result<RegisteredUserDto>.Success(registeredUser);
     }
 
@@ -65,18 +70,21 @@ public class UserService:IUserService
         var user = await _userManager.FindByEmailAsync(loginUserDto.Email);
         if (user is null)
         {
+            _logger.LogWarning("User tried to login with incorrect credentials");
             return Result<string>.BadRequest(new Error(ErrorCodes.BadRequest, "Invalid credentials"));
         }
 
-        var valid = await _userManager.CheckPasswordAsync(user, loginUserDto.Password);
+        var passwordIsvalid = await _userManager.CheckPasswordAsync(user, loginUserDto.Password);
         
-        if (!valid)
+        if (!passwordIsvalid)
         {
+            _logger.LogWarning("User: {UserId} tried to login with incorrect credentials", user.Id);
             return Result<string>.BadRequest(new Error(ErrorCodes.BadRequest, "Invalid Credentials"));
         }
         
         // Issue a token
         var token = await GenerateToken(user);
+        _logger.LogInformation("User: {UserId} signed in successfully", user.Id);
         return Result<string>.Success(token);
     }
     

@@ -12,7 +12,7 @@ public class ApplicationUser : IdentityUser
     public string FullName => $"{LastName}, {FirstName}";
 
     public List<Bucket> Buckets { get; } = [];
-    // public List<UserBuckets> UserBuckets { get; } = [];
+    public List<UserBuckets> UserBuckets { get; } = [];
     
     
 }

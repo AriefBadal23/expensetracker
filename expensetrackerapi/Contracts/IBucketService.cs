@@ -7,6 +7,5 @@ namespace expensetrackerapi.Contracts;
 public interface IBucketService
 {
     public Task<Result<BucketResponseDto>> GetSummary(string userId, int month, int year);
-    public Task<Result<List<Bucket>>> GetBuckets();
     public Task<Result<List<UserBucketResponseDto>>> GetBucketsByUserId(string? userId);
 }
