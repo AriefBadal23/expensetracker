@@ -327,11 +327,8 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
             await expenseService.DeleteTransaction(seedingUser.Id,transaction.Id);
         }
 
-        var buckets = await bucketService.GetBuckets();
-        Assert.NotNull(buckets.Value);
-        
-        var bucketsTotals = buckets.Value?.Count;
-        Assert.Equal(3, bucketsTotals);
+        var buckets = await db.Buckets.CountAsync();
+        Assert.Equal(3,buckets);
     }
 
     [Fact]
