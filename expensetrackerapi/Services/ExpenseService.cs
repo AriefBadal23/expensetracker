@@ -14,22 +14,20 @@ namespace expensetrackerapi.Services
         private readonly ExpenseTrackerContext _db;
         private readonly TransactionMapper _mapper = new();
         private readonly ILogger<IExpenseService> _logger;
-        private readonly IUserService _userService;
 
-        public ExpenseService(ExpenseTrackerContext db, ILogger<IExpenseService> logger, IUserService userService)
+        public ExpenseService(ExpenseTrackerContext db, ILogger<ExpenseService> logger, IUserService userService)
         {
             _db = db;
             _logger = logger;
-            _userService = userService;
         }
 
-        public async Task<Result<ResponseTransactionDTo?>> GetTransactionByID(int id)
+        public async Task<Result<ResponseTransactionDTo?>> GetTransactionByID(int Id)
         {
-            var transaction = await _db.Transactions.FirstOrDefaultAsync(t => t.Id == id);
-            _logger.LogInformation("GET request for transaction with ID: {id}", id);
+            var transaction = await _db.Transactions.FirstOrDefaultAsync(t => t.Id == Id);
 
             if (transaction == null)
             {
+                // TODO: De transaction kan niet gevonden worden dat gezocht werd
                 return Result<ResponseTransactionDTo?>.NotFound();
             }
 
@@ -46,6 +44,7 @@ namespace expensetrackerapi.Services
 
             if (t == null)
             {
+                // TODO: Transaction could not be found log it.
                 return Result<ResponseTransactionDTo?>.NotFound();
             }
 
@@ -58,6 +57,8 @@ namespace expensetrackerapi.Services
             _db.Transactions.Update(t);
             await _db.SaveChangesAsync();
             var response = _mapper.TransactionToResponseTransaction(t);
+            
+            _logger.LogWarning("User: {UserId} has updated transactionID: {Id}",userId, id);
             return Result<ResponseTransactionDTo?>.Success(
                 response
             );
@@ -65,19 +66,24 @@ namespace expensetrackerapi.Services
         
         public async Task<Result<object>> GetTransactions(string? userId, int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3)
         {
-            if (userId == null) return Result<object>.Failure();
+            if (userId == null)
+            {
+                _logger.LogWarning("Unauthorized access by retrieving all transactions of {UserId}",userId);
+                return Result<object>.Failure(); // TODO userID is niet valid log het.
+            }
             
             // bucket query string = bucket ID
             var totalRecords = await _db.Transactions.Where(t => t.ApplicationUserId == userId).CountAsync();
             if (month.HasValue && year.HasValue && !bucket.HasValue)
             {
+                _logger.LogWarning("User:{UserId} received all transactions with parameters: Month: {Month} - Year: {Year}",userId, month, year);
+                
                 var monthTransactions = await _db.Transactions
                     .Where(t => t.ApplicationUserId == userId && t.CreatedAt.Month == month && t.CreatedAt.Year == year)
                     .OrderByDescending(t => t.CreatedAt)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize).ToListAsync();
 
-                // TODO: ResponseDTO
                 return Result<object>.Success(new
                 {
                     Total = monthTransactions.Count,
@@ -93,7 +99,6 @@ namespace expensetrackerapi.Services
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).ToListAsync();
 
-                // TODO: ResponseDTO
                 return Result<object>.Success(
                 new
                 {
@@ -126,7 +131,6 @@ namespace expensetrackerapi.Services
                 .Take(pageSize)
                 .ToListAsync();
 
-                // TODO: ResponseDTO
                 return Result<object>.Success(
                     new
                     {
@@ -145,7 +149,6 @@ namespace expensetrackerapi.Services
                     .Take(pageSize)
                     .ToListAsync();
 
-                // TODO: ResponseDTO
                 return Result<object>.Success(
                     new
                     {
@@ -190,6 +193,7 @@ namespace expensetrackerapi.Services
                 // Guard clauses, always start with null check first.
                 if (transactionBucket == null || mappedTransaction.Amount <= 0)
                 {
+                    // TODO: Incorrect format for new transaction, log it.
                     _logger.LogWarning("Failed to create new transaction, incorrect amount or bucket was provided.");
                     return Result<ResponseTransactionDTo>.Failure();
                 }
@@ -229,8 +233,6 @@ namespace expensetrackerapi.Services
                 var deletedTransaction = await _db.Transactions.FindAsync(transactionId);
 
                 var transactionBucket = await _db.Buckets.FirstAsync(bucket => deletedTransaction != null && bucket.Id == deletedTransaction.BucketId);
-
-                // var income = await _db.UserBuckets.FirstAsync(b => b. == Buckets.Salary);
                 
                 var userBuckets = await _db.UserBuckets.FirstAsync(ub =>
                     ub.BucketId == transactionBucket.Id && ub.ApplicationUserId == userId);
@@ -264,6 +266,7 @@ namespace expensetrackerapi.Services
                     await _db.SaveChangesAsync();
                     return Result<bool>.Success(true);
                 }
+                // TODO:   DeletedTransaction is not valid and could not be deleted.
             return Result<bool>.Failure();
 
         }

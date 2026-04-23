@@ -25,6 +25,8 @@ public class BucketService : IBucketService
 
     public async Task<Result<List<UserBucketResponseDto>>> GetBucketsByUserId(string? userId)
     {
+        // TODO: Is het niet eerst de bedoeling dat ik check of the userId bestaat!?
+        // Als de user niet bestaat dan moet dit ook gelogt worden.
         var buckets = from bucket in _db.Buckets
             join userbucket in _db.UserBuckets on bucket.Id equals userbucket.BucketId into Userbucketgroup
             
@@ -43,6 +45,7 @@ public class BucketService : IBucketService
 
     public async Task<Result<BucketResponseDto>> GetSummary(string userId, int month, int year)
     {
+        // TODO: als de userId niet bestaat dan moet dit gelogd worden.
         if (month == 0 || year == 0)
             return
                 Result<BucketResponseDto>.Success(new BucketResponseDto
