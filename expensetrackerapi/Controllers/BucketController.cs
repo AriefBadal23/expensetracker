@@ -35,16 +35,6 @@ public class BucketsController : ControllerBase
     }
     
     
-    [HttpGet]
-    public async Task<ActionResult> GetBuckets()
-    {
-        var buckets = await _bucketService.GetBuckets();
-        if (buckets.IsSuccess)
-        {
-            return Ok(buckets);
-        }
-        return BadRequest("No buckets found.");
-    }
     [HttpGet("user")]
     public async Task<ActionResult> GetBucketsByUserId()
     {
