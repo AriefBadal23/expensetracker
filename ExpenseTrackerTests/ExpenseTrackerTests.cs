@@ -10,7 +10,6 @@ using Moq;
 
 namespace ExpenseTrackerTests;
 
-using expensetrackerapi;
 using expensetrackerapi.Models;
 using expensetrackerapi.Services;
 using Microsoft.EntityFrameworkCore;
@@ -63,7 +62,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
         db.Buckets.AddRange(buckets);
         await db.SaveChangesAsync();
-        var loggerMock = new Mock<ILogger<IExpenseService>>();
+        var loggerMock = new Mock<ILogger<ExpenseService>>();
         var userServiceMock = new Mock<IUserService>();
 
         // mock the behaviour of the userService.
@@ -161,7 +160,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
         // Assert
         Assert.Equal(3, transactionArrayResult.Count()); // Service method returns 3x true
-        Assert.Equal(3, db.Transactions.Count()); // there are 3 transactions
+        Assert.Equal(3, await db.Transactions.CountAsync()); // there are 3 transactions
         Assert.Equal(800, salaryBucketTotal.Total);
         Assert.Equal(120, groceriesBucketTotal.Total);
         Assert.Equal(80, shoppingBucketTotal.Total);
@@ -235,7 +234,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         };
         
         // Assert
-        Assert.Equal(33, db.Transactions.Count(x => x.ApplicationUserId == user.Id));
+        Assert.Equal(33, await db.Transactions.CountAsync(x => x.ApplicationUserId == user.Id));
         Assert.Equal(firstFiveTransactions, db.Transactions.OrderBy(transaction => transaction.Id).Take(5));
         // asserts op de waarde niet een heel object!
     }
@@ -247,7 +246,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         // Arrange
 
         await using var db = _fixture.CreateContext();
-        var loggerMock = new Mock<ILogger<IExpenseService>>();
+        var loggerMock = new Mock<ILogger<ExpenseService>>();
         
         var userServiceMock = new Mock<IUserService>();
         
@@ -294,7 +293,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     public async Task TestDeleteAllTransactions_Zero_As_Totals()
     {
         await using var db = _fixture.CreateContext();
-        var loggerMock = new Mock<ILogger<IExpenseService>>();
+        var loggerMock = new Mock<ILogger<ExpenseService>>();
         var userServiceMock = new Mock<IUserService>();
         
         var user = new RegisteredUserDto
@@ -625,9 +624,9 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         var seeder = new DbIntializer();
         await seeder.SeedAsync(db);
         
-        var seeduser = await db.Users.FirstAsync(user => user.Email == "arief@outlook.nl");
+        var seeduser = await db.Users.FirstAsync(u => u.Email == "arief@outlook.nl");
 
-        var logger = new Mock<ILogger<IExpenseService>>();
+        var logger = new Mock<ILogger<ExpenseService>>();
 
         var expenseService = new ExpenseService(db, logger.Object, userServiceMock.Object);
 
