@@ -12,7 +12,7 @@ public interface IExpenseService
 
     public Task<Result<bool>> DeleteTransaction(string userId, int transactionId);
 
-    public Task<Result<ResponseTransactionDTo?>> GetTransactionByID(int Id); // Task is enough; no async modifier required.
+    public Task<Result<ResponseTransactionDTo?>> GetTransactionById(int id); // Task is enough; no async modifier required.
 
     public Task<Result<ResponseTransactionDTo?>> UpdateTransaction(string userId, int id, UpdateTransactionDto transaction);
 }

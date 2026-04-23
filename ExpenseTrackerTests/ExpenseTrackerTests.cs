@@ -79,7 +79,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
                 LastName = "Doe"
             }));
 
-        var service = new ExpenseService(db, loggerMock.Object, userServiceMock.Object);
+        var service = new ExpenseService(db, loggerMock.Object);
         
         var newUser = new ApplicationUser
         {
@@ -274,9 +274,9 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         // 3-> 80
         // 5 -> 150
         // 8 -> 60
-        var T_3_isDeleted = await new ExpenseService(db,loggerMock.Object, userServiceMock.Object).DeleteTransaction(seedingUser.Id,3); // 80
-        var T_5_isDeleted = await new ExpenseService(db, loggerMock.Object, userServiceMock.Object).DeleteTransaction(seedingUser.Id,5); //150
-        var T_8_isDeleted = await new ExpenseService(db, loggerMock.Object, userServiceMock.Object).DeleteTransaction(seedingUser.Id,8); // 60
+        var T_3_isDeleted = await new ExpenseService(db,loggerMock.Object).DeleteTransaction(seedingUser.Id,3); // 80
+        var T_5_isDeleted = await new ExpenseService(db, loggerMock.Object).DeleteTransaction(seedingUser.Id,5); //150
+        var T_8_isDeleted = await new ExpenseService(db, loggerMock.Object).DeleteTransaction(seedingUser.Id,8); // 60
         
         var currentShoppingTotal =  await db.UserBuckets.FirstAsync(ub => ub.BucketId == 2 && ub.ApplicationUserId == seedingUser.Id);
         var currentSalaryTotal = await db.UserBuckets.FirstAsync(ub => ub.BucketId ==1 && ub.ApplicationUserId == seedingUser.Id);
@@ -317,7 +317,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         await seeder.SeedAsync(db);
         var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
         
-        var expenseService = new ExpenseService(db, expenseloggerMock.Object, userServiceMock.Object);
+        var expenseService = new ExpenseService(db, expenseloggerMock.Object);
         var bucketService = new BucketService(db, bucketloggerMock.Object);
 
        
@@ -639,7 +639,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
         var logger = new Mock<ILogger<ExpenseService>>();
 
-        var expenseService = new ExpenseService(db, logger.Object, userServiceMock.Object);
+        var expenseService = new ExpenseService(db, logger.Object);
 
         //Act
         var updatedTransaction = await expenseService.UpdateTransaction(seeduser.Id, 1,

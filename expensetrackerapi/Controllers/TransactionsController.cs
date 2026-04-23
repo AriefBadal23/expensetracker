@@ -11,7 +11,7 @@ namespace expensetrackerapi.Controllers
     [Authorize]
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class Transactions : Controller
+    public class Transactions : ControllerBase
     {
 
         private readonly IExpenseService _expenseExpenseService;
@@ -26,11 +26,10 @@ namespace expensetrackerapi.Controllers
         [HttpGet("details")]
         public async Task<ActionResult> GetTransactionById([FromQuery] int id)
         {
-            var transaction = await _expenseExpenseService.GetTransactionByID(id);
+            var transaction = await _expenseExpenseService.GetTransactionById(id);
             
             if (transaction.Value == null)
             {
-                // TODO: De transaction kon niet gevonden worden.
                 return NotFound(transaction);
             }
 
@@ -48,7 +47,6 @@ namespace expensetrackerapi.Controllers
             var transactions = await _expenseExpenseService.GetTransactions(id, month, year, bucket, pageNumber, pageSize);
             if (!transactions.IsSuccess)
             {
-                // TODO: user transaction could not be found.
                 return NotFound();
             }
             return Ok(transactions);
@@ -60,7 +58,7 @@ namespace expensetrackerapi.Controllers
         {
             var userId = _userManager.GetUserId(User);
             
-            if (userId is null) return Unauthorized(); // TODO: UserId is null, log it.
+            if (userId is null) return Unauthorized(); 
             
             var transactionCreated = await _expenseExpenseService.CreateTransaction(userId,transaction);
             
@@ -76,7 +74,7 @@ namespace expensetrackerapi.Controllers
         {
             
             var userId = _userManager.GetUserId(User);
-            if (userId is null) return Unauthorized(); //TODO: UserId is null, log it.
+            if (userId is null) return Unauthorized(); 
             var isDeleted = await _expenseExpenseService.DeleteTransaction(userId, transactionId);
             if (!isDeleted.IsSuccess)
             {

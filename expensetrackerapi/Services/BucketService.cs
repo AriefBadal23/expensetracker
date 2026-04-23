@@ -30,7 +30,7 @@ public class BucketService : IBucketService
         var userDoesExists = await _db.Users.AnyAsync(u => u.Id == userId);
         if (!userDoesExists)
         {
-            _logger.LogWarning("Failed to retrieve buckets for {UserId}", userId);   
+            _logger.LogWarning("Failed to retrieve buckets due invalid userId for userId: {UserId}", userId);   
             return Result<List<UserBucketResponseDto>>.Failure();
         }
         var buckets = from bucket in _db.Buckets
@@ -55,7 +55,7 @@ public class BucketService : IBucketService
         
         if (!userDoesExists)
         {
-            _logger.LogWarning("Failed to retrieve buckets for {UserId}", userId);   
+            _logger.LogWarning("Failed to retrieve transactions summary due invalid userId for userId: {UserId}", userId);   
             return Result<BucketResponseDto>.Failure();
         }
         
