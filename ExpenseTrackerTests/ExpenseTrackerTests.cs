@@ -293,7 +293,8 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     public async Task TestDeleteAllTransactions_Zero_As_Totals()
     {
         await using var db = _fixture.CreateContext();
-        var loggerMock = new Mock<ILogger<ExpenseService>>();
+        var expenseloggerMock = new Mock<ILogger<ExpenseService>>();
+        var bucketloggerMock = new Mock<ILogger<BucketService>>();
         var userServiceMock = new Mock<IUserService>();
         
         var user = new RegisteredUserDto
@@ -316,8 +317,8 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         await seeder.SeedAsync(db);
         var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
         
-        var expenseService = new ExpenseService(db, loggerMock.Object, userServiceMock.Object);
-        var bucketService = new BucketService(db);
+        var expenseService = new ExpenseService(db, expenseloggerMock.Object, userServiceMock.Object);
+        var bucketService = new BucketService(db, bucketloggerMock.Object);
 
        
 
@@ -396,6 +397,8 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         // Arrange
         await using var db = _fixture.CreateContext();
         var userServiceMock = new Mock<IUserService>();
+        var bucketloggerMock = new Mock<ILogger<BucketService>>();
+        
         
         var user = new RegisteredUserDto
         {
@@ -418,7 +421,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
         
         
-        var bucketService = new BucketService(db);
+        var bucketService = new BucketService(db,bucketloggerMock.Object);
         
         
         // Act
@@ -449,6 +452,8 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     {
         // Arrange
         await using var db = _fixture.CreateContext();
+        
+        var bucketloggerMock = new Mock<ILogger<BucketService>>();
         var userServiceMock = new Mock<IUserService>();
 
         var user = new RegisteredUserDto
@@ -469,7 +474,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
         var seeder = new DbIntializer();
         await seeder.SeedAsync(db);
-        var bucketService = new BucketService(db);
+        var bucketService = new BucketService(db, bucketloggerMock.Object);
         var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
         
         
@@ -502,6 +507,8 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         // Arrange
         await using var db = _fixture.CreateContext();
         var userServiceMock = new Mock<IUserService>();
+        
+        var bucketloggerMock = new Mock<ILogger<BucketService>>();
 
         var user = new RegisteredUserDto
         {
@@ -520,9 +527,8 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
 
         var seeder = new DbIntializer();
-        var bucketService = new BucketService(db);
+        var bucketService = new BucketService(db, bucketloggerMock.Object);
         await seeder.SeedAsync(db);
-
         var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
         // Act
         const int month = 8;
@@ -548,11 +554,13 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         
     }
     [Fact]
-    public async Task TestInCorrectBucketSummaryAugust2025()
+    public async Task TestInCorrectBucketSummaryJanuary2026()
     {
         // Arrange
         await using var db = _fixture.CreateContext();
         var userServiceMock = new Mock<IUserService>();
+        
+        var bucketloggerMock = new Mock<ILogger<BucketService>>();
 
         var user = new RegisteredUserDto
         {
@@ -569,10 +577,12 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
                 dto.LastName == "Doe")))
             .ReturnsAsync(Result<RegisteredUserDto>.Success(user));
 
-
+        
         var seeder = new DbIntializer();
-        var bucketService = new BucketService(db);
         await seeder.SeedAsync(db);
+        var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
+        
+        var bucketService = new BucketService(db, bucketloggerMock.Object);
         
         
         // Act
@@ -580,7 +590,8 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         const int year = 2026;
         
         // Uses the db to retrieve summary of transactions of the given month-year
-        var summary = await bucketService.GetSummary(user.Id,month, year);
+        var summary = await bucketService.GetSummary(seedingUser.Id,month, year);
+        
         //Assert
         Assert.NotNull(summary.Value);
         
