@@ -10,10 +10,12 @@ namespace expensetrackerapi.Services;
 public class BucketService : IBucketService
 {
     private readonly ExpenseTrackerContext _db;
+    private readonly ILogger<BucketService> _logger;
 
-    public BucketService(ExpenseTrackerContext context)
+    public BucketService(ExpenseTrackerContext context, ILogger<BucketService> logger)
     {
         _db = context;
+        _logger = logger;
     }
 
     public async Task<Result<List<Bucket>>> GetBuckets()
@@ -25,8 +27,12 @@ public class BucketService : IBucketService
 
     public async Task<Result<List<UserBucketResponseDto>>> GetBucketsByUserId(string? userId)
     {
-        // TODO: Is het niet eerst de bedoeling dat ik check of the userId bestaat!?
-        // Als de user niet bestaat dan moet dit ook gelogt worden.
+        var userDoesExists = await _db.Users.AnyAsync(u => u.Id == userId);
+        if (!userDoesExists)
+        {
+            _logger.LogWarning("Failed to retrieve buckets for {UserId}", userId);   
+            return Result<List<UserBucketResponseDto>>.Failure();
+        }
         var buckets = from bucket in _db.Buckets
             join userbucket in _db.UserBuckets on bucket.Id equals userbucket.BucketId into Userbucketgroup
             
@@ -45,7 +51,14 @@ public class BucketService : IBucketService
 
     public async Task<Result<BucketResponseDto>> GetSummary(string userId, int month, int year)
     {
-        // TODO: als de userId niet bestaat dan moet dit gelogd worden.
+        var userDoesExists = await _db.Users.AnyAsync(u => u.Id == userId);
+        
+        if (!userDoesExists)
+        {
+            _logger.LogWarning("Failed to retrieve buckets for {UserId}", userId);   
+            return Result<BucketResponseDto>.Failure();
+        }
+        
         if (month == 0 || year == 0)
             return
                 Result<BucketResponseDto>.Success(new BucketResponseDto
