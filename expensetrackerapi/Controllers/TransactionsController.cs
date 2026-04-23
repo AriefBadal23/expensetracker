@@ -15,13 +15,11 @@ namespace expensetrackerapi.Controllers
     {
 
         private readonly IExpenseService _expenseExpenseService;
-        private readonly ILogger<IExpenseService> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public Transactions(IExpenseService expenseService, ILogger<IExpenseService> logger, UserManager<ApplicationUser> userManager)
+        public Transactions(IExpenseService expenseService, UserManager<ApplicationUser> userManager)
         {
             _expenseExpenseService = expenseService;
-            _logger = logger;
             _userManager = userManager;
         }
 
@@ -32,6 +30,7 @@ namespace expensetrackerapi.Controllers
             
             if (transaction.Value == null)
             {
+                // TODO: De transaction kon niet gevonden worden.
                 return NotFound(transaction);
             }
 
@@ -40,7 +39,7 @@ namespace expensetrackerapi.Controllers
 
 
         [HttpGet]
-        public async Task<ActionResult> Get(
+        public async Task<ActionResult> GetUserTransactions(
             [FromQuery] int? month, int? year,
             [FromQuery] int? bucket,
             int pageNumber = 1, int pageSize = 3)
@@ -49,6 +48,7 @@ namespace expensetrackerapi.Controllers
             var transactions = await _expenseExpenseService.GetTransactions(id, month, year, bucket, pageNumber, pageSize);
             if (!transactions.IsSuccess)
             {
+                // TODO: user transaction could not be found.
                 return NotFound();
             }
             return Ok(transactions);
@@ -56,11 +56,11 @@ namespace expensetrackerapi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] RequestTransactionDto transaction)
+        public async Task<ActionResult> CreateTransaction([FromBody] RequestTransactionDto transaction)
         {
             var userId = _userManager.GetUserId(User);
             
-            if (userId is null) return Unauthorized();
+            if (userId is null) return Unauthorized(); // TODO: UserId is null, log it.
             
             var transactionCreated = await _expenseExpenseService.CreateTransaction(userId,transaction);
             
@@ -72,11 +72,11 @@ namespace expensetrackerapi.Controllers
         }
 
         [HttpDelete("{transactionId:int}")]
-        public async Task<ActionResult> Delete(int transactionId)
+        public async Task<ActionResult> DeleteTransaction(int transactionId)
         {
             
             var userId = _userManager.GetUserId(User);
-            if (userId is null) return Unauthorized();
+            if (userId is null) return Unauthorized(); //TODO: UserId is null, log it.
             var isDeleted = await _expenseExpenseService.DeleteTransaction(userId, transactionId);
             if (!isDeleted.IsSuccess)
             {
