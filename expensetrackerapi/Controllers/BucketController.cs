@@ -17,7 +17,6 @@ public class BucketsController : ControllerBase
     public BucketsController( IBucketService bucketService, UserManager<ApplicationUser> userManager)
     {
         // constructor DI 
-        _logger = logger;
         _bucketService = bucketService;
         _manager = userManager;
     }
@@ -32,7 +31,6 @@ public class BucketsController : ControllerBase
             
             return Ok(transactions);
         }
-        // TODO: No transaction are returned.
         return BadRequest("No transactions found.");
     }
     
@@ -45,7 +43,6 @@ public class BucketsController : ControllerBase
         {
             return Ok(buckets);
         }
-        // TODO: No Buckets are returned.
         return BadRequest("No buckets found.");
     }
     [HttpGet("user")]
@@ -57,7 +54,6 @@ public class BucketsController : ControllerBase
         {
             return Ok(buckets);
         }
-        // //TODO: No user buckets are found
         return BadRequest("No buckets found.");
     }
 }
