@@ -40,19 +40,32 @@ namespace expensetrackerapi.Services
         public async Task<Result<ResponseTransactionDTo?>> UpdateTransaction(string userId, int id, UpdateTransactionDto transaction)
         {
             var t = await _db.Transactions.FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == userId);
+            var usertransactionBucket = await _db.UserBuckets.FirstAsync(b => b.ApplicationUserId == userId && b.BucketId == transaction.BucketId);
+            
 
             if (t == null)
             {
                 return Result<ResponseTransactionDTo?>.NotFound();
             }
 
+            // deduct first the original amount of the updated transaction.
+            usertransactionBucket.Total -= t.Amount;
+            _db.UserBuckets.Update(usertransactionBucket);
+            await _db.SaveChangesAsync();
+            
+            // update the amount with the new updated amount for the transaction.
+            usertransactionBucket.Total += transaction.Amount;
+            _db.Transactions.Update(t);
+            await _db.SaveChangesAsync();
+            
+            // update the object.
             t.Amount = transaction.Amount;
             t.BucketId = transaction.BucketId;
             t.CreatedAt = transaction.CreatedAt;
             t.Description = transaction.Description;
+            
 
-
-            _db.Transactions.Update(t);
+            _db.UserBuckets.Update(usertransactionBucket);
             await _db.SaveChangesAsync();
             var response = _mapper.TransactionToResponseTransaction(t);
 

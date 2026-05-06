@@ -645,11 +645,13 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
                 Amount = 100,
                 CreatedAt = new LocalDate(2025, 1, 10)
             });
-            
+
+        var Userbucket =  await db.UserBuckets.FirstAsync(b => b.ApplicationUserId == seeduser.Id && b.BucketId == 1);
         
         // Assert
         Assert.Equal("Weekly Salary",updatedTransaction.Value.Description );
         Assert.Equal(100,updatedTransaction.Value.Amount );
+        Assert.Equal(4830, Userbucket.Total);
         Assert.Equal(new LocalDate(2025,1, 10),updatedTransaction.Value.CreatedAt );
         
        
