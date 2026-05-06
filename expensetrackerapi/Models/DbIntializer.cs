@@ -43,8 +43,8 @@ public class DbIntializer : IDbInitializer
         var buckets = new Bucket[]
         {
             new() {Name=Buckets.Salary,Icon="💰", Type = BucketTypes.Income},
+            new() {Name=Buckets.Shopping,Icon="🛒", Type = BucketTypes.Expense},
             new() {Name=Buckets.Groceries,Icon="🏪", Type = BucketTypes.Expense},
-            new() {Name=Buckets.Shopping,Icon="🛒", Type = BucketTypes.Expense}
         };
 
         await context.Buckets.AddRangeAsync(buckets);
