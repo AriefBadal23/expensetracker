@@ -2,6 +2,7 @@ public enum Buckets
 {
     Salary,
     Shopping,
-    Groceries
+    Groceries,
+    Savings
 }
 
