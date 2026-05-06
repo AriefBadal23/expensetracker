@@ -21,7 +21,7 @@ namespace expensetrackerapi.Migrations
                 .HasAnnotation("ProductVersion", "9.0.11")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
-            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "buckets", new[] { "groceries", "salary", "shopping" });
+            NpgsqlModelBuilderExtensions.HasPostgresEnum(modelBuilder, "buckets", new[] { "groceries", "salary", "savings", "shopping" });
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
@@ -373,7 +373,7 @@ namespace expensetrackerapi.Migrations
             modelBuilder.Entity("expensetrackerapi.Models.UserBuckets", b =>
                 {
                     b.HasOne("expensetrackerapi.Models.ApplicationUser", null)
-                        .WithMany()
+                        .WithMany("UserBuckets")
                         .HasForeignKey("ApplicationUserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -383,6 +383,11 @@ namespace expensetrackerapi.Migrations
                         .HasForeignKey("BucketId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+                });
+
+            modelBuilder.Entity("expensetrackerapi.Models.ApplicationUser", b =>
+                {
+                    b.Navigation("UserBuckets");
                 });
 
             modelBuilder.Entity("expensetrackerapi.Models.Bucket", b =>

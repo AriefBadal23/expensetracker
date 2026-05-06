@@ -33,7 +33,6 @@ public class AuthController : ControllerBase
                 ErrorCodes.BadRequest,
                 e.Description
             )).ToArray();
-            // TODO: ✅ User failed to register, input validation failed....
             return BadRequest(errors);
 
         }
@@ -67,9 +66,9 @@ public class AuthController : ControllerBase
         };
         Response.Cookies.Append("jwt", result.Value, CookieOptions);
         return Ok(result);
-    
+
     }
-    
+
     [HttpPost("logout")]
     public ActionResult LogOut()
     {

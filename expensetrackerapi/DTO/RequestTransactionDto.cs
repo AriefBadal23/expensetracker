@@ -8,7 +8,7 @@ namespace expensetrackerapi.DTO;
 public class RequestTransactionDto
 {
     [JsonPropertyName("bucketId")]
-    public int BucketId { get; set; }
+    public required int BucketId { get; set; }
 
     [JsonPropertyName("description")]
     [Required(ErrorMessage = "The Description is required.")]
@@ -17,10 +17,10 @@ public class RequestTransactionDto
 
     [JsonPropertyName("amount")]
     [Range(0, 100_000, ErrorMessage = "The amount must be between 0 and 100_000.")]
-    public int Amount { get; set; }
+    public required int Amount { get; set; }
 
     [CreatedAtValidation]
     [Required(ErrorMessage = "Created_at is required.")]
-    public LocalDate CreatedAt { get; set; }
+    public required LocalDate CreatedAt { get; set; }
 
 }

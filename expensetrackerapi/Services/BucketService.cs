@@ -17,28 +17,28 @@ public class BucketService : IBucketService
         _db = context;
         _logger = logger;
     }
-    
+
 
     public async Task<Result<List<UserBucketResponseDto>>> GetBucketsByUserId(string? userId)
     {
         var userDoesExists = await _db.Users.AnyAsync(u => u.Id == userId);
         if (!userDoesExists)
         {
-            _logger.LogWarning("Failed to retrieve buckets due invalid userId for userId: {UserId}", userId);   
+            _logger.LogWarning("Failed to retrieve buckets due invalid userId for userId: {UserId}", userId);
             return Result<List<UserBucketResponseDto>>.Failure();
         }
         var buckets = from bucket in _db.Buckets
-            join userbucket in _db.UserBuckets on bucket.Id equals userbucket.BucketId into Userbucketgroup
-            
-            from userbucket in Userbucketgroup
-            where userbucket.ApplicationUserId == userId
-            select new UserBucketResponseDto
-            {
-                Bucket = bucket,
-                BucketTotal = userbucket.Total
-            };
-        
-        _logger.LogInformation("Successfully retrieved buckets by userId: {UserId}", userId);   
+                      join userbucket in _db.UserBuckets on bucket.Id equals userbucket.BucketId into Userbucketgroup
+
+                      from userbucket in Userbucketgroup
+                      where userbucket.ApplicationUserId == userId
+                      select new UserBucketResponseDto
+                      {
+                          Bucket = bucket,
+                          BucketTotal = userbucket.Total
+                      };
+
+        _logger.LogInformation("Successfully retrieved buckets by userId: {UserId}", userId);
         return Result<List<UserBucketResponseDto>>.Success(
             await buckets.ToListAsync());
     }
@@ -47,10 +47,10 @@ public class BucketService : IBucketService
     public async Task<Result<BucketResponseDto>> GetSummary(string userId, int month, int year)
     {
         var userDoesExists = await _db.Users.AnyAsync(u => u.Id == userId);
-        
+
         if (!userDoesExists)
         {
-            _logger.LogWarning("Failed to retrieve transactions summary due invalid userId for userId: {UserId}", userId);   
+            _logger.LogWarning("Failed to retrieve transactions summary due invalid userId for userId: {UserId}", userId);
             return Result<BucketResponseDto>.Failure();
         }
 
@@ -70,18 +70,18 @@ public class BucketService : IBucketService
 
                            let userTransactions = bucketTransactions
                                .Where(t => t.CreatedAt.Month == month && t.CreatedAt.Year == year && t.ApplicationUserId == userId)
-                           
+
 
                            let monthBucketTotal = userTransactions.Sum(x => x.Amount)
 
                            select
-                                   new BucketTransaction(buck.Id, buck.Name,buck.Type, monthBucketTotal, userTransactions.ToArray())
+                                   new BucketTransaction(buck.Id, buck.Name, buck.Type, monthBucketTotal, userTransactions.ToArray())
             ).ToListAsync();
 
 
         // Make use of the query but change the return type so it matches the required output for the front-end.
         _logger.LogInformation("Successfully retrieved Bucket Transactions summary by userId for {UserId}.", userId);
-        
+
         return Result<BucketResponseDto>.Success(
             new BucketResponseDto
             {

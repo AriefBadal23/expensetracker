@@ -294,7 +294,6 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     {
         await using var db = _fixture.CreateContext();
         var expenseloggerMock = new Mock<ILogger<ExpenseService>>();
-        var bucketloggerMock = new Mock<ILogger<BucketService>>();
         var userServiceMock = new Mock<IUserService>();
         
         var user = new RegisteredUserDto
@@ -318,7 +317,6 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
         
         var expenseService = new ExpenseService(db, expenseloggerMock.Object);
-        var bucketService = new BucketService(db, bucketloggerMock.Object);
 
        
 
@@ -378,7 +376,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
      db.Transactions.AddRange(newTransactions);
      await db.SaveChangesAsync();
 
-     var attr = new CreatedAtValidation();
+     var attr = new CreatedAtValidationAttribute();
      var context = new ValidationContext(new { });
      var result = attr.GetValidationResult(newTransactions[0].CreatedAt, context);
      // ASSERT

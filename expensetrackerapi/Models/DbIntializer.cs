@@ -6,19 +6,19 @@ using NodaTime;
 
 namespace expensetrackerapi.Models;
 
-public class DbIntializer:IDbInitializer
+public class DbIntializer : IDbInitializer
 {
     // 💡 First I used UserService in this class (constructor DI) but it made it hard to use it in the unittests.
     // Now I make the ApplicationUser object, hash the password and store the user in the DB without any userService methods.
     public async Task SeedAsync(ExpenseTrackerContext context)
     {
-        
-        if (context.Buckets.Any())
+
+        if (await context.Buckets.AnyAsync())
         {
             return;
         }
         Console.WriteLine("Database seeding started");
-        
+
         var hasher = new PasswordHasher<ApplicationUser>();
         
         var user = new ApplicationUser()
@@ -31,32 +31,32 @@ public class DbIntializer:IDbInitializer
             NormalizedEmail = "ARIEF@OUTLOOK.NL",
             EmailConfirmed = false,
             SecurityStamp = Guid.NewGuid().ToString("D")
-            
+
         };
-        
-        user.PasswordHash = hasher.HashPassword(user, "Marvel01@"); ;
+
+        user.PasswordHash = hasher.HashPassword(user, "Marvel01@");
 
         await context.Users.AddAsync(user);
-        
+
         Console.WriteLine($"{await context.SaveChangesAsync()} User has been added to the database.");
-        
+
         var buckets = new Bucket[]
         {
             new() {Name=Buckets.Salary,Icon="💰", Type = BucketTypes.Income},
+            new() {Name=Buckets.Shopping,Icon="🛒", Type = BucketTypes.Expense},
             new() {Name=Buckets.Groceries,Icon="🏪", Type = BucketTypes.Expense},
-            new() {Name=Buckets.Shopping,Icon="🛒", Type = BucketTypes.Expense}
         };
 
         await context.Buckets.AddRangeAsync(buckets);
         await context.SaveChangesAsync();
-        
+
         var userBuckets = buckets.Select(bucket => new UserBuckets { ApplicationUserId = user.Id, BucketId = bucket.Id }).ToList();
         await context.UserBuckets.AddRangeAsync(userBuckets);
         Console.WriteLine($"{await context.SaveChangesAsync()} Buckets has been added to the database.");
-        
+
         // Seeding of M:M table (Join Entity Type)
         var newUser = await context.Users.FirstAsync(u => u.Email == "arief@outlook.nl");
-        
+
         var transactions = new Transaction[]
         {
             new()
@@ -337,14 +337,14 @@ public class DbIntializer:IDbInitializer
         // Make sure the Total is up-to-date of the buckets.
 
         var salaryBucket = await context.UserBuckets.FirstAsync(ub => ub.BucketId == 1 && ub.ApplicationUserId == user.Id);
-        
-        
+
+
         foreach (var t in transactions)
         {
             var userBucket =
                 await context.UserBuckets.FirstAsync(ub => ub.ApplicationUserId == user.Id && ub.BucketId == t.BucketId);
-            
-            var bucket = context.Buckets.First(x => x.Id == t.BucketId);
+
+            var bucket = await context.Buckets.FirstAsync(x => x.Id == t.BucketId);
 
             if (bucket.Name == Buckets.Salary && bucket.Type == BucketTypes.Income)
             {
@@ -354,21 +354,21 @@ public class DbIntializer:IDbInitializer
             else
             {
                 // Update the bucket & Salary Total
-                salaryBucket.Total-= t.Amount;
+                salaryBucket.Total -= t.Amount;
                 userBucket.Total += t.Amount;
-                
+
 
             }
 
 
         }
-        
+
         await context.Transactions.AddRangeAsync(transactions);
-        
-        
+
+
         Console.WriteLine($"{await context.SaveChangesAsync()} transactions are added.");
         Console.WriteLine("Database seeding completed");
     }
-    
-        
-    }
+
+
+}

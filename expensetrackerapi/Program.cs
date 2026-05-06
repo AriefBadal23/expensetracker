@@ -37,7 +37,7 @@ try
 
     // Add services to the container.
 
-    
+
     // Inject Serilog as a service to the Dependancy Injection Container to use it in the application.
     // to configure it to work with the ILogger service
     builder.Host.UseSerilog((context, services, configuration) => configuration
@@ -46,9 +46,9 @@ try
         .ReadFrom.Services(services)
         .Enrich.FromLogContext()
         .Enrich.WithClientIp()
-    
+
     );
-    
+
     // Als iemand IDbInitializer vraagt → geef een DbInitializer
     builder.Services.AddScoped<IDbInitializer, DbIntializer>();
     builder.Services.AddScoped<IExpenseService, ExpenseService>();
@@ -74,7 +74,7 @@ try
                         .AllowCredentials();
                 });
         });
-    
+
     builder.Services.AddControllers()
         .AddJsonOptions(options =>
         {
@@ -122,7 +122,6 @@ try
                 OnMessageReceived = context =>
                 {
                     context.Token = context.Request.Cookies["jwt"];
-                    var cookie = context.Request.Cookies["jwt"];
                     return Task.CompletedTask;
                 },
                 OnAuthenticationFailed = context =>
@@ -130,24 +129,24 @@ try
                     return Task.CompletedTask;
                 }
             };
-            
-        // handler to handle authentication
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            // validates our secret key
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-            ValidAudience = builder.Configuration["JwtSettings:Audience"],
-            // encrypting our (encoded) secret key
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
-            // 5-min window (by default) between duration, we change it here to 0.
-            ClockSkew = TimeSpan.Zero
-        };
-    });
-    
+
+            // handler to handle authentication
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                // validates our secret key
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                // encrypting our (encoded) secret key
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
+                // 5-min window (by default) between duration, we change it here to 0.
+                ClockSkew = TimeSpan.Zero
+            };
+        });
+
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
 
@@ -155,7 +154,7 @@ try
     app.Use(async (context, next) =>
     {
         var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
-        
+
         // Add of source IP to the LogContext
         using (LogContext.PushProperty("ClientIp", clientIp))
         {
@@ -163,7 +162,7 @@ try
         }
     });
     app.UseCors(myAllowSpecificOrigins);
-    
+
     app.UseAuthentication();
     app.UseAuthorization();
 
@@ -182,7 +181,7 @@ try
     {
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ExpenseTrackerContext>();
-        context.Database.EnsureCreated();
+        await context.Database.EnsureCreatedAsync();
         // seed the database.
         var initializer = services.GetRequiredService<IDbInitializer>();
         await initializer.SeedAsync(context);
@@ -196,7 +195,7 @@ try
 
     Log.Information("Expense Tracker API started successfully");
 
-    app.Run();
+    await app.RunAsync();
 
 }
 catch (Exception ex)
@@ -206,7 +205,7 @@ catch (Exception ex)
 
 finally
 {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }
 
 

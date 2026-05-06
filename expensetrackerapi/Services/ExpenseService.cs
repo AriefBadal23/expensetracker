@@ -32,7 +32,7 @@ namespace expensetrackerapi.Services
 
             var response = _mapper.TransactionToResponseTransaction(transaction);
             return Result<ResponseTransactionDTo?>.Success(response);
-            
+
 
 
         }
@@ -55,27 +55,27 @@ namespace expensetrackerapi.Services
             _db.Transactions.Update(t);
             await _db.SaveChangesAsync();
             var response = _mapper.TransactionToResponseTransaction(t);
-            
-            _logger.LogInformation("User: {UserId} has updated transactionID: {Id} successfully.",userId, id);
+
+            _logger.LogInformation("User: {UserId} has updated transactionID: {Id} successfully.", userId, id);
             return Result<ResponseTransactionDTo?>.Success(
                 response
             );
         }
-        
+
         public async Task<Result<object>> GetTransactions(string? userId, int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3)
         {
             if (userId == null)
             {
-                _logger.LogWarning("Unauthorized access by retrieving all transactions of {UserId}",userId);
-                return Result<object>.Failure(); 
+                _logger.LogWarning("Unauthorized access by retrieving all transactions of {UserId}", userId);
+                return Result<object>.Failure();
             }
-            
+
             // bucket query string = bucket ID
             var totalRecords = await _db.Transactions.Where(t => t.ApplicationUserId == userId).CountAsync();
             if (month.HasValue && year.HasValue && !bucket.HasValue)
             {
-                _logger.LogInformation("User:{UserId} received all transactions with parameters: Month: {Month} - Year: {Year}",userId,month, year);
-                
+                _logger.LogInformation("User:{UserId} received all transactions with parameters: Month: {Month} - Year: {Year}", userId, month, year);
+
                 var monthTransactions = await _db.Transactions
                     .Where(t => t.ApplicationUserId == userId && t.CreatedAt.Month == month && t.CreatedAt.Year == year)
                     .OrderByDescending(t => t.CreatedAt)
@@ -96,8 +96,8 @@ namespace expensetrackerapi.Services
                 .OrderByDescending(t => t.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).ToListAsync();
-                
-                _logger.LogInformation("User:{UserId} received all transactions with parameters: bucket {Bucket}",userId,bucket);
+
+                _logger.LogInformation("User:{UserId} received all transactions with parameters: bucket {Bucket}", userId, bucket);
 
                 return Result<object>.Success(
                 new
@@ -116,10 +116,10 @@ namespace expensetrackerapi.Services
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
-                
-                _logger.LogInformation("User:{UserId} received all transactions with parameters: Month: {Month} - Year: {Year} for bucket {Bucket}",userId,month, year, bucket);
 
-                
+                _logger.LogInformation("User:{UserId} received all transactions with parameters: Month: {Month} - Year: {Year} for bucket {Bucket}", userId, month, year, bucket);
+
+
                 return Result<object>.Success(new
                 {
                     Total = monthTransactions.Count,
@@ -152,9 +152,9 @@ namespace expensetrackerapi.Services
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
-                
-                _logger.LogInformation("User:{UserId} received all transactions with parameters: Year: {Year} ",userId, year);
-                
+
+                _logger.LogInformation("User:{UserId} received all transactions with parameters: Year: {Year} ", userId, year);
+
                 return Result<object>.Success(
                     new
                     {
@@ -171,10 +171,10 @@ namespace expensetrackerapi.Services
                 .OrderByDescending(t => t.CreatedAt)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).ToListAsync();
-            
-            _logger.LogInformation("User:{UserId} received all its transactions",userId);
-            
-            
+
+            _logger.LogInformation("User:{UserId} received all its transactions", userId);
+
+
             return Result<object>.Success(
                 new
                 {
@@ -183,106 +183,106 @@ namespace expensetrackerapi.Services
 
                 }
             );
+        }
+
+        public async Task<Result<ResponseTransactionDTo>> CreateTransaction(string userId, RequestTransactionDto transaction)
+        {
+            // mapp to Transaction object.
+            var mappedTransaction = _mapper.TransactionDtoToRequestTransaction(transaction);
+            mappedTransaction.ApplicationUserId = userId;
+
+            // Salary bucket of the current logged in user.
+            UserBuckets salary = await _db.UserBuckets.FirstAsync(ub => ub.BucketId == 1 && ub.ApplicationUserId == userId);
+
+            // Bucket of the new created transaction.
+            Bucket? transactionBucket = await _db.Buckets.FirstOrDefaultAsync(b => b.Id == mappedTransaction.BucketId);
+
+            var userBuckets = await _db.UserBuckets.FirstAsync(ub =>
+                ub.ApplicationUserId == userId && ub.BucketId == mappedTransaction.BucketId); // bucketID: 2
+
+            // Guard clauses, always start with null check first.
+            if (transactionBucket == null || mappedTransaction.Amount <= 0)
+            {
+                _logger.LogWarning("UserId: {UserId} failed to create a new transaction, incorrect amount or bucket was provided.", userId);
+
+                return Result<ResponseTransactionDTo>.Failure();
             }
 
-            public async Task<Result<ResponseTransactionDTo>> CreateTransaction(string userId, RequestTransactionDto transaction)
-            {
-                // mapp to Transaction object.
-                var mappedTransaction = _mapper.TransactionDtoToRequestTransaction(transaction);
-                mappedTransaction.ApplicationUserId = userId;
-                
-                // Salary bucket of the current logged in user.
-                UserBuckets salary = await _db.UserBuckets.FirstAsync(ub => ub.BucketId == 1 && ub.ApplicationUserId == userId);
-                
-                // Bucket of the new created transaction.
-                Bucket? transactionBucket = await _db.Buckets.FirstOrDefaultAsync(b => b.Id == mappedTransaction.BucketId);
-                
-                var userBuckets = await _db.UserBuckets.FirstAsync(ub =>
-                    ub.ApplicationUserId == userId && ub.BucketId == mappedTransaction.BucketId); // bucketID: 2
-                
-                // Guard clauses, always start with null check first.
-                if (transactionBucket == null || mappedTransaction.Amount <= 0)
-                {
-                    _logger.LogWarning("UserId: {UserId} failed to create a new transaction, incorrect amount or bucket was provided.", userId);
-                    
-                    return Result<ResponseTransactionDTo>.Failure();
-                }
 
-                
-                // 💡 GetValueOrDefault()
-                // if the transaction is Income then we need to update the amount.
-                // 1. The transaction is an Income transaction
-                // 2. The transaction is an Expense transaction
-                //      2.1 Increment the total of the expense bucket
-                        //2.2 Decrement the Income bucket 
-                        
-                if (userBuckets.BucketId >= 0 && transactionBucket.Name != Buckets.Salary)
+            // 💡 GetValueOrDefault()
+            // if the transaction is Income then we need to update the amount.
+            // 1. The transaction is an Income transaction
+            // 2. The transaction is an Expense transaction
+            //      2.1 Increment the total of the expense bucket
+            //2.2 Decrement the Income bucket 
+
+            if (userBuckets.BucketId >= 0 && transactionBucket.Name != Buckets.Salary)
+            {
+                userBuckets.Total += mappedTransaction.Amount;
+                salary.Total -= mappedTransaction.Amount;
+            }
+            else
+            {
+                userBuckets.Total += mappedTransaction.Amount;
+
+            }
+
+
+
+            _db.Transactions.Add(mappedTransaction);
+            _db.UserBuckets.Update(salary);
+            await _db.SaveChangesAsync();
+
+            var response = _mapper.TransactionToResponseTransaction(mappedTransaction);
+            _logger.LogInformation("UserId: {UserId} successfully created a new transaction", userId);
+
+            return Result<ResponseTransactionDTo>.Success(response);
+
+        }
+
+        public async Task<Result<bool>> DeleteTransaction(string userId, int transactionId)
+        {
+            var deletedTransaction = await _db.Transactions.FindAsync(transactionId);
+
+            var transactionBucket = await _db.Buckets.FirstAsync(bucket => deletedTransaction != null && bucket.Id == deletedTransaction.BucketId);
+
+            var userBuckets = await _db.UserBuckets.FirstAsync(ub =>
+                ub.BucketId == transactionBucket.Id && ub.ApplicationUserId == userId);
+
+            var userIncome = await _db.UserBuckets.FirstAsync(ub =>
+                ub.BucketId == 1 && ub.ApplicationUserId == userId);
+
+
+
+
+            if (deletedTransaction != null && deletedTransaction.Amount > 0)
+            {
+                _db.Transactions.Remove(deletedTransaction);
+                // Je kijkt of the transaction een income of expense is. 
+                // Daarop update je de Income total.
+                // -----
+                // Is the transaction not an income
+                // then add it back to the income and decrease the bucket amount.
+                // otherwise decrease it from the income and decrease it from the Income as well.
+
+                if (transactionBucket.Type == BucketTypes.Expense)
                 {
-                    userBuckets.Total+=mappedTransaction.Amount;
-                    salary.Total -= mappedTransaction.Amount;
+                    userBuckets.Total -= deletedTransaction.Amount;
+                    userIncome.Total += deletedTransaction.Amount;
                 }
                 else
                 {
-                    userBuckets.Total += mappedTransaction.Amount;
-                    
+                    userIncome.Total -= deletedTransaction.Amount;
                 }
-                
 
-
-                _db.Transactions.Add(mappedTransaction);
-                _db.UserBuckets.Update(salary);
                 await _db.SaveChangesAsync();
-                
-                var response = _mapper.TransactionToResponseTransaction(mappedTransaction);
-                _logger.LogInformation("UserId: {UserId} successfully created a new transaction", userId);
-                
-                return Result<ResponseTransactionDTo>.Success(response);
-                
+
+                _logger.LogInformation("UserId: {UserId} successfully deleted transactionId {DeletedTransaction}", userId, transactionId);
+                return Result<bool>.Success(true);
             }
 
-            public async Task<Result<bool>> DeleteTransaction(string userId, int transactionId)
-            {
-                var deletedTransaction = await _db.Transactions.FindAsync(transactionId);
 
-                var transactionBucket = await _db.Buckets.FirstAsync(bucket => deletedTransaction != null && bucket.Id == deletedTransaction.BucketId);
-                
-                var userBuckets = await _db.UserBuckets.FirstAsync(ub =>
-                    ub.BucketId == transactionBucket.Id && ub.ApplicationUserId == userId);
-                
-                var userIncome = await _db.UserBuckets.FirstAsync(ub =>
-                    ub.BucketId == 1 && ub.ApplicationUserId == userId);
-                
-                
-
-
-                if (deletedTransaction != null && deletedTransaction.Amount > 0)
-                {
-                    _db.Transactions.Remove(deletedTransaction);
-                    // Je kijkt of the transaction een income of expense is. 
-                    // Daarop update je de Income total.
-                    // -----
-                    // Is the transaction not an income
-                    // then add it back to the income and decrease the bucket amount.
-                    // otherwise decrease it from the income and decrease it from the Income as well.
-
-                    if (transactionBucket.Type == BucketTypes.Expense)
-                    {
-                        userBuckets.Total -= deletedTransaction.Amount;
-                        userIncome.Total += deletedTransaction.Amount;
-                    }
-                    else
-                    {
-                        userIncome.Total -= deletedTransaction.Amount;
-                    }
-
-                    await _db.SaveChangesAsync();
-                    
-                    _logger.LogInformation("UserId: {UserId} successfully deleted transactionId {DeletedTransaction}", userId, transactionId);
-                    return Result<bool>.Success(true);
-                }
-                
-                
-            _logger.LogWarning("UserId: {UserId} failed to delete transactionId {DeletedTransaction}", userId, transactionId);    
+            _logger.LogWarning("UserId: {UserId} failed to delete transactionId {DeletedTransaction}", userId, transactionId);
             return Result<bool>.Failure();
 
         }

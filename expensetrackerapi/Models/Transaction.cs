@@ -1,6 +1,7 @@
 using expensetrackerapi.Validation;
 using NodaTime;
 namespace expensetrackerapi.Models;
+
 using System.ComponentModel.DataAnnotations;
 
 public record Transaction
@@ -10,7 +11,7 @@ public record Transaction
 
     [Required(ErrorMessage = "UserID is required.")]
     public string ApplicationUserId { get; set; } = string.Empty;
-    
+
     [Required(ErrorMessage = "The Description is required.")]
     [StringLength(50, ErrorMessage = "The description must be less than 50 characters.")]
     public string? Description { get; set; }

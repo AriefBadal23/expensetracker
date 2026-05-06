@@ -14,7 +14,7 @@ public class BucketsController : ControllerBase
     private readonly IBucketService _bucketService;
     private readonly UserManager<ApplicationUser> _manager;
 
-    public BucketsController( IBucketService bucketService, UserManager<ApplicationUser> userManager)
+    public BucketsController(IBucketService bucketService, UserManager<ApplicationUser> userManager)
     {
         // constructor DI 
         _bucketService = bucketService;
@@ -25,16 +25,18 @@ public class BucketsController : ControllerBase
     public async Task<ActionResult> GetBucketSummary([FromQuery] int month, [FromQuery] int year)
     {
         var userId = _manager.GetUserId(User);
-        var transactions = await _bucketService.GetSummary(userId,month, year);
+        if (userId is null) return BadRequest("Invalid userId provided.");
+
+        var transactions = await _bucketService.GetSummary(userId, month, year);
         if (transactions.IsSuccess)
         {
-            
+
             return Ok(transactions);
         }
         return BadRequest("No transactions found.");
     }
-    
-    
+
+
     [HttpGet("user")]
     public async Task<ActionResult> GetBucketsByUserId()
     {
