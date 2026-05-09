@@ -6,21 +6,21 @@ const CreateFormModal = ({SetShowModal,showModal, isUpdateForm, transactionID, s
         {
             showModal && SetShowModal !== undefined ?
                 (
-                <>
                     <div
                         className="modal fade show"
                         id="createTransaction"
                         aria-labelledby="createTransactionLabel"
                         aria-hidden="true"
-                        style={{ display: "block" }}
+                        style={{display: "block"}}
                     >
                         <div className="modal-dialog">
                             <div className="modal-content">
                                 <div className="modal-header">
-                                <h1 className="modal-title fs-5" id="createTransactionLabel"> Transaction Details</h1>
-                                    
+                                    <h1 className="modal-title fs-5" id="createTransactionLabel"> Transaction
+                                        Details</h1>
+
                                     <button
-                                        type="button"   
+                                        type="button"
                                         className="btn-close"
                                         data-bs-dismiss="modal"
                                         aria-label="Close"
@@ -28,7 +28,9 @@ const CreateFormModal = ({SetShowModal,showModal, isUpdateForm, transactionID, s
                                     ></button>
                                 </div>
                                 <div className="modal-body">
-                                    <CreateTransactionForm SetShowModal={SetShowModal} showModal={showModal} isUpdateForm={isUpdateForm} transactionID={transactionID} setTransactions={setTransactions} />
+                                    <CreateTransactionForm SetShowModal={SetShowModal} showModal={showModal}
+                                                           isUpdateForm={isUpdateForm} transactionID={transactionID}
+                                                           setTransactions={setTransactions}/>
                                 </div>
                                 <div className="modal-footer">
                                     <button
@@ -43,7 +45,6 @@ const CreateFormModal = ({SetShowModal,showModal, isUpdateForm, transactionID, s
                             </div>
                         </div>
                     </div>
-                </>
                 ) : null
                 
         }
