@@ -11,6 +11,19 @@ interface TransactionTableProps {
 }
 const TransactionTable = ({ transactions, setTransactions,ErrorMessage }: TransactionTableProps) => {
     const [showModal, setShowModal] = useState(false);
+    
+    // state to show the CreateFormTransactionForm with the transaction details.
+    const [isUpdateForm, setUpdateForm] = useState(false)
+    
+    // keep track of the transaction that need to be updated, with a separate state, lift state up to this component instead of in the transaction row.
+    const [updatedTransaction, setUpdatedTransaction] = useState<Transaction>({
+        id:0,
+        createdAt: new Date(),
+        bucketId:0,
+        description:"",
+        amount: 0
+    });
+    
     const ErrorMessageStyle = {
         color: "#B00020",           
         backgroundColor: "#FFEBEE", 
@@ -27,7 +40,7 @@ const TransactionTable = ({ transactions, setTransactions,ErrorMessage }: Transa
         
         {/*Show create modal*/}
         { showModal ? 
-            <CreateFormModal SetShowModal={setShowModal} showModal={showModal} isUpdateForm={false} setTransactions={setTransactions}/>
+            <CreateFormModal SetShowModal={setShowModal} transactionID={updatedTransaction?.id} showModal={showModal} isUpdateForm={isUpdateForm} setTransactions={setTransactions}/>
             : null
         }
 
@@ -74,7 +87,7 @@ const TransactionTable = ({ transactions, setTransactions,ErrorMessage }: Transa
                     {
                         transactions.map((t) => {
                             return (
-                                <TransactionRow key={t.id} transaction={t} setTransactions={setTransactions} /> 
+                                <TransactionRow key={t.id} transaction={t} setTransactions={setTransactions} setShowModal={setShowModal} setUpdateForm={setUpdateForm} setUpdateTransaction={setUpdatedTransaction} /> 
                             )
                         })
                     }

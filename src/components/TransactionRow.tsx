@@ -1,24 +1,18 @@
 import type {Dispatch, SetStateAction} from "react";
-import {useEffect, useState} from "react"
 import type {Transaction} from "../types/Transaction";
 import {IdToBucket} from "../utils/BucketMap";
-import CreateFormModal from "./CreateFormModal.tsx";
 import {Buckets} from "../types/Buckets.tsx";
 
 
 interface TransactionRowProps {
   transaction: Transaction;
   setTransactions: Dispatch<SetStateAction<Transaction[]>>
+    setShowModal: Dispatch<SetStateAction<boolean>>
+    setUpdateForm:Dispatch<SetStateAction<boolean>>
+    setUpdateTransaction:Dispatch<SetStateAction<Transaction>>
 }
 
-const TransactionRow = ({transaction, setTransactions }: TransactionRowProps) => {
-  const [showModal, setShowModal] = useState(false);
-  const [selectedTransaction, setSelectedTransaction] = useState<Transaction | null>(null);
-  
-  useEffect(() => {
-    
-  }, [selectedTransaction]);
-  
+const TransactionRow = ({transaction, setTransactions, setShowModal, setUpdateForm, setUpdateTransaction }: TransactionRowProps) => {
   async function DeleteTransaction(id: number | undefined) {
     try {
           await fetch(`https://localhost:7118/api/v1/transactions/${id}`, {
@@ -39,32 +33,29 @@ const TransactionRow = ({transaction, setTransactions }: TransactionRowProps) =>
   
   return (
       // fragments
-    <>
-        {
-          showModal && selectedTransaction !== null ?
-              <CreateFormModal SetShowModal={setShowModal} showModal={showModal} isUpdateForm={true} transactionID={selectedTransaction.id} setTransactions={setTransactions} />
-              : <></>
-        }
-        
-              <tr key={transaction.id} id={transaction.id?.toString()}>
-                <td>{transaction.description}</td>
-                {/* TODO: dit kan beter: */}
-                <td>{IdToBucket[transaction.bucketId] === Buckets.Salary ? `   + €${transaction.amount}` : ` - € ${transaction.amount}`}</td>
-                <td>{IdToBucket[transaction.bucketId]}</td>
-                <td>{new Date(transaction.createdAt).toLocaleDateString()}</td>
-                <td><button type="button" 
+      <tr key={transaction.id} id={transaction.id?.toString()}>
+          <td>{transaction.description}</td>
+          <td>{IdToBucket[transaction.bucketId] === Buckets.Salary ? `   + €${transaction.amount}` : ` - € ${transaction.amount}`}</td>
+          <td>{IdToBucket[transaction.bucketId]}</td>
+          <td>{new Date(transaction.createdAt).toLocaleDateString()}</td>
+          <td>
+              <button type="button"
                       aria-label="Delete transaction"
                       onClick={() => DeleteTransaction(transaction.id)}>
-                     <img src="delete.png" alt="Delete transaction"/></button></td>
-                
-                <td><button type="button"
-                            aria-label="Update transaction"
-                            onClick={() => {
-                            setShowModal(true)
-                            setSelectedTransaction(transaction)}}>
-                <img src="update.png" alt="Update transaction" /></button></td>
-              </tr>
-    </>
+                  <img src="delete.png" alt="Delete transaction"/></button>
+          </td>
+
+          <td>
+              <button type="button"
+                      aria-label="Update transaction"
+                      onClick={() => {
+                          setShowModal(true)
+                          setUpdateForm(true)
+                          setUpdateTransaction(transaction)
+                      }}>
+                  <img src="update.png" alt="Update transaction"/></button>
+          </td>
+      </tr>
   );
 };
 
