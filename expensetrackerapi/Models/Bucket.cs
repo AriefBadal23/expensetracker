@@ -14,7 +14,7 @@ public record Bucket
 
     [Required(ErrorMessage = "Type is required.")]
     public BucketTypes Type { get; set; }
-    
+
     public List<ApplicationUser> Users { get; } = [];
     public List<UserBuckets> UserBuckets { get; } = [];
 }

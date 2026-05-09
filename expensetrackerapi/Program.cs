@@ -12,6 +12,7 @@ using NodaTime.Serialization.SystemTextJson;
 using Serilog;
 using Serilog.Events;
 using Scalar.AspNetCore;
+using Serilog.Context;
 
 
 Log.Logger = new LoggerConfiguration()
@@ -23,9 +24,11 @@ Log.Logger = new LoggerConfiguration()
     // To capture and include contextual information from the current logging scope.
     // logging scope; an completed operation and start an logging scope with different logs.
     .Enrich.FromLogContext()
-    .WriteTo.Console()
+    .WriteTo.Console(outputTemplate:
+        "{Timestamp:HH:mm:ss} [{Level}] {Message} (IP: {ClientIp}){NewLine}{Exception}")
     // Files will be created each day.
-    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day).CreateBootstrapLogger();
+    .WriteTo.File("Logs/log-.txt", rollingInterval: RollingInterval.Day)
+    .CreateBootstrapLogger();
 try
 {
     Log.Information("Starting ExpenseTracker API");
@@ -34,19 +37,24 @@ try
 
     // Add services to the container.
 
+
     // Inject Serilog as a service to the Dependancy Injection Container to use it in the application.
     // to configure it to work with the ILogger service
     builder.Host.UseSerilog((context, services, configuration) => configuration
         // Read from configuration file with the sinks it should use.
         .ReadFrom.Configuration(context.Configuration)
         .ReadFrom.Services(services)
+        .Enrich.FromLogContext()
+        .Enrich.WithClientIp()
+
     );
-    
+
     // Als iemand IDbInitializer vraagt → geef een DbInitializer
     builder.Services.AddScoped<IDbInitializer, DbIntializer>();
     builder.Services.AddScoped<IExpenseService, ExpenseService>();
     builder.Services.AddScoped<IBucketService, BucketService>();
     builder.Services.AddScoped<IUserService, UserService>();
+    builder.Services.AddHttpContextAccessor();
     builder.Services.AddIdentityCore<ApplicationUser>(options =>
         {
         })
@@ -66,7 +74,7 @@ try
                         .AllowCredentials();
                 });
         });
-    
+
     builder.Services.AddControllers()
         .AddJsonOptions(options =>
         {
@@ -114,7 +122,6 @@ try
                 OnMessageReceived = context =>
                 {
                     context.Token = context.Request.Cookies["jwt"];
-                    var cookie = context.Request.Cookies["jwt"];
                     return Task.CompletedTask;
                 },
                 OnAuthenticationFailed = context =>
@@ -122,30 +129,40 @@ try
                     return Task.CompletedTask;
                 }
             };
-            
-        // handler to handle authentication
-        options.TokenValidationParameters = new TokenValidationParameters
-        {
-            ValidateIssuer = true,
-            ValidateAudience = true,
-            ValidateLifetime = true,
-            // validates our secret key
-            ValidateIssuerSigningKey = true,
-            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
-            ValidAudience = builder.Configuration["JwtSettings:Audience"],
-            // encrypting our (encoded) secret key
-            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
-            // 5-min window (by default) between duration, we change it here to 0.
-            ClockSkew = TimeSpan.Zero
-        };
-    });
-    
+
+            // handler to handle authentication
+            options.TokenValidationParameters = new TokenValidationParameters
+            {
+                ValidateIssuer = true,
+                ValidateAudience = true,
+                ValidateLifetime = true,
+                // validates our secret key
+                ValidateIssuerSigningKey = true,
+                ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+                ValidAudience = builder.Configuration["JwtSettings:Audience"],
+                // encrypting our (encoded) secret key
+                IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:Key"])),
+                // 5-min window (by default) between duration, we change it here to 0.
+                ClockSkew = TimeSpan.Zero
+            };
+        });
+
     // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
     builder.Services.AddOpenApi();
 
     var app = builder.Build();
+    app.Use(async (context, next) =>
+    {
+        var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
+
+        // Add of source IP to the LogContext
+        using (LogContext.PushProperty("ClientIp", clientIp))
+        {
+            await next.Invoke();
+        }
+    });
     app.UseCors(myAllowSpecificOrigins);
-    
+
     app.UseAuthentication();
     app.UseAuthorization();
 
@@ -164,7 +181,7 @@ try
     {
         var services = scope.ServiceProvider;
         var context = services.GetRequiredService<ExpenseTrackerContext>();
-        context.Database.EnsureCreated();
+        await context.Database.EnsureCreatedAsync();
         // seed the database.
         var initializer = services.GetRequiredService<IDbInitializer>();
         await initializer.SeedAsync(context);
@@ -178,7 +195,7 @@ try
 
     Log.Information("Expense Tracker API started successfully");
 
-    app.Run();
+    await app.RunAsync();
 
 }
 catch (Exception ex)
@@ -188,7 +205,7 @@ catch (Exception ex)
 
 finally
 {
-    Log.CloseAndFlush();
+    await Log.CloseAndFlushAsync();
 }
 
 

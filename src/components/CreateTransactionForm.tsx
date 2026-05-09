@@ -205,7 +205,22 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
             }
             
             const data = await response.json();
-            setFormData(data.value)
+            const updatedTransaction: Transaction = {
+                id: data.value.id,
+                bucketId: data.value.bucketId,
+                description: data.value.description,
+                amount: data.value.amount,
+                createdAt: new Date(data.value.createdAt),
+            }
+
+            // Dit maakt een nieuwe array door oude values van de huidige state te kopiëren
+            // naar de nieuwe array samen met de nieuwe transactie.
+            // Hiervoor heb ik een spread operator gebruikt. Door dit doen wordt er re-render gedaan.
+
+            
+            setTransactions(prev =>
+                prev.map(t => t.id === updatedTransaction.id ? updatedTransaction : t)
+            );
         }
         catch(e){
             const message = getErrorMessage(e)

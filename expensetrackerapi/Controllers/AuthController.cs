@@ -33,11 +33,9 @@ public class AuthController : ControllerBase
                 ErrorCodes.BadRequest,
                 e.Description
             )).ToArray();
-
             return BadRequest(errors);
 
         }
-
         return Ok(result);
     }
 
@@ -67,11 +65,10 @@ public class AuthController : ControllerBase
             Expires = DateTime.UtcNow.AddMinutes(10)
         };
         Response.Cookies.Append("jwt", result.Value, CookieOptions);
-        Console.WriteLine("LOGIN HIT");
         return Ok(result);
-    
+
     }
-    
+
     [HttpPost("logout")]
     public ActionResult LogOut()
     {

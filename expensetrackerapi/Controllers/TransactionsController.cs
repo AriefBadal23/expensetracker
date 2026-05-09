@@ -2,7 +2,6 @@ using expensetrackerapi.Contracts;
 using expensetrackerapi.DTO;
 using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Mvc;
-using expensetrackerapi.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 
@@ -11,25 +10,23 @@ namespace expensetrackerapi.Controllers
     [Authorize]
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class Transactions : Controller
+    public class Transactions : ControllerBase
     {
 
         private readonly IExpenseService _expenseExpenseService;
-        private readonly ILogger<IExpenseService> _logger;
         private readonly UserManager<ApplicationUser> _userManager;
 
-        public Transactions(IExpenseService expenseService, ILogger<IExpenseService> logger, UserManager<ApplicationUser> userManager)
+        public Transactions(IExpenseService expenseService, UserManager<ApplicationUser> userManager)
         {
             _expenseExpenseService = expenseService;
-            _logger = logger;
             _userManager = userManager;
         }
 
         [HttpGet("details")]
         public async Task<ActionResult> GetTransactionById([FromQuery] int id)
         {
-            var transaction = await _expenseExpenseService.GetTransactionByID(id);
-            
+            var transaction = await _expenseExpenseService.GetTransactionById(id);
+
             if (transaction.Value == null)
             {
                 return NotFound(transaction);
@@ -40,13 +37,15 @@ namespace expensetrackerapi.Controllers
 
 
         [HttpGet]
-        public async Task<ActionResult> Get(
+        public async Task<ActionResult> GetUserTransactions(
             [FromQuery] int? month, int? year,
             [FromQuery] int? bucket,
             int pageNumber = 1, int pageSize = 3)
         {
-            var id = _userManager.GetUserId(User);
-            var transactions = await _expenseExpenseService.GetTransactions(id, month, year, bucket, pageNumber, pageSize);
+            var userId = _userManager.GetUserId(User);
+            if (userId is null) return BadRequest("Invalid userId provided.");
+
+            var transactions = await _expenseExpenseService.GetTransactions(userId, month, year, bucket, pageNumber, pageSize);
             if (!transactions.IsSuccess)
             {
                 return NotFound();
@@ -56,25 +55,25 @@ namespace expensetrackerapi.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> Post([FromBody] RequestTransactionDto transaction)
+        public async Task<ActionResult> CreateTransaction([FromBody] RequestTransactionDto transaction)
         {
             var userId = _userManager.GetUserId(User);
-            
+
             if (userId is null) return Unauthorized();
-            
-            var transactionCreated = await _expenseExpenseService.CreateTransaction(userId,transaction);
-            
+
+            var transactionCreated = await _expenseExpenseService.CreateTransaction(userId, transaction);
+
             if (transactionCreated.Value == null) return BadRequest();
             return Ok(transactionCreated);
-            
+
 
 
         }
 
         [HttpDelete("{transactionId:int}")]
-        public async Task<ActionResult> Delete(int transactionId)
+        public async Task<ActionResult> DeleteTransaction(int transactionId)
         {
-            
+
             var userId = _userManager.GetUserId(User);
             if (userId is null) return Unauthorized();
             var isDeleted = await _expenseExpenseService.DeleteTransaction(userId, transactionId);
@@ -90,8 +89,8 @@ namespace expensetrackerapi.Controllers
         {
             var userId = _userManager.GetUserId(User);
             if (userId is null) return Unauthorized();
-            
-            var transaction = await _expenseExpenseService.UpdateTransaction(userId,id, updatedTransaction);
+
+            var transaction = await _expenseExpenseService.UpdateTransaction(userId, id, updatedTransaction);
             if (transaction.Value != null)
             {
                 return Ok(transaction);
