@@ -52,6 +52,7 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
               
               if(response.status === 401){
                   message  = "Unauthorized access"
+                  localStorage.setItem("isLoggedIn", "false")
               }
               setErrorMessage(new Error(message))
               return;
@@ -79,34 +80,31 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
   }, [page, search, setErrorMessage, setTransactions]); //! beide als dependancy
 
   return (
-      <>
-          
-        <div>
+      <div>
           <p>
-            Page: {page}/{Math.ceil(TOTALPAGES)}
+              Page: {page}/{Math.ceil(TOTALPAGES)}
           </p>
           <input
-            type="button"
-            value="Prev"
-            disabled={page === 1}
-            onClick={() => {
-              if (page > 0) {
-                SetPage(page - 1);
-              }
-            }}
+              type="button"
+              value="Prev"
+              disabled={page === 1}
+              onClick={() => {
+                  if (page > 0) {
+                      SetPage(page - 1);
+                  }
+              }}
           />
           <input
-            type="button"
-            value="Next"
-            disabled={page === Math.ceil(TOTALPAGES)} // why does it work only with === (loose/strict equality in JS?)
-            onClick={() => {
-              if (page <= TOTALPAGES) {
-                SetPage(page + 1);
-              }
-            }}
+              type="button"
+              value="Next"
+              disabled={page === Math.ceil(TOTALPAGES)} // why does it work only with === (loose/strict equality in JS?)
+              onClick={() => {
+                  if (page <= TOTALPAGES) {
+                      SetPage(page + 1);
+                  }
+              }}
           />
-        </div>
-      </>
+      </div>
   );
 };
 
