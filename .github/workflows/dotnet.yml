@@ -28,4 +28,4 @@ jobs:
       working-directory: ./ExpenseTrackerTests
       run: dotnet test --no-build --verbosity normal
     - name: Formatting
-      run: dotnet format ./ExpenseTracker.sln
+      run: cd .. && dotnet format ./ExpenseTracker.sln
