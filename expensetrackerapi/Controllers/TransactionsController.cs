@@ -77,7 +77,7 @@ namespace expensetrackerapi.Controllers
             var userId = _userManager.GetUserId(User);
             if (userId is null) return Unauthorized();
             var isDeleted = await _expenseExpenseService.DeleteTransaction(userId, transactionId);
-            if (!isDeleted.IsSuccess)
+            if (isDeleted.IsSuccess)
             {
                 return Ok();
             }

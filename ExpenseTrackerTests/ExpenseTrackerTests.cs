@@ -44,6 +44,92 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     }
 
     [Fact]
+    public async Task TestCreateUser()
+    {
+        // Arrange
+        await using var db = _fixture.CreateContext();
+        
+        var newUser = new ApplicationUser
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            Email = "johndoe@outlook.nl",
+            PasswordHash = "Marvel01@"
+        };
+        
+        // Act
+        var hasher = new PasswordHasher<ApplicationUser>();
+        var hashedPassword = hasher.HashPassword(newUser,newUser.PasswordHash);
+        newUser.PasswordHash = hashedPassword;
+        await db.Users.AddAsync(newUser);
+        await db.SaveChangesAsync();
+        
+        // Assert
+        Assert.Contains(newUser, db.Users);
+    }
+    
+    [Fact]
+    public async Task TestGetExistingUser()
+    {
+        // Arrange
+        await using var db = _fixture.CreateContext();
+        
+        var newUser = new ApplicationUser
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            Email = "johndoe@outlook.nl",
+            PasswordHash = "Marvel01@"
+        };
+        
+        // Act
+        var hasher = new PasswordHasher<ApplicationUser>();
+        var hashedPassword = hasher.HashPassword(newUser,newUser.PasswordHash);
+        newUser.PasswordHash = hashedPassword;
+        await db.Users.AddAsync(newUser);
+        await db.SaveChangesAsync();
+        
+        
+        var user = await db.Users.FirstAsync(user => user.Email == "johndoe@outlook.nl");
+
+        // Assert
+        Assert.Equal(newUser, user);
+        Assert.Contains(user,db.Users);
+    }
+
+    [Fact]
+    public async Task DeleteExistingUser()
+    {
+        
+        // Arrange
+        await using var db = _fixture.CreateContext();
+        
+        var newUser = new ApplicationUser
+        {
+            FirstName = "John",
+            LastName = "Doe",
+            Email = "johndoe@outlook.nl",
+            PasswordHash = "Marvel01@"
+        };
+        
+        // Act
+        var hasher = new PasswordHasher<ApplicationUser>();
+        var hashedPassword = hasher.HashPassword(newUser,newUser.PasswordHash);
+        newUser.PasswordHash = hashedPassword;
+        await db.Users.AddAsync(newUser);
+        await db.SaveChangesAsync();
+        
+        var user = await db.Users.FirstAsync(user => user.Email == "johndoe@outlook.nl");
+        
+        // delete the user
+        db.Users.Remove(user);
+        await db.SaveChangesAsync();
+        
+        // Assert
+        Assert.DoesNotContain(newUser, db.Users);
+    }
+
+    [Fact]
     public async Task TestCreateTransaction()
     {
         // Arrange
@@ -97,6 +183,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         await db.SaveChangesAsync();
         
         var user = await db.Users.FirstAsync(user => user.Email == "johndoe@outlook.nl");
+        
         var userBuckets =  buckets.Select(bucket => new UserBuckets
         {
             ApplicationUserId = user.Id,
@@ -645,11 +732,13 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
                 Amount = 100,
                 CreatedAt = new LocalDate(2025, 1, 10)
             });
-            
+
+        var Userbucket =  await db.UserBuckets.FirstAsync(b => b.ApplicationUserId == seeduser.Id && b.BucketId == 1);
         
         // Assert
         Assert.Equal("Weekly Salary",updatedTransaction.Value.Description );
         Assert.Equal(100,updatedTransaction.Value.Amount );
+        Assert.Equal(4830, Userbucket.Total);
         Assert.Equal(new LocalDate(2025,1, 10),updatedTransaction.Value.CreatedAt );
         
        
