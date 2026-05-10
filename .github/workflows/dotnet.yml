@@ -27,5 +27,3 @@ jobs:
     - name: Test
       working-directory: ./ExpenseTrackerTests
       run: dotnet test --no-build --verbosity normal
-    - name: Formatting
-      run: cd .. && dotnet format ./ExpenseTracker.sln
