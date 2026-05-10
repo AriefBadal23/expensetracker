@@ -41,7 +41,7 @@ namespace expensetrackerapi.Services
         {
             var t = await _db.Transactions.FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == userId);
             var usertransactionBucket = await _db.UserBuckets.FirstAsync(b => b.ApplicationUserId == userId && b.BucketId == transaction.BucketId);
-            
+
 
             if (t == null)
             {
@@ -52,18 +52,18 @@ namespace expensetrackerapi.Services
             usertransactionBucket.Total -= t.Amount;
             _db.UserBuckets.Update(usertransactionBucket);
             await _db.SaveChangesAsync();
-            
+
             // update the amount with the new updated amount for the transaction.
             usertransactionBucket.Total += transaction.Amount;
             _db.Transactions.Update(t);
             await _db.SaveChangesAsync();
-            
+
             // update the object.
             t.Amount = transaction.Amount;
             t.BucketId = transaction.BucketId;
             t.CreatedAt = transaction.CreatedAt;
             t.Description = transaction.Description;
-            
+
 
             _db.UserBuckets.Update(usertransactionBucket);
             await _db.SaveChangesAsync();

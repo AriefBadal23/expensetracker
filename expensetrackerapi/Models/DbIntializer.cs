@@ -20,7 +20,7 @@ public class DbIntializer : IDbInitializer
         Console.WriteLine("Database seeding started");
 
         var hasher = new PasswordHasher<ApplicationUser>();
-        
+
         var user = new ApplicationUser()
         {
             Email = "arief@outlook.nl",
