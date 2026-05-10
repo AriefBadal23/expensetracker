@@ -1,13 +1,15 @@
-import { Buckets } from "../types/Buckets";
+import {Buckets} from "../types/Buckets";
 
 export const BucketToId: Record<Buckets, number> = {
   [Buckets.Salary]: 1,
   [Buckets.Shopping]: 2,
   [Buckets.Groceries]: 3,
+  [Buckets.Savings]: 4
 };
 
 export const IdToBucket: Record<number, Buckets> = {
   1: Buckets.Salary,
   2: Buckets.Shopping,
   3: Buckets.Groceries,
+  4: Buckets.Savings
 };

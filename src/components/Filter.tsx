@@ -77,6 +77,21 @@ const Filter = () => {
           Groceries Bucket
       </label>  
           
+      <input
+          type="radio"
+          className="btn-check"
+          name="bucket"
+          id="bucket-4"
+          checked={activeId === "4"}
+          onChange={() => {
+              navigate("?id=4&year=2025");
+              setisShown(false);
+          }}
+      />
+      <label className="btn btn-outline-primary" htmlFor="bucket-4">
+          Savings Bucket
+      </label>  
+          
           
         <input
           type="radio"
