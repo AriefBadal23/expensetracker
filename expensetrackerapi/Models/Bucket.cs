@@ -7,7 +7,7 @@ public record Bucket
     public int Id { get; set; }
 
     [Required(ErrorMessage = "The Name is required.")]
-    public Buckets Name { get; set; }
+    public string Name { get; set; }
 
     [Required(ErrorMessage = "The Icon is required")]
     public required string Icon { get; set; }

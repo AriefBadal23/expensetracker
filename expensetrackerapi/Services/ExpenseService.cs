@@ -216,7 +216,7 @@ namespace expensetrackerapi.Services
             //      2.1 Increment the total of the expense bucket
             //2.2 Decrement the Income bucket 
 
-            if (userBuckets.BucketId >= 0 && transactionBucket.Name != Buckets.Salary)
+            if (userBuckets.BucketId >= 0 && transactionBucket.Name != nameof(Buckets.Salary))
             {
                 userBuckets.Total += mappedTransaction.Amount;
                 salary.Total -= mappedTransaction.Amount;
