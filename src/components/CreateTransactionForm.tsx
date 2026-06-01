@@ -25,6 +25,7 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
   const [errors, setErrors] = useState({description: "", amount: "", createdAt:"", bucket_id: "", uiMessage: ""})
     
   const canSubmit = Object.values(errors).every(value => value === "");
+  
   const errorStyle = {
         borderRadius: "5px",
             border: "1px solid #ced4da",

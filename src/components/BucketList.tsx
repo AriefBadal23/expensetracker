@@ -1,9 +1,10 @@
 import "../styles/BucketList.css";
-import Bucket from "./Bucket";
+import BucketCard from "./BucketCard";
 import type { Bucket as BucketType } from "../types/Bucket";
 import { useEffect, useState } from "react";
 import type {Transaction} from "../types/Transaction.tsx";
 import {getErrorMessage} from "../utils/utils.ts";
+import CreateBucketModal from "./CreateBucketModal.tsx";
 
 interface BucketListProps{
   transactions: Transaction[]
@@ -13,6 +14,9 @@ interface BucketListProps{
 const BucketList = ({transactions}:BucketListProps) => {
   const [buckets, SetBuckets] = useState<BucketType[]>([]);
   const [isPending, setPending] = useState(true);
+  
+  const [showModal, setShowModal] = useState(false)
+  
 
   const BucketsisArray = (buckets:BucketType[]) => {
     return Array.isArray(buckets)
@@ -85,22 +89,30 @@ const BucketList = ({transactions}:BucketListProps) => {
       }
 
       {errorMessage && <div><p style={ErrorMessageStyle}>{errorMessage.message}</p></div>}
-
+      
       {!errorMessage && BucketsisArray(buckets) &&
       <div className="bucket-list">
-        {buckets !== null &&
-          buckets.map((b: BucketType) => {
-            return (
-              <Bucket
-                key={b.bucket.id}
-                name={b.bucket.name}
-                amount={b.bucketTotal}
-                icon={b.bucket.icon}
+        {buckets?.map((b: BucketType) => {
+          return (
+              <div key={b.bucket.id}>
+              <BucketCard
+                  key={b.bucket.id}
+                  id={b.bucket.id}
+                  name={b.bucket.name}
+                  amount={b.bucketTotal}
+                  icon={b.bucket.icon}
               />
-            );
-          })}
+              </div>
+          );
+          
+        })}
       </div>  
       }
+      <input className="btn btn-primary" type="button" value="Create Bucket" onClick={() => setShowModal(true)} />
+      {showModal ?
+        <CreateBucketModal setShowModal={setShowModal} showModal={showModal} setBuckets={SetBuckets} /> : null
+      }
+      
     </>
   );
   };

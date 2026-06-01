@@ -1,12 +1,15 @@
-import type { Buckets } from "./Buckets";
+
+export enum BucketTypes  {
+  Income = "income",
+  Expense = "expense"
+}
 
 export  interface Bucket {
   bucketTotal: number,
   bucket: {
-    id: number;
+    id?: number;
     name: string;
-    total: number;
     icon: string;
-    type: Buckets
+    type?: BucketTypes
   }
 }
