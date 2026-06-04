@@ -67,19 +67,18 @@ const CreateBucketForm = ({setShowModal, setBuckets}: CreateBucketFormProps) => 
             const data = await response.json()
             console.log(`POST /buckets response`, data);
 
-
+            // 💡Make sure the structure is the same as the API response.
             const newBucket: BucketType = {
                 bucketTotal: data.value.bucketTotal,
                 bucket: {
-                    id: data.value.id,
-                    name: data.value.name,
-                    icon: data.value.icon,
-                    type: BucketTypes.Expense
+                    id: data.value.bucket.id,
+                    name: data.value.bucket.name,
+                    icon: data.value.bucket.icon,
+                    type: data.value.bucket.type
                 }
                 
             }
             
-            // console.log(`New bucket created: ${newBucket.bucket.name} with total ${newBucket.bucketTotal}`);
 
             // Dit maakt een nieuwe array door oude values van de huidige state te kopieeren
             // naar een de nieuwe array met de nieuwe transactie.
