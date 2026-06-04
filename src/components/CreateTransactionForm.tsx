@@ -1,17 +1,14 @@
 import {useEffect, useState} from "react";
 import type {Transaction} from "../types/Transaction";
-import {Buckets} from "../types/Buckets";
 import type {NewTransactionRow} from "../types/NewTransactionRow.tsx";
-import {BucketToId, IdToBucket} from "../utils/BucketMap.ts";
 import {
     validateCreateDate,
     validateAmount,
     validateDescription,
-    validateBucketId,
     getErrorMessage
 } from "../utils/utils.ts"; // named export
 
-const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showModal, setTransactions }: NewTransactionRow) => {
+const CreateTransactionForm = ({buckets, setUpdateForm, isUpdateForm, transactionID, SetShowModal, showModal, setTransactions }: NewTransactionRow) => {
   
   // NOTE: Voor een transaction is het niet nodig om een ID mee te geven. 
   // Dit omdat EFC en PostgreSQL een auto-incremented ID aanmaken.
@@ -91,8 +88,6 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
     }, [isUpdateForm, transactionID]); // alleen aanroepen als deze veranderen
     
     
-  // 💡 force keys to be enum values
-  const bucketKeys = Object.values(Buckets) as Buckets[];
   
     const handleCreationDateChange =  (date:string) => {
         const isValid =   validateCreateDate(new Date(date))
@@ -149,21 +144,6 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
     }
     }
     
-    const handleBucketIdChange = (bucket:number) => {
-        if (!validateBucketId(bucket)) {
-            setErrors(prev => ({
-                ...prev,
-                bucket_id: "Invalid bucket"
-            }))
-        } else {
-            setErrors(prev => ({
-                ...prev,
-                bucket_id: "",
-                uiMessage:""
-                
-            }))
-        }
-    }
 
   
     const updateTransaction = async () => {
@@ -206,6 +186,7 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
             }
             
             const data = await response.json();
+            setUpdateForm(false);
             const updatedTransaction: Transaction = {
                 id: data.value.id,
                 bucketId: data.value.bucketId,
@@ -338,8 +319,8 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
           case "createdAt":
               handleCreationDateChange(value);
               break;
-          case "bucketId":
-              handleBucketIdChange(Number(value))
+          // case "bucketId":
+          //     handleBucketIdChange(Number(value))
       }
       
       
@@ -373,6 +354,7 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
             description: "",
             createdAt: new Date(),
           });
+          
         }}
       >
         <div
@@ -439,9 +421,9 @@ const CreateTransactionForm = ({isUpdateForm, transactionID, SetShowModal, showM
                     boxShadow: "none"
                 }}
           >
-            {isUpdateForm ? <option>{IdToBucket[formdata.bucketId]}</option> : <option value={0}>Choose a bucket</option>}
-            {bucketKeys.map((key) => {
-              return <option key={key} value={BucketToId[key]}>{key}</option>;
+            {isUpdateForm ? <option>{buckets.find((b) => b.bucket.id === formdata.bucketId)?.bucket.name}</option> : <option value={0}>Choose a bucket</option>}
+            {buckets.map((key) => {
+              return <option key={key.bucket.id} value={key.bucket.id}>{key.bucket.name}</option>;
             })}
           </select>
           <label htmlFor="bucketId">Bucket</label>

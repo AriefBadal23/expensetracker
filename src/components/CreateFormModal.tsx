@@ -1,6 +1,6 @@
 import CreateTransactionForm from "./CreateTransactionForm";
 import type {NewTransactionRow} from "../types/NewTransactionRow.tsx";
-const CreateFormModal = ({SetShowModal,showModal, isUpdateForm, transactionID, setTransactions }: NewTransactionRow ) => {
+const CreateFormModal = ({buckets, SetShowModal,showModal, isUpdateForm,setUpdateForm, transactionID, setTransactions }: NewTransactionRow ) => {
     return (
     <>
         {
@@ -24,20 +24,27 @@ const CreateFormModal = ({SetShowModal,showModal, isUpdateForm, transactionID, s
                                         className="btn-close"
                                         data-bs-dismiss="modal"
                                         aria-label="Close"
-                                        onClick={() => SetShowModal(false)}
+                                        onClick={() => {
+                                            SetShowModal(false)
+                                            // setUpdateForm(false)
+                                        }}
                                     ></button>
                                 </div>
+                                
                                 <div className="modal-body">
                                     <CreateTransactionForm SetShowModal={SetShowModal} showModal={showModal}
-                                                           isUpdateForm={isUpdateForm} transactionID={transactionID}
-                                                           setTransactions={setTransactions}/>
+                                                           isUpdateForm={isUpdateForm} setUpdateForm={setUpdateForm} transactionID={transactionID}
+                                                           setTransactions={setTransactions} buckets={buckets}/>
                                 </div>
                                 <div className="modal-footer">
                                     <button
                                         type="button"
                                         className="btn btn-secondary"
                                         data-bs-dismiss="modal"
-                                        onClick={() => SetShowModal(false)}
+                                        onClick={() => {
+                                            SetShowModal(false)
+                                            setUpdateForm(false)
+                                    }}
                                     >
                                         Close
                                     </button>
