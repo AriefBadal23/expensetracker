@@ -71,7 +71,8 @@ public class BucketService : IBucketService
         await _db.UserBuckets.AddAsync(UserBucket);
         await _db.SaveChangesAsync();
 
-        var userBucketTotal =  _db.UserBuckets.First(ub => ub.ApplicationUserId == userId).Total;
+        // THe code before cause issues with showing the total of the newly created bucket.
+        var userBucketTotal =  UserBucket.Total;
         
         return Result<UserBucketResponseDto>.Success(new UserBucketResponseDto
         {
