@@ -17,13 +17,14 @@ interface BucketListProps {
 const BucketList = ({transactions, setBuckets, buckets}: BucketListProps) => {
     const [isPending, setPending] = useState(true);
     const [showModal, setShowModal] = useState(false)
+    const [errorMessage, setErrorMessage] = useState<Error | undefined>();
 
 
     const BucketsisArray = (buckets: Bucket[]) => {
         return Array.isArray(buckets)
 
     }
-    const [errorMessage, setErrorMessage] = useState<Error | undefined>();
+    
     const ErrorMessageStyle = {
         color: "#B00020",
         backgroundColor: "#FFEBEE",
@@ -110,7 +111,7 @@ const BucketList = ({transactions, setBuckets, buckets}: BucketListProps) => {
             }
             <input className="btn btn-primary" type="button" value="Create Bucket" onClick={() => setShowModal(true)}/>
             {showModal ?
-                <CreateBucketModal setShowModal={setShowModal} showModal={showModal} setBuckets={setBuckets}/> : null
+                <CreateBucketModal setShowModal={setShowModal} showModal={showModal} setBuckets={setBuckets} setErrorMessage={setErrorMessage}/> : null
             }
 
         </>

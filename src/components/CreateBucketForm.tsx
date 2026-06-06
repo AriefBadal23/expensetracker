@@ -1,6 +1,6 @@
 ﻿import * as React from "react";
-import {useState} from "react";
-import {getErrorMessage} from "../utils/utils.ts";
+import {type Dispatch, type SetStateAction, useState} from "react";
+import {getErrorMessage, validateBucketName, validateIcon} from "../utils/utils.ts";
 import {type Bucket as BucketType, BucketTypes} from "../types/Bucket";
 
 
@@ -15,18 +15,84 @@ type Bucket = {
 interface CreateBucketFormProps {
     setShowModal: React.Dispatch<React.SetStateAction<boolean>>
     setBuckets: React.Dispatch<React.SetStateAction<BucketType[]>>
+    setErrorMessage: Dispatch<SetStateAction<Error | undefined>>
+    
 }
 
-const CreateBucketForm = ({setShowModal, setBuckets}: CreateBucketFormProps) => {
+const CreateBucketForm = ({setShowModal, setBuckets, setErrorMessage}: CreateBucketFormProps) => {
+    
     const [formData, setFormdata] = useState<Bucket>({
             name: "",
             icon: "",
             type: BucketTypes.Expense
 })
 
+    
+    const [errors, setErrors] = useState({ name: "", icon:"", uiMessage: ""});
+    
+    const canSubmit = Object.values(errors).every(value => value === "");
 
-    const [errors, setErrors] = useState([]);
+    function handleIconChange(value: string) {
+        if(!validateIcon(value)){
+            setErrors((prev) => (
+                {
+                    ...prev,
+                    // icon is the property for the form field to hold the error message for it.
+                    icon: "The icon for the bucket should only be an emoji."
+                }
+            ))
+        }
 
+        else{
+            setErrors(prev => ({
+                ...prev,
+                icon: "",
+                uiMessage:""
+
+            }))
+        }
+    }
+
+    const change = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        switch(name) {
+            case "name":
+                handleBucketNameChange(value);
+                break;
+            case "icon":
+                handleIconChange(value);
+                break;
+        }
+
+        //!   wat doet [e.target.name]: e.target.value => computed property name
+        setFormdata(prev => ({
+            ...prev,
+            [name]: value,
+        }));
+        
+        
+        
+        
+    }
+    const handleBucketNameChange = (name:string) =>{
+        if(!validateBucketName(name)){
+            setErrors(prev => ({
+                ...prev,
+                // name is the property for the form field to hold the error message for it.
+                name: "The name must be between 1 and 15 characters and contain only allowed characters",
+            }))
+        }
+        else{
+            setErrors(prev => ({
+                ...prev,
+                name: "",
+                uiMessage:""
+    
+            }))
+        }
+        
+    }
+    
     const PostBucket = async () => {
         try {
             const response = await fetch("https://localhost:7118/api/v1/buckets", {
@@ -59,6 +125,8 @@ const CreateBucketForm = ({setShowModal, setBuckets}: CreateBucketFormProps) => 
                     ...prev,
                     uiMessage: message
                 }));
+                
+                setErrorMessage(new Error(message))
 
                 // early return to stop flow here.
                 return;
@@ -93,10 +161,10 @@ const CreateBucketForm = ({setShowModal, setBuckets}: CreateBucketFormProps) => 
                 ...prev,
                 uiMessage: "Not able to create new bucket."
             }));
+            setErrorMessage(new Error("Not able to create new bucket."))
         }
     }
-
-
+    
     return (
         <form onSubmit={async (e) => {
             e.preventDefault()
@@ -115,28 +183,34 @@ const CreateBucketForm = ({setShowModal, setBuckets}: CreateBucketFormProps) => 
         }}>
             <div>
                 <label htmlFor="bucket">Name: </label>
-                <input type="text" name="bucket" id="name" value={formData.name}
-                       onChange={(e) => setFormdata(prevState => (
-                           {
-                               ...prevState,
-                               name: e.target.value,
-                           }
-                       ))}
+                {/* If there is an error for the bucket name in the form field show it in the UI */}
+                {errors["name"] && <p style={{ color: "red", marginTop: "0.25rem" }}>{errors["name"]}</p>}
+                
+                
+                <input className="form-control" 
+                       type="text" 
+                       name="name" 
+                       placeholder="Savings"
+                       value={formData.name}
+                       onChange={change}
                 />
+
                 <label htmlFor="bucket">Icon: </label>
-                <input type="text" name="icon" id="icon" value={formData.icon}
-                       onChange= {(e) => (
-                           setFormdata((prevState) => (
-                               {
-                                    ...prevState,
-                                   icon: e.target.value,
-                               }
-                           ))
-                       ) }
+                
+                <input
+                    className="form-control" 
+                    required
+                    type="text" 
+                    onChange= {change}
+                    name="icon"
+                    placeholder="e.g. 💸"
+                    value={formData.icon}
+                    title="Add emoji icon for bucket."
                 />
-
-
-                <input className="btn btn-primary" type="submit" value="Submit"/>
+                {/* If there is an error for the bucket name in the form field show it in the UI */}
+                {errors["icon"] && <p style={{ color: "red", marginTop: "0.25rem" }}>{errors["icon"]}</p>}
+                
+                <input className="btn btn-primary" type="submit" value="Submit" style={{marginTop: "0.60rem"}} disabled={!canSubmit}/>
             </div>
         </form>
     )
