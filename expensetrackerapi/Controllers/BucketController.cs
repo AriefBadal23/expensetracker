@@ -1,4 +1,5 @@
 using expensetrackerapi.Contracts;
+using expensetrackerapi.DTO;
 using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -21,6 +22,23 @@ public class BucketsController : ControllerBase
         _manager = userManager;
     }
 
+    [HttpPost]
+    public async Task<ActionResult> CreateBucket([FromBody] BucketRequestDto bucket)
+    {
+        var userId = _manager.GetUserId(User);
+        var newBucketCreated = await _bucketService.CreateBucket(userId, bucket);
+
+        if (newBucketCreated.IsSuccess)
+        {
+            return Ok(newBucketCreated);
+        }
+        return BadRequest("Failed to create bucket.");
+        
+        
+
+    }
+    
+    
     [HttpGet("summary")]
     public async Task<ActionResult> GetBucketSummary([FromQuery] int month, [FromQuery] int year)
     {

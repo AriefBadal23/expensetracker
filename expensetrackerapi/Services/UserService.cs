@@ -53,13 +53,19 @@ public class UserService : IUserService
             LastName = user.LastName,
             Id = user.Id
         };
-
-        var buckets = _db.Buckets;
-
-        var userBuckets = buckets.Select(bucket => new UserBuckets { ApplicationUserId = user.Id, BucketId = bucket.Id }).ToList();
-
-        await _db.AddRangeAsync(userBuckets);
+        
+        // Ik heb een seeder, dus ik maak al default buckets aan. Ik pak de eerste drie buckets.
+        // De seeder runt altijd de eerste keer bij het aanmaken van de database.
+        var defaultBuckets = _db.Buckets.Take(3);
+        
+        // Wat ik  heb ik nodig? Nu ik de default buckets heb gemaakt. Moet ik deze koppelen aan een user.
+        // dit doe ik met de userBuckets conjunction table. ik kijk naar de buckets die ik heb gemaakt en
+        
+        // Sets the buckets to the user buckets.
+        var userBuckets = defaultBuckets.Select(bucket => new UserBuckets { ApplicationUserId = user.Id, BucketId = bucket.Id }).ToList();
+        await _db.UserBuckets.AddRangeAsync(userBuckets);
         await _db.SaveChangesAsync();
+        
         _logger.LogInformation(
             "User: {UserId} has created an account", user.Id);
         return Result<RegisteredUserDto>.Success(registeredUser);

@@ -42,9 +42,9 @@ public class DbIntializer : IDbInitializer
 
         var buckets = new Bucket[]
         {
-            new() {Name=Buckets.Salary,Icon="💰", Type = BucketTypes.Income},
-            new() {Name=Buckets.Shopping,Icon="🛒", Type = BucketTypes.Expense},
-            new() {Name=Buckets.Groceries,Icon="🏪", Type = BucketTypes.Expense},
+            new() {Name=nameof(Buckets.Salary),Icon="💰", Type = BucketTypes.Income},
+            new() {Name=nameof(Buckets.Shopping),Icon="🛒", Type = BucketTypes.Expense},
+            new() {Name=nameof(Buckets.Groceries),Icon="🏪", Type = BucketTypes.Expense},
         };
 
         await context.Buckets.AddRangeAsync(buckets);
@@ -346,7 +346,7 @@ public class DbIntializer : IDbInitializer
 
             var bucket = await context.Buckets.FirstAsync(x => x.Id == t.BucketId);
 
-            if (bucket.Name == Buckets.Salary && bucket.Type == BucketTypes.Income)
+            if (bucket.Name == nameof(Buckets.Salary) && bucket.Type == BucketTypes.Income)
             {
                 // Update Salary total if it's an income.
                 userBucket.Total += t.Amount;

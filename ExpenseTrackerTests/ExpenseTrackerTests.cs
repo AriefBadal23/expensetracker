@@ -141,9 +141,9 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
 
         var buckets = new[]
         {
-                new Bucket{Id=1, Name=Buckets.Salary,Icon="💰", Type = BucketTypes.Income},
-                new Bucket{Id=2, Name=Buckets.Groceries,Icon="🏪", Type = BucketTypes.Expense},
-                new Bucket{Id=3, Name=Buckets.Shopping,Icon="🛒", Type = BucketTypes.Expense}
+                new Bucket{Id=1, Name=nameof(Buckets.Salary),Icon="💰", Type = BucketTypes.Income},
+                new Bucket{Id=2, Name=nameof(Buckets.Groceries),Icon="🏪", Type = BucketTypes.Expense},
+                new Bucket{Id=3, Name=nameof(Buckets.Shopping),Icon="🛒", Type = BucketTypes.Expense}
         };
 
         db.Buckets.AddRange(buckets);
@@ -522,9 +522,9 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         Assert.Equal(1000, summaryTotalIncome);
         Assert.Equal(385, summaryTotalExpenses);
         Assert.Equal(3,value.Buckets.Count);
-        Assert.Contains(Buckets.Salary, value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Groceries, value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Shopping, value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(nameof(Buckets.Salary), value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(nameof(Buckets.Groceries), value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(nameof(Buckets.Shopping), value.Buckets.Select(bucket => bucket.BucketName));
         Assert.Equal(month,value.Month);
         Assert.Equal(year,value.Year);
         
@@ -576,9 +576,9 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         Assert.Equal(1000, summaryTotalIncome);
         Assert.Equal(398, summaryTotalExpenses);
         Assert.Equal(3,summary.Value.Buckets.Count);
-        Assert.Contains(Buckets.Salary, summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Groceries, summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Shopping, summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(nameof(Buckets.Salary), summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(nameof(Buckets.Groceries), summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(nameof(Buckets.Shopping), summary.Value.Buckets.Select(bucket => bucket.BucketName));
         Assert.Equal(month,summary.Value.Month);
         Assert.Equal(year,summary.Value.Year);
         
@@ -628,9 +628,9 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         Assert.Equal(0, summaryTotalIncome);
         Assert.Equal(108, summaryTotalExpenses);
         Assert.Equal(3,summary.Value.Buckets.Count);
-        Assert.Contains(Buckets.Salary, summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Groceries, summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Shopping, summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(nameof(Buckets.Salary), summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(nameof(Buckets.Groceries), summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(nameof(Buckets.Shopping), summary.Value.Buckets.Select(bucket => bucket.BucketName));
         Assert.Equal(month,summary.Value.Month);
         Assert.Equal(year,summary.Value.Year);
         
@@ -684,9 +684,9 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         Assert.Equal(0, summaryTotalIncome);
         Assert.Equal(0, summaryTotalExpenses);
         Assert.Equal(3,summary.Value.Buckets.Count);
-        Assert.Contains(Buckets.Salary, summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Groceries, summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(Buckets.Shopping, summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(nameof(Buckets.Salary), summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(nameof(Buckets.Groceries), summary.Value.Buckets.Select(bucket => bucket.BucketName));
+        Assert.Contains(nameof(Buckets.Shopping), summary.Value.Buckets.Select(bucket => bucket.BucketName));
         Assert.Equal(month,summary.Value.Month);
         Assert.Equal(year,summary.Value.Year);
         

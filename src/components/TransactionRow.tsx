@@ -1,7 +1,7 @@
 import type {Dispatch, SetStateAction} from "react";
 import type {Transaction} from "../types/Transaction";
-import {IdToBucket} from "../utils/BucketMap";
 import {Buckets} from "../types/Buckets.tsx";
+import type {Bucket} from "../types/Bucket.tsx";
 
 
 interface TransactionRowProps {
@@ -10,9 +10,10 @@ interface TransactionRowProps {
     setShowModal: Dispatch<SetStateAction<boolean>>
     setUpdateForm:Dispatch<SetStateAction<boolean>>
     setUpdateTransaction:Dispatch<SetStateAction<Transaction>>
+    buckets: Bucket[]
 }
 
-const TransactionRow = ({transaction, setTransactions, setShowModal, setUpdateForm, setUpdateTransaction }: TransactionRowProps) => {
+const TransactionRow = ({transaction, setTransactions, buckets, setShowModal, setUpdateForm, setUpdateTransaction }: TransactionRowProps) => {
   async function DeleteTransaction(id: number | undefined) {
     try {
           await fetch(`https://localhost:7118/api/v1/transactions/${id}`, {
@@ -35,8 +36,8 @@ const TransactionRow = ({transaction, setTransactions, setShowModal, setUpdateFo
       // fragments
       <tr key={transaction.id} id={transaction.id?.toString()}>
           <td>{transaction.description}</td>
-          <td>{IdToBucket[transaction.bucketId] === Buckets.Salary ? `   + €${transaction.amount}` : ` - € ${transaction.amount}`}</td>
-          <td>{IdToBucket[transaction.bucketId]}</td>
+          <td>{buckets.find(bucket => bucket.bucket.id === transaction.bucketId)?.bucket.name === Buckets.Salary ? `   + €${transaction.amount}` : ` - € ${transaction.amount}`}</td>
+          <td>{buckets.find(bucket => bucket.bucket.id === transaction.bucketId)?.bucket.name}</td>
           <td>{new Date(transaction.createdAt).toLocaleDateString()}</td>
           <td>
               <button type="button"
