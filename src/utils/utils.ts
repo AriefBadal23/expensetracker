@@ -61,3 +61,15 @@ export function UserIsLoggedIn():boolean{
     const isLoggedIn = localStorage.getItem("isLoggedIn");
     return !!isLoggedIn;
 }
+
+export function validateIcon(icon: string): boolean {
+    if (!icon || icon.trim().length === 0) return false;
+    const regex = /^(\p{Emoji})$/u;
+    return regex.test(icon);
+}
+
+export function validateBucketName(name: string): boolean {
+    if (!name || name.trim().length === 0) return false;
+    const regex = /^[\p{L}0-9\s'-]{1,15}$/u;
+    return regex.test(name);
+}

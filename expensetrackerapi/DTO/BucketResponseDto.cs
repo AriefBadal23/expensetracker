@@ -1,12 +1,8 @@
-﻿using expensetrackerapi.Models;
+﻿namespace expensetrackerapi.DTO;
 
-namespace expensetrackerapi.DTO;
-
-public record BucketResponseDto
+public class BucketResponseDto
 {
-    public int Month { get; set; }
-    public int Year { get; set; }
-    public List<BucketTransaction>? Buckets { get; set; }
-    public int TotalIncome { get; set; }
-    public int TotalExpenses { get; set; }
+    public string Name { get; set; }
+    public int Icon { get; set; }
+    public int Type { get; set; }
 }
