@@ -5,6 +5,7 @@ using expensetrackerapi.DTO.Auth;
 using expensetrackerapi.Results;
 using expensetrackerapi.Validation;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Moq;
 
@@ -65,7 +66,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         var loggerMock = new Mock<ILogger<ExpenseService>>();
         var userServiceMock = new Mock<IUserService>();
 
-        // mock the behaviour of the userService.
+        // mock the behavior of the userService.
         userServiceMock
             .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
                 dto.Email == "arief@outlook.nl" &&
@@ -238,8 +239,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         Assert.Equal(firstFiveTransactions, db.Transactions.OrderBy(transaction => transaction.Id).Take(5));
         // asserts op de waarde niet een heel object!
     }
-
-
+    
     [Fact]
     public async Task TestDeletingTransactionById_Correct_Totals()
     {
@@ -606,7 +606,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
     }
     
     [Fact]
-    public async Task TestTransactionUpdateById()
+    public async Task UpdateTransaction_WithValidDto_UpdatesDescriptionAmountAndCreatedAt()
     {
         //Arrange
         await using var db = _fixture.CreateContext();
@@ -654,7 +654,175 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         
        
     }
+    
+    
+    [Fact]
+    public async Task UpdateTransaction_WithValidDto_UpdatesBucket()
+    {
+        //Arrange
+        await using var db = _fixture.CreateContext();
+        var userServiceMock = new Mock<IUserService>();
 
+        var user = new RegisteredUserDto
+        {
+            Id = Guid.NewGuid().ToString(),
+            Email = "arief@outlook.nl",
+            FirstName = "John",
+            LastName = "Doe"
+        };
+        
+        userServiceMock
+            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
+                dto.Email == "arief@outlook.nl" &&
+                dto.FirstName == "John" &&
+                dto.LastName == "Doe")))
+            .ReturnsAsync(Result<RegisteredUserDto>.Success(user));
+        
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
+        
+        var seeduser = await db.Users.FirstAsync(u => u.Email == "arief@outlook.nl");
+
+        var logger = new Mock<ILogger<ExpenseService>>();
+
+        var expenseService = new ExpenseService(db, logger.Object);
+
+        //Act
+        var updatedTransaction = await expenseService.UpdateTransaction(seeduser.Id, 1,
+            new UpdateTransactionDto
+            {
+                BucketId = 2, // Only changing the bucket here from 1 to 2.
+                Description = "New IPhone 17", // changing the description.
+                Amount = 1900,
+                CreatedAt = new LocalDate(2025, 1, 10)
+            });
+            
+        
+        // Assert
+        Assert.NotNull(seeduser.Id);
+        Assert.Equal("New IPhone 17",updatedTransaction!.Value!.Description );
+        Assert.Equal(2,updatedTransaction.Value.BucketId);
+        Assert.Equal(1900,updatedTransaction.Value.Amount );
+        Assert.Equal(new LocalDate(2025,1, 10),updatedTransaction.Value.CreatedAt );
+       
+    }
+
+
+    [Fact]
+    public async Task CreateBucket_WithValidDto_CreatesNewUserBucket()
+    {
+        // Arrange
+        await using var db = _fixture.CreateContext();
+        
+        var userServiceMock = new Mock<IUserService>();
+        
+        var bucketloggerMock = new Mock<ILogger<BucketService>>();
+
+        var user = new RegisteredUserDto
+        {
+            Id = Guid.NewGuid().ToString(),
+            Email = "arief@outlook.nl",
+            FirstName = "John",
+            LastName = "Doe"
+        };
+        
+        userServiceMock
+            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
+                dto.Email == "arief@outlook.nl" &&
+                dto.FirstName == "John" &&
+                dto.LastName == "Doe")))
+            .ReturnsAsync(Result<RegisteredUserDto>.Success(user));
+
+        
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
+        var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
+        
+        var bucketService = new BucketService(db, bucketloggerMock.Object);
+        
+        
+        // Act
+        BucketRequestDto newUserBucket = new BucketRequestDto
+        {
+            Icon = "💸",
+            Name = "Savings",
+            Type = BucketTypes.Expense
+        };
+        
+        await bucketService.CreateBucket(seedingUser.Id, newUserBucket );
+        
+        var newCreatedBucket =  await db.Buckets.Where(ub => newUserBucket.Name == ub.Name).FirstAsync();
+        
+        var newCreatedUserBucket =  await db.UserBuckets.Where(ub =>
+            ub.ApplicationUserId == seedingUser.Id && ub.BucketId == newCreatedBucket.Id).Select(x => x).FirstAsync();
+        
+        //Assert
+        Assert.Equal("Savings", newCreatedBucket.Name);
+        Assert.Equal("💸", newCreatedBucket.Icon);
+        Assert.Equal(0, newCreatedUserBucket.Total);
+    }
+
+
+    [Fact]
+    public async Task RegisterAsync_WithValidDto_CreatesDefaultUserBuckets()
+    {
+        // Arrange
+        await using var db = _fixture.CreateContext();
+
+        // Seed default buckets FIRST
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
+
+        var loggerMock = new Mock<ILogger<UserService>>();
+        var configurationMock = new Mock<IConfiguration>();
+
+        var storeMock = new Mock<IUserStore<ApplicationUser>>();
+
+        var userManagerMock = new Mock<UserManager<ApplicationUser>>(
+            storeMock.Object,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null,
+            null);
+
+        userManagerMock
+            .Setup(x => x.CreateAsync(
+                It.IsAny<ApplicationUser>(),
+                It.IsAny<string>()))
+            .ReturnsAsync(IdentityResult.Success);
+
+        var userService = new UserService(
+            userManagerMock.Object,
+            configurationMock.Object,
+            loggerMock.Object,
+            db);
+
+        var dto = new RegisterUserDto
+        {
+            Email = "mary.doe@outlook.com",
+            FirstName = "Mary",
+            LastName = "Doe",
+            Password = "Marvel01@"
+        };
+
+        // Act
+        var result = await userService.RegisterAsync(dto);
+
+        // Assert
+        Assert.True(result.IsSuccess);
+
+        var userBuckets = await db.UserBuckets.ToListAsync();
+        
+        
+        Assert.Equal(6, userBuckets.Count);
+        
+    }
+    
+    
 }
 
 
