@@ -2,55 +2,34 @@
 using expensetrackerapi.Contracts;
 using expensetrackerapi.DTO;
 using expensetrackerapi.DTO.Auth;
+using expensetrackerapi.Models;
 using expensetrackerapi.Results;
+using expensetrackerapi.Services;
 using expensetrackerapi.Validation;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Moq;
+using NodaTime;
 
 namespace ExpenseTrackerTests;
 
-using expensetrackerapi.Models;
-using expensetrackerapi.Services;
-using Microsoft.EntityFrameworkCore;
-using NodaTime;
-
-
-/* 
-⚠️ Fixture gebruiken om 1 malig een in-memory database te maken en te gebruiken
-
- */
-
-public class TestDbFixture
-{
-    public ExpenseTrackerContext CreateContext()
-    {
-        var options = new DbContextOptionsBuilder<ExpenseTrackerContext>()
-            .UseInMemoryDatabase(Guid.NewGuid().ToString())
-            .Options;
-
-        return new ExpenseTrackerContext(options);
-    }
-}
-
-public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
+public class TransactionTests: IClassFixture<TestDbFixture>
 {
 
     private readonly TestDbFixture _fixture;
-
-    public ExpenseTrackerTests(TestDbFixture fixture)
+    
+    public TransactionTests(TestDbFixture fixture)
     {
         _fixture = fixture;
     }
-
+    
     [Fact]
     public async Task TestCreateTransaction()
     {
         // Arrange
         await using var db = _fixture.CreateContext();
         
-        
-
         // Act
 
         var buckets = new[]
@@ -65,7 +44,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         var loggerMock = new Mock<ILogger<ExpenseService>>();
         var userServiceMock = new Mock<IUserService>();
 
-        // mock the behaviour of the userService.
+        // mock the behavior of the userService.
         userServiceMock
             .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
                 dto.Email == "arief@outlook.nl" &&
@@ -238,8 +217,7 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         Assert.Equal(firstFiveTransactions, db.Transactions.OrderBy(transaction => transaction.Id).Take(5));
         // asserts op de waarde niet een heel object!
     }
-
-
+    
     [Fact]
     public async Task TestDeletingTransactionById_Correct_Totals()
     {
@@ -385,228 +363,10 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
      Assert.Equal("The created date year must not be later than this year.", result.ErrorMessage);
 
     }
-
-    [Fact]
-    public async Task TestCorrectBucketSummaryJanuary2025()
-    {
-        // Arrange
-        await using var db = _fixture.CreateContext();
-        var userServiceMock = new Mock<IUserService>();
-        var bucketloggerMock = new Mock<ILogger<BucketService>>();
-        
-        
-        var user = new RegisteredUserDto
-        {
-            Id = Guid.NewGuid().ToString(),
-            Email = "arief@outlook.nl",
-            FirstName = "John",
-            LastName = "Doe"
-        };
-        
-        userServiceMock
-            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
-                dto.Email == "arief@outlook.nl" &&
-                dto.FirstName == "John" &&
-                dto.LastName == "Doe")))
-            .ReturnsAsync(Result<RegisteredUserDto>.Success(user));
-
-
-        var seeder = new DbIntializer();
-        await seeder.SeedAsync(db);
-        var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
-        
-        
-        var bucketService = new BucketService(db,bucketloggerMock.Object);
-        
-        
-        // Act
-        const int month = 1;
-        const int year = 2025;
-        
-        // Uses the db to retrieve summary of transactions of the given month-year
-        var summary = await bucketService.GetSummary(seedingUser.Id,month, year);
-
-        Assert.NotNull(summary.Value);
-        var value = summary.Value;
-        
-        var summaryTotalIncome = summary.Value?.TotalIncome;
-        var summaryTotalExpenses = summary.Value?.TotalExpenses;
-        // Assert
-        Assert.Equal(1000, summaryTotalIncome);
-        Assert.Equal(385, summaryTotalExpenses);
-        Assert.Equal(3,value.Buckets.Count);
-        Assert.Contains(nameof(Buckets.Salary), value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(nameof(Buckets.Groceries), value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(nameof(Buckets.Shopping), value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Equal(month,value.Month);
-        Assert.Equal(year,value.Year);
-        
-    }
-    [Fact]
-    public async Task TestCorrectBucketSummaryMarch2025()
-    {
-        // Arrange
-        await using var db = _fixture.CreateContext();
-        
-        var bucketloggerMock = new Mock<ILogger<BucketService>>();
-        var userServiceMock = new Mock<IUserService>();
-
-        var user = new RegisteredUserDto
-        {
-            Id = Guid.NewGuid().ToString(),
-            Email = "arief@outlook.nl",
-            FirstName = "John",
-            LastName = "Doe"
-        };
-        
-        userServiceMock
-            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
-                dto.Email == "arief@outlook.nl" &&
-                dto.FirstName == "John" &&
-                dto.LastName == "Doe")))
-            .ReturnsAsync(Result<RegisteredUserDto>.Success(user));
-
-
-        var seeder = new DbIntializer();
-        await seeder.SeedAsync(db);
-        var bucketService = new BucketService(db, bucketloggerMock.Object);
-        var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
-        
-        
-        // Act
-        const int month = 3;
-        const int year = 2025;
-        
-        // Uses the db to retrieve summary of transactions of the given month-year
-        var summary = await bucketService.GetSummary(seedingUser.Id, month, year);
-        
-        //Assert
-        Assert.NotNull(summary.Value);
-        
-        var summaryTotalIncome = summary.Value.TotalIncome;
-        var summaryTotalExpenses = summary.Value.TotalExpenses;
-
-        Assert.Equal(1000, summaryTotalIncome);
-        Assert.Equal(398, summaryTotalExpenses);
-        Assert.Equal(3,summary.Value.Buckets.Count);
-        Assert.Contains(nameof(Buckets.Salary), summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(nameof(Buckets.Groceries), summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(nameof(Buckets.Shopping), summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Equal(month,summary.Value.Month);
-        Assert.Equal(year,summary.Value.Year);
-        
-    }
-    [Fact]
-    public async Task TestCorrectBucketSummaryAugust2025()
-    {
-        // Arrange
-        await using var db = _fixture.CreateContext();
-        var userServiceMock = new Mock<IUserService>();
-        
-        var bucketloggerMock = new Mock<ILogger<BucketService>>();
-
-        var user = new RegisteredUserDto
-        {
-            Id = Guid.NewGuid().ToString(),
-            Email = "arief@outlook.nl",
-            FirstName = "John",
-            LastName = "Doe"
-        };
-
-        userServiceMock
-            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
-                dto.Email == "arief@outlook.nl" &&
-                dto.FirstName == "John" &&
-                dto.LastName == "Doe")))
-            .ReturnsAsync(Result<RegisteredUserDto>.Success(user));
-
-
-        var seeder = new DbIntializer();
-        var bucketService = new BucketService(db, bucketloggerMock.Object);
-        await seeder.SeedAsync(db);
-        var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
-        // Act
-        const int month = 8;
-        const int year = 2025;
-        
-        // Uses the db to retrieve summary of transactions of the given month-year
-        var summary = await bucketService.GetSummary(seedingUser.Id,month, year);
-        
-        //Assert
-        Assert.NotNull(summary.Value);
-        
-        var summaryTotalIncome = summary.Value.TotalIncome;
-        var summaryTotalExpenses = summary.Value.TotalExpenses;
-
-        Assert.Equal(0, summaryTotalIncome);
-        Assert.Equal(108, summaryTotalExpenses);
-        Assert.Equal(3,summary.Value.Buckets.Count);
-        Assert.Contains(nameof(Buckets.Salary), summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(nameof(Buckets.Groceries), summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(nameof(Buckets.Shopping), summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Equal(month,summary.Value.Month);
-        Assert.Equal(year,summary.Value.Year);
-        
-    }
-    [Fact]
-    public async Task TestInCorrectBucketSummaryJanuary2026()
-    {
-        // Arrange
-        await using var db = _fixture.CreateContext();
-        var userServiceMock = new Mock<IUserService>();
-        
-        var bucketloggerMock = new Mock<ILogger<BucketService>>();
-
-        var user = new RegisteredUserDto
-        {
-            Id = Guid.NewGuid().ToString(),
-            Email = "arief@outlook.nl",
-            FirstName = "John",
-            LastName = "Doe"
-        };
-        
-        userServiceMock
-            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
-                dto.Email == "arief@outlook.nl" &&
-                dto.FirstName == "John" &&
-                dto.LastName == "Doe")))
-            .ReturnsAsync(Result<RegisteredUserDto>.Success(user));
-
-        
-        var seeder = new DbIntializer();
-        await seeder.SeedAsync(db);
-        var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
-        
-        var bucketService = new BucketService(db, bucketloggerMock.Object);
-        
-        
-        // Act
-        const int month = 1;
-        const int year = 2026;
-        
-        // Uses the db to retrieve summary of transactions of the given month-year
-        var summary = await bucketService.GetSummary(seedingUser.Id,month, year);
-        
-        //Assert
-        Assert.NotNull(summary.Value);
-        
-        var summaryTotalIncome = summary.Value.TotalIncome;
-        var summaryTotalExpenses = summary.Value.TotalExpenses;
-        
-
-        Assert.Equal(0, summaryTotalIncome);
-        Assert.Equal(0, summaryTotalExpenses);
-        Assert.Equal(3,summary.Value.Buckets.Count);
-        Assert.Contains(nameof(Buckets.Salary), summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(nameof(Buckets.Groceries), summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Contains(nameof(Buckets.Shopping), summary.Value.Buckets.Select(bucket => bucket.BucketName));
-        Assert.Equal(month,summary.Value.Month);
-        Assert.Equal(year,summary.Value.Year);
-        
-    }
+    
     
     [Fact]
-    public async Task TestTransactionUpdateById()
+    public async Task UpdateTransaction_WithValidDto_UpdatesDescriptionAmountAndCreatedAt()
     {
         //Arrange
         await using var db = _fixture.CreateContext();
@@ -654,7 +414,57 @@ public class ExpenseTrackerTests : IClassFixture<TestDbFixture>
         
        
     }
+    
+    
+    [Fact]
+    public async Task UpdateTransaction_WithValidDto_UpdatesBucket()
+    {
+        //Arrange
+        await using var db = _fixture.CreateContext();
+        var userServiceMock = new Mock<IUserService>();
+
+        var user = new RegisteredUserDto
+        {
+            Id = Guid.NewGuid().ToString(),
+            Email = "arief@outlook.nl",
+            FirstName = "John",
+            LastName = "Doe"
+        };
+        
+        userServiceMock
+            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
+                dto.Email == "arief@outlook.nl" &&
+                dto.FirstName == "John" &&
+                dto.LastName == "Doe")))
+            .ReturnsAsync(Result<RegisteredUserDto>.Success(user));
+        
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
+        
+        var seeduser = await db.Users.FirstAsync(u => u.Email == "arief@outlook.nl");
+
+        var logger = new Mock<ILogger<ExpenseService>>();
+
+        var expenseService = new ExpenseService(db, logger.Object);
+
+        //Act
+        var updatedTransaction = await expenseService.UpdateTransaction(seeduser.Id, 1,
+            new UpdateTransactionDto
+            {
+                BucketId = 2, // Only changing the bucket here from 1 to 2.
+                Description = "New IPhone 17", // changing the description.
+                Amount = 1900,
+                CreatedAt = new LocalDate(2025, 1, 10)
+            });
+            
+        
+        // Assert
+        Assert.NotNull(seeduser.Id);
+        Assert.Equal("New IPhone 17",updatedTransaction!.Value!.Description );
+        Assert.Equal(2,updatedTransaction.Value.BucketId);
+        Assert.Equal(1900,updatedTransaction.Value.Amount );
+        Assert.Equal(new LocalDate(2025,1, 10),updatedTransaction.Value.CreatedAt );
+       
+    }
 
 }
-
-

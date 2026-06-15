@@ -33,12 +33,12 @@ public class BucketsController : ControllerBase
             return Ok(newBucketCreated);
         }
         return BadRequest("Failed to create bucket.");
-        
-        
+
+
 
     }
-    
-    
+
+
     [HttpGet("summary")]
     public async Task<ActionResult> GetBucketSummary([FromQuery] int month, [FromQuery] int year)
     {
