@@ -27,7 +27,7 @@ public class BucketService : IBucketService
             _logger.LogWarning("Failed to retrieve buckets due invalid userId for userId: {UserId}", userId);
             return Result<List<UserBucketResponseDto>>.Failure();
         }
-        
+
         var buckets = from bucket in _db.Buckets
                       join userbucket in _db.UserBuckets on bucket.Id equals userbucket.BucketId into Userbucketgroup
 
@@ -51,29 +51,30 @@ public class BucketService : IBucketService
         {
             return Result<UserBucketResponseDto>.Failure();
         }
-        
-        
+
+
         Bucket newBucket = new Bucket
         {
             Icon = bucket.Icon,
-            Name= bucket.Name,
+            Name = bucket.Name,
             Type = bucket.Type
         };
 
 
 
-        
+
         await _db.Buckets.AddAsync(newBucket);
         await _db.SaveChangesAsync();
-        
-        var UserBucket = new UserBuckets { ApplicationUserId = userId, BucketId = _db.Buckets.First(b => b.Name == bucket.Name).Id };
-        
-        await _db.UserBuckets.AddAsync(UserBucket);
+
+        var bucketId = await _db.Buckets.FirstAsync(b => b.Name == bucket.Name);
+        var userBucket = new UserBuckets { ApplicationUserId = userId, BucketId = bucketId.Id };
+
+        await _db.UserBuckets.AddAsync(userBucket);
         await _db.SaveChangesAsync();
 
         // THe code before cause issues with showing the total of the newly created bucket.
-        var userBucketTotal =  UserBucket.Total;
-        
+        var userBucketTotal = userBucket.Total;
+
         return Result<UserBucketResponseDto>.Success(new UserBucketResponseDto
         {
             Bucket = newBucket,
@@ -81,7 +82,7 @@ public class BucketService : IBucketService
         });
 
     }
-    
+
     public async Task<Result<BucketSummaryResponseDto>> GetSummary(string userId, int month, int year)
     {
         var userDoesExists = await _db.Users.AnyAsync(u => u.Id == userId);
@@ -130,6 +131,26 @@ public class BucketService : IBucketService
                 TotalIncome = query.Where(x => x.BucketName == nameof(Buckets.Salary)).Sum(x => x.BucketExpenseTotal),
             });
 
+    }
+
+    public async Task<Result<bool>> DeleteBucket(string? userId, int bucketId)
+    {
+        var bucket = await _db.Buckets.FindAsync(bucketId);
+        var userBucket = await _db.UserBuckets.FindAsync(userId,bucketId);
+        var defaultBuckets = new string[] { nameof(Buckets.Groceries), nameof(Buckets.Salary), nameof(Buckets.Shopping) };
+        // delete bucket and userbucket row 
+        if (bucket is not null
+            && userBucket is not null
+            && !defaultBuckets.Contains(bucket.Name)
+            )
+        {
+            _db.Buckets.Remove(bucket);
+            _db.UserBuckets.Remove(userBucket);
+            return Result<bool>.Success(true);
+
+        }
+
+        return Result<bool>.Failure();
     }
 
 }
