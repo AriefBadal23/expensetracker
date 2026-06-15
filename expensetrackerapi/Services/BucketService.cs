@@ -65,14 +65,15 @@ public class BucketService : IBucketService
         
         await _db.Buckets.AddAsync(newBucket);
         await _db.SaveChangesAsync();
+
+        var bucketId = await _db.Buckets.FirstAsync(b => b.Name == bucket.Name);
+        var userBucket =  new UserBuckets { ApplicationUserId = userId, BucketId = bucketId.Id };
         
-        var UserBucket = new UserBuckets { ApplicationUserId = userId, BucketId = _db.Buckets.First(b => b.Name == bucket.Name).Id };
-        
-        await _db.UserBuckets.AddAsync(UserBucket);
+        await _db.UserBuckets.AddAsync(userBucket);
         await _db.SaveChangesAsync();
 
         // THe code before cause issues with showing the total of the newly created bucket.
-        var userBucketTotal =  UserBucket.Total;
+        var userBucketTotal =  userBucket.Total;
         
         return Result<UserBucketResponseDto>.Success(new UserBucketResponseDto
         {
