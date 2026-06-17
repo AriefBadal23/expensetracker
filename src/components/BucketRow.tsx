@@ -5,11 +5,17 @@ interface BucketRowProps{
 }
 const BucketRow = ({bucket}:BucketRowProps) => {
     
-    async function DeleteBucket(){
-        
+    async function DeleteBucket(bucketId:number){
         try{
-            const URL = ""
-            await fetch(URL,
+            const URL = `http://localhost:5286/api/v1/Buckets/${bucketId}`
+            await fetch(URL, {
+                    method:"Delete",
+                    credentials: "include",
+                    headers: {
+                        "Content-type": "application/json; charset=UTF-8"
+                    },
+                }
+                
                 )
         }
         catch(error){
@@ -25,8 +31,12 @@ const BucketRow = ({bucket}:BucketRowProps) => {
            
             <td>
                 <button type="button"
-                        aria-label="Delete transaction">
-                    <img src="delete.png" alt="Delete transaction"/></button>
+                        aria-label="Delete transaction"
+                        onClick={() => DeleteBucket(Number(bucket.bucket.id))}
+                >
+                    <img src="delete.png" alt="Delete transaction"/>
+                    
+                </button>
             </td>
             <td>
                 <button type="button"

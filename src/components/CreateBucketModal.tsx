@@ -18,7 +18,6 @@ interface ICreateBucketModal{
 }
 
 const CreateBucketModal = ({showModal, setShowModal, setBuckets, setErrorMessage}:ICreateBucketModal) => {
-    console.log(`Modal state is ${showModal}`)
     return (
         <>
             {

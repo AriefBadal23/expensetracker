@@ -4,6 +4,7 @@ import TransactionRow from "./TransactionRow";
 import {useState} from "react";
 import CreateFormModal from "./CreateFormModal.tsx";
 import type {Bucket} from "../types/Bucket.tsx";
+import BucketTable from "./BucketTable.tsx";
 
 interface TransactionTableProps {
     buckets: Bucket[]
@@ -13,6 +14,8 @@ interface TransactionTableProps {
 }
 const TransactionTable = ({ buckets, transactions, setTransactions,ErrorMessage }: TransactionTableProps) => {
     const [showModal, setShowModal] = useState(false);
+    
+    const [showBucketModal, setShowBucketModal] = useState(false);
     
     // state to show the CreateFormTransactionForm with the transaction details.
     const [isUpdateForm, setUpdateForm] = useState(false)
@@ -74,6 +77,15 @@ const TransactionTable = ({ buckets, transactions, setTransactions,ErrorMessage 
                         </button>
                     </a>
                 </span>
+                <span style={{padding: 5 }}>
+                    <button
+                        type="button"
+                        className="btn btn-info"
+                        onClick={() => setShowBucketModal(true)}
+                    >
+                        Manage buckets
+                    </button>
+                </span>
                 <table className="table">
                     <thead>
                     <tr>
@@ -87,6 +99,7 @@ const TransactionTable = ({ buckets, transactions, setTransactions,ErrorMessage 
                     </thead>
                     <tbody>
                     {
+                        showBucketModal ? <BucketTable setShowBucketModal={setShowBucketModal}/> :
                         transactions.map((t) => {
                             return (
                                 <TransactionRow key={t.id} transaction={t} setTransactions={setTransactions} buckets={buckets} setShowModal={setShowModal} setUpdateForm={setUpdateForm} setUpdateTransaction={setUpdatedTransaction} /> 
