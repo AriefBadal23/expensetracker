@@ -146,6 +146,7 @@ public class BucketService : IBucketService
         {
             _db.Buckets.Remove(bucket);
             _db.UserBuckets.Remove(userBucket);
+            await _db.SaveChangesAsync();
             return Result<bool>.Success(true);
 
         }
