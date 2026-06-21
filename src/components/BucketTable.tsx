@@ -1,16 +1,21 @@
 ﻿import {type Dispatch, type SetStateAction, useEffect, useState} from "react";
 import type {Bucket} from "../types/Bucket.tsx";
 import BucketRow from "./BucketRow.tsx";
+import {getErrorMessage} from "../utils/utils.ts";
 
 
 interface BucketTableProps{
     setShowBucketModal: Dispatch<SetStateAction<boolean>>
+    setBuckets: Dispatch<SetStateAction<Bucket[]>>
+    buckets: Bucket[]
 }
-const BucketTable = ({setShowBucketModal}:BucketTableProps) => {
+const BucketTable = ({setShowBucketModal, setBuckets, buckets}:BucketTableProps) => {
     
-   const [buckets, setBuckets] = useState<Bucket[]>([])
+   // const [buckets, setUserBuckets] = useState<Bucket[]>([])
+    
     // TODO: Error handling for failing api call
-    
+    const [errors, setErrors] = useState({uiMessage:""})
+    console.log(errors["uiMessage"])
     useEffect(
         // call fetch function HERE
         () => {
@@ -21,11 +26,32 @@ const BucketTable = ({setShowBucketModal}:BucketTableProps) => {
                         method: "GET",
                         credentials: "include"
                     })
+                    
+                    if(!response.ok){
+                        let message = "Something went wrong."
+                        
+                        if(response.status === 401){
+                            message="Unauthorized access."
+                        }
+                        else if(response.status == 404){
+                            message="Unable to delete bucket."
+                        }
+                        setErrors(prev => ({
+                            ...prev,
+                            uiMessage: message}))
+                        return;
+                    }
+                    
                     const data = await response.json()
                     setBuckets(data.value)
                 }
-                catch (err){
-                    console.log(err)
+                catch (e){
+                    const message = getErrorMessage(e);
+                    console.error(message)
+                    setErrors(prev => ({
+                        ...prev,
+                        uiMessage: "Not able to delete the bucket"
+                    }));
                 }
             }
          fetchUserBuckets()
@@ -55,6 +81,8 @@ const BucketTable = ({setShowBucketModal}:BucketTableProps) => {
                     </div>
                     <div className="modal-body">
                         <div className="container mt-4">
+                            {errors["uiMessage"] && <p style={{ color: "red", marginTop: "0.25rem" }}>{errors["uiMessage"]}</p>}
+                            
                             <table className="table">
                                 <thead>
                                 <tr>
@@ -67,8 +95,10 @@ const BucketTable = ({setShowBucketModal}:BucketTableProps) => {
                                 <tbody>
                                 {
                                     buckets.map((bucket:Bucket) => (
-                                        <BucketRow bucket={bucket} key={bucket.bucket.id}/>
+                                        <BucketRow bucket={bucket} key={bucket.bucket.id} setBuckets={setBuckets}/>
                                     ))
+                                    
+                                    
                                 }
                                 </tbody>
                             </table>

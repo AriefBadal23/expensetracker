@@ -39,7 +39,7 @@ function App() {
                   {/*  Pass here the buckets state*/}
                     
                   <TransactionTable transactions={transactions} setTransactions={setTransactions}
-                                    ErrorMessage={errorMessage} buckets={buckets}/>
+                                    ErrorMessage={errorMessage} buckets={buckets} setBuckets={setBuckets}/>
                   <Pagination setTransactions={setTransactions} setErrorMessage={setErrorMessage}/>
                 </>
               }

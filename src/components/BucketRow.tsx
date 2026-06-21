@@ -1,13 +1,15 @@
 ﻿import type {Bucket} from "../types/Bucket.tsx";
+import type {Dispatch, SetStateAction} from "react";
 
 interface BucketRowProps{
     bucket: Bucket
+    setBuckets: Dispatch<SetStateAction<Bucket[]>>
 }
-const BucketRow = ({bucket}:BucketRowProps) => {
+const BucketRow = ({bucket, setBuckets}:BucketRowProps) => {
     
     async function DeleteBucket(bucketId:number){
         try{
-            const URL = `http://localhost:5286/api/v1/Buckets/${bucketId}`
+            const URL = `https://localhost:7118/api/v1/buckets/${bucketId}`
             await fetch(URL, {
                     method:"Delete",
                     credentials: "include",
@@ -17,6 +19,7 @@ const BucketRow = ({bucket}:BucketRowProps) => {
                 }
                 
                 )
+            setBuckets(prevState => prevState.filter(b => b.bucket.id !== bucketId));
         }
         catch(error){
             console.log(error)
