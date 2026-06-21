@@ -13,6 +13,7 @@ import type {Bucket} from "./types/Bucket.tsx";
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  // TODO dont use Error | undefined
   const [errorMessage, setErrorMessage] = useState<Error | undefined>();
   // buckets state
   const [buckets, setBuckets] = useState<Bucket[]>([]);

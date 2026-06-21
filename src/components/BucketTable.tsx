@@ -14,8 +14,7 @@ const BucketTable = ({setShowBucketModal, setBuckets, buckets}:BucketTableProps)
    // const [buckets, setUserBuckets] = useState<Bucket[]>([])
     
     // TODO: Error handling for failing api call
-    const [errors, setErrors] = useState({uiMessage:""})
-    console.log(errors["uiMessage"])
+    const [error, setError] = useState<string | null>(null)
     useEffect(
         // call fetch function HERE
         () => {
@@ -36,9 +35,7 @@ const BucketTable = ({setShowBucketModal, setBuckets, buckets}:BucketTableProps)
                         else if(response.status == 404){
                             message="Unable to delete bucket."
                         }
-                        setErrors(prev => ({
-                            ...prev,
-                            uiMessage: message}))
+                        setError(message)
                         return;
                     }
                     
@@ -48,10 +45,7 @@ const BucketTable = ({setShowBucketModal, setBuckets, buckets}:BucketTableProps)
                 catch (e){
                     const message = getErrorMessage(e);
                     console.error(message)
-                    setErrors(prev => ({
-                        ...prev,
-                        uiMessage: "Not able to delete the bucket"
-                    }));
+                    setError(message);
                 }
             }
          fetchUserBuckets()
@@ -81,7 +75,7 @@ const BucketTable = ({setShowBucketModal, setBuckets, buckets}:BucketTableProps)
                     </div>
                     <div className="modal-body">
                         <div className="container mt-4">
-                            {errors["uiMessage"] && <p style={{ color: "red", marginTop: "0.25rem" }}>{errors["uiMessage"]}</p>}
+                            {error && <p style={{ color: "red", marginTop: "0.25rem" }}>{error}</p>}
                             
                             <table className="table">
                                 <thead>
@@ -95,7 +89,7 @@ const BucketTable = ({setShowBucketModal, setBuckets, buckets}:BucketTableProps)
                                 <tbody>
                                 {
                                     buckets.map((bucket:Bucket) => (
-                                        <BucketRow bucket={bucket} key={bucket.bucket.id} setBuckets={setBuckets}/>
+                                        <BucketRow bucket={bucket} key={bucket.bucket.id} setBuckets={setBuckets} setError={setError} error={error}/>
                                     ))
                                     
                                     
