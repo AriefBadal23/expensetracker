@@ -24,8 +24,8 @@ public class DbIntializer : IDbInitializer
         var user = new ApplicationUser()
         {
             Email = "arief@outlook.nl",
-            FirstName = "John",
-            LastName = "Doe",
+            FirstName = "Arief",
+            LastName = "Badal",
             UserName = "arief@outlook.nl",
             NormalizedUserName = "ARIEF@OUTLOOK.NL",
             NormalizedEmail = "ARIEF@OUTLOOK.NL",
@@ -36,7 +36,20 @@ public class DbIntializer : IDbInitializer
 
         user.PasswordHash = hasher.HashPassword(user, "Marvel01@");
 
-        await context.Users.AddAsync(user);
+        var dummyUser = new ApplicationUser()
+        {
+            Email = "john.doe@outlook.nl",
+            FirstName = "John",
+            LastName = "Doe",
+            UserName = "john.doe@outlook.nl",
+            NormalizedUserName = "JOHN.DOE@OUTLOOK.NL",
+            NormalizedEmail = "JOHN.DOE@OUTLOOK.NL",
+            EmailConfirmed = false,
+            SecurityStamp = Guid.NewGuid().ToString("D")
+
+        };
+        
+        await context.Users.AddRangeAsync(dummyUser, user);
 
         Console.WriteLine($"{await context.SaveChangesAsync()} User has been added to the database.");
 

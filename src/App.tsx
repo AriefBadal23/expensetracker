@@ -13,6 +13,7 @@ import type {Bucket} from "./types/Bucket.tsx";
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
+  // TODO dont use Error | undefined
   const [errorMessage, setErrorMessage] = useState<Error | undefined>();
   // buckets state
   const [buckets, setBuckets] = useState<Bucket[]>([]);
@@ -27,6 +28,7 @@ function App() {
               path="/overview"
               element={<Overview/>}
           />
+            
           <Route
               path="/"
               element={
@@ -38,7 +40,7 @@ function App() {
                   {/*  Pass here the buckets state*/}
                     
                   <TransactionTable transactions={transactions} setTransactions={setTransactions}
-                                    ErrorMessage={errorMessage} buckets={buckets}/>
+                                    ErrorMessage={errorMessage} buckets={buckets} setBuckets={setBuckets}/>
                   <Pagination setTransactions={setTransactions} setErrorMessage={setErrorMessage}/>
                 </>
               }

@@ -169,10 +169,10 @@ const CreateTransactionForm = ({buckets, setUpdateForm, isUpdateForm, transactio
 
 
                 }
-                if(response.status == 401){
+                if(response.status === 401){
                         message =  "Unauthorized access."
                 }
-                else if(response.status == 404){
+                else if(response.status === 404){
                     message=  "Unable to update the transaction"
                     console.error(response.statusText)
 
