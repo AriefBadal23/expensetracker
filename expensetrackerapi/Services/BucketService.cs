@@ -138,18 +138,35 @@ public class BucketService : IBucketService
         var bucket = await _db.Buckets.FindAsync(bucketId);
         var userBucket = await _db.UserBuckets.FindAsync(userId,bucketId);
         var defaultBuckets = new string[] { nameof(Buckets.Groceries), nameof(Buckets.Salary), nameof(Buckets.Shopping) };
-        // delete bucket and userbucket row 
-        if (bucket is not null
-            && userBucket is not null
-            && !defaultBuckets.Contains(bucket.Name)
-            )
-        {
-            _db.Buckets.Remove(bucket);
-            _db.UserBuckets.Remove(userBucket);
-            await _db.SaveChangesAsync();
-            return Result<bool>.Success(true);
 
+        // finds the bucket that will be deleted.
+        var deletedBucket =
+            await _db.UserBuckets.FirstOrDefaultAsync(ub =>
+                ub.ApplicationUserId == userId && ub.BucketId == bucketId);
+        
+        
+        if (deletedBucket is not null)
+        {
+            var totalDeletedBucket  =  deletedBucket.Total;
+            var userSalaryBucket = await _db.UserBuckets.FirstAsync(ub => ub.ApplicationUserId == userId && ub.BucketId == 1);
+            
+            // delete bucket and user bucket row 
+            if (bucket is not null
+                && userBucket is not null
+                && !defaultBuckets.Contains(bucket.Name)
+                )
+            {
+                // Make sure the bucket total moves back to the salary bucket.
+                 userSalaryBucket.Total += totalDeletedBucket;
+                _db.Buckets.Remove(bucket);
+                _db.UserBuckets.Update(userSalaryBucket);
+                _db.UserBuckets.Remove(userBucket);
+                await _db.SaveChangesAsync();
+                return Result<bool>.Success(true);
+
+            }
         }
+        
 
         return Result<bool>.Failure();
     }

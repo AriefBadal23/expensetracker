@@ -388,6 +388,74 @@ public class BucketTests: IClassFixture<TestDbFixture>
     }
 
     [Fact]
+    public async Task DeleteBucket_AllTransactionsDeleted_DeletesBucketAndTransactions()
+    {
+        // Arrange
+        await using var db = _fixture.CreateContext();
+        var bucketloggerMock = new Mock<ILogger<BucketService>>();
+        
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
+
+        var user = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
+        
+        // create a new bucket for the other user we are trying to get the data from that we should not see.
+        var newBucket = new Bucket
+        {
+            Icon = "🚗",
+            Name = "Car insurence",
+            Type = BucketTypes.Expense
+        };
+        await db.Buckets.AddAsync(newBucket);
+
+        Transaction[] CarInsuranceTransactions = new Transaction[]
+        {
+            new Transaction
+            {
+                BucketId = newBucket.Id,
+                Amount = 10000,
+                Description = "Insurance of the car of month Januari"
+            },
+            new Transaction
+            {
+                BucketId = newBucket.Id,
+                Amount = 12000,
+                Description = "Insurance of the car of month Februari with price increase"
+            }
+        };
+
+        await db.Transactions.AddRangeAsync(CarInsuranceTransactions);
+        await db.SaveChangesAsync();
+        
+        var newCreatedBucket = await db.Buckets.FirstAsync(b => b.Name == newBucket.Name);
+        
+        var newUserBucket = new UserBuckets
+        {
+            ApplicationUserId = user.Id,
+            BucketId = newCreatedBucket.Id,
+            Total = 0
+        };
+        db.UserBuckets.Add(newUserBucket);
+        await db.SaveChangesAsync();
+        
+        var bucketService = new BucketService(db, bucketloggerMock.Object);
+        
+        // Act
+        var bucketIsDeleted = await bucketService.DeleteBucket(user.Id, newCreatedBucket.Id);
+        var allBucketTransactionsDeleted =  await db.Transactions.Where(t => t.BucketId == newCreatedBucket.Id).ToListAsync();
+        var count = allBucketTransactionsDeleted.Any()  ? 0 : allBucketTransactionsDeleted.Count;
+        
+        
+        // Assert
+        Assert.True(bucketIsDeleted.Value);
+        Assert.Equal(0, count);
+        
+        
+    }
+    
+    
+    
+    [Fact]
     public async Task DeleteBucket_OtherUserId_DeletesBucketFailed()
     {
         // Arrange
