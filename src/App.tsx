@@ -21,7 +21,7 @@ function App() {
   return (
       <BrowserRouter>
         <Routes>
-          <Route path="/login"
+          <Route path="/"
                  element={<LoginForm/>}
           />
           <Route
@@ -30,15 +30,13 @@ function App() {
           />
             
           <Route
-              path="/"
+              path="/home"
               element={
                 <>
                   <Navbar/>
                   <BucketList transactions={transactions} setBuckets={setBuckets} buckets={buckets}/>
                   <Filter/>
-
                   {/*  Pass here the buckets state*/}
-                    
                   <TransactionTable transactions={transactions} setTransactions={setTransactions}
                                     ErrorMessage={errorMessage} buckets={buckets} setBuckets={setBuckets}/>
                   <Pagination setTransactions={setTransactions} setErrorMessage={setErrorMessage}/>

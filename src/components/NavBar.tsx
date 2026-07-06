@@ -12,7 +12,7 @@ const Navbar = () => {
             })
             console.log("User has logged out.")
             localStorage.setItem("isLoggedIn", "false")
-            navigate("/login")
+            navigate("/")
             
             
         }

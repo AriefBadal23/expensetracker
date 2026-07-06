@@ -51,7 +51,7 @@ const LoginForm =  () => {
             else{
                 await response.json();
                 localStorage.setItem("isLoggedIn", "true")
-                navigate("/")
+                navigate("/home")
             }
         }
         catch(error){
