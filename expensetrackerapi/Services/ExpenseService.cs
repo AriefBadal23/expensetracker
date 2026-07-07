@@ -40,10 +40,10 @@ namespace expensetrackerapi.Services
         public async Task<Result<ResponseTransactionDTo?>> UpdateTransaction(string userId, int id, UpdateTransactionDto transaction)
         {
             var t = await _db.Transactions.FirstOrDefaultAsync(t => t.Id == id && t.ApplicationUserId == userId);
-            
+
             // The bucket that is chosen in the update transaction modal.
             var bucket = await _db.Buckets.FirstOrDefaultAsync(b => b.Id == transaction.BucketId);
-            
+
             if (t == null)
             {
                 return Result<ResponseTransactionDTo?>.NotFound();
@@ -53,9 +53,9 @@ namespace expensetrackerapi.Services
             // In the case the user changes the bucket of the transaction.
             var oldTransactionBucket =
                 await _db.UserBuckets.FirstAsync(ub => ub.BucketId == t.BucketId && ub.ApplicationUserId == userId);
-            
+
             var userSalaryBucket = await _db.UserBuckets.FirstAsync(ub => ub.BucketId == 1 && ub.ApplicationUserId == userId);
-            
+
             //💡 Don't forget to use the userId parameter, otherwise you get just the first transactioBucketId
             var transactionUserBucket = await _db.UserBuckets.FirstAsync(ub => ub.BucketId == transaction.BucketId && ub.ApplicationUserId == userId);
 
@@ -73,27 +73,27 @@ namespace expensetrackerapi.Services
             {
                 userSalaryBucket.Total += t.Amount;
                 transactionUserBucket.Total -= t.Amount;
-                
+
                 userSalaryBucket.Total -= transaction.Amount;
-                
+
                 transactionUserBucket.Total += transaction.Amount;
             }
             else
             {
                 userSalaryBucket.Total -= t.Amount;
                 userSalaryBucket.Total += transaction.Amount;
-                
+
             }
 
-            
-  
-            
+
+
+
             // Update after
             t.Amount = transaction.Amount;
             t.BucketId = transaction.BucketId;
             t.CreatedAt = transaction.CreatedAt;
             t.Description = transaction.Description;
-            
+
             _db.UserBuckets.Update(userSalaryBucket);
             _db.UserBuckets.Update(transactionUserBucket);
             _db.Transactions.Update(t);

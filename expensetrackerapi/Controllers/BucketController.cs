@@ -33,12 +33,12 @@ public class BucketsController : ControllerBase
             return Ok(newBucketCreated);
         }
         return BadRequest("Failed to create bucket.");
-        
-        
+
+
 
     }
-    
-    
+
+
     [HttpGet("summary")]
     public async Task<ActionResult> GetBucketSummary([FromQuery] int month, [FromQuery] int year)
     {
@@ -66,4 +66,18 @@ public class BucketsController : ControllerBase
         }
         return BadRequest("No buckets found.");
     }
+
+    [HttpDelete("{bucketId:int}")]
+    public async Task<ActionResult> DeleteBucket(int bucketId)
+    {
+        var id = _manager.GetUserId(User);
+        var bucketIsDeleted = await _bucketService.DeleteBucket(id,bucketId);
+        if (bucketIsDeleted.IsSuccess)
+        {
+            return Ok($"Bucket with id {bucketId} is deleted.");
+        }
+
+        return BadRequest("Failed to delete bucket.");
+    }
+    
 }
