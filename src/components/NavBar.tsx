@@ -12,7 +12,7 @@ const Navbar = () => {
             })
             console.log("User has logged out.")
             localStorage.setItem("isLoggedIn", "false")
-            navigate("/dashboard")
+            navigate("/")
             
             
         }
@@ -44,7 +44,7 @@ const Navbar = () => {
                         <li className="nav-item">
                             {
                                 localStorage.getItem("isLoggedIn") === "true" &&    
-                            <a className="nav-link px-3" href="/">
+                            <a className="nav-link px-3" href="/dashboard">
                                 Home
                             </a>
                             }
@@ -64,7 +64,7 @@ const Navbar = () => {
                                         Logout
                                     </a> :
                                     
-                                    <a className="nav-link px-3"  href="/login">
+                                    <a className="nav-link px-3"  href="/">
                                         Login
                                     </a>
                                     

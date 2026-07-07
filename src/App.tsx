@@ -21,7 +21,7 @@ function App() {
   return (
       <BrowserRouter>
         <Routes>
-          <Route path="/login"
+          <Route path="/"
                  element={<LoginForm/>}
           />
           <Route
@@ -30,7 +30,7 @@ function App() {
           />
             
           <Route
-              path="/"
+              path="/dashboard"
               element={
                 <>
                   <Navbar/>
