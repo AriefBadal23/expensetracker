@@ -12,7 +12,7 @@ const Navbar = () => {
             })
             console.log("User has logged out.")
             localStorage.setItem("isLoggedIn", "false")
-            navigate("/login")
+            navigate("/dashboard")
             
             
         }
@@ -24,7 +24,7 @@ const Navbar = () => {
         <nav className="navbar navbar-expand-sm bg-white border-bottom shadow-sm">
             <div className="container py-2">
                 {/* Brand */}
-                <a className="navbar-brand fw-semibold fs-5" href="/">
+                <a className="navbar-brand fw-semibold fs-5" href="/dashboard">
                     ExpenseFlow
                 </a>
 

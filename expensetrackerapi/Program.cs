@@ -70,7 +70,7 @@ try
                 {
                     policy.WithOrigins(
                     "https://localhost:7118",
-                    "https://localhost:3000",
+                    "http://localhost:3000",
                     "http://localhost:5173",
                     "https://localhost:5173"
                 )

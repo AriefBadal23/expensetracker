@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import type { Transaction } from "../types/Transaction";
 import { useSearchParams } from "react-router-dom";
-import "react-day-picker/dist/style.css";
 import type { Dispatch, SetStateAction } from "react";
 import {getErrorMessage} from "../utils/utils.ts";
 
