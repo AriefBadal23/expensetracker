@@ -509,3 +509,6 @@ $RECYCLE.BIN/
 /.sonarqube/out/Processed.Telemetry.Targets.S4NET.json
 /.sonarqube/out/ScannerEngineInput.json
 /.sonarqube/out/sonar-project.properties
+
+
+/certs

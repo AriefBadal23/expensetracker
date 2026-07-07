@@ -27,6 +27,7 @@ public class BucketService : IBucketService
             _logger.LogWarning("Failed to retrieve buckets due invalid userId for userId: {UserId}", userId);
             return Result<List<UserBucketResponseDto>>.Failure();
         }
+        
         var buckets = from bucket in _db.Buckets
                       join userbucket in _db.UserBuckets on bucket.Id equals userbucket.BucketId into Userbucketgroup
 
@@ -43,22 +44,59 @@ public class BucketService : IBucketService
             await buckets.ToListAsync());
     }
 
+    public async Task<Result<UserBucketResponseDto>> CreateBucket(string? userId, BucketRequestDto bucket)
+    {
+        var userDoesExists = await _db.Users.AnyAsync(u => u.Id == userId);
+        if (!userDoesExists)
+        {
+            return Result<UserBucketResponseDto>.Failure();
+        }
+        
+        
+        Bucket newBucket = new Bucket
+        {
+            Icon = bucket.Icon,
+            Name= bucket.Name,
+            Type = bucket.Type
+        };
 
-    public async Task<Result<BucketResponseDto>> GetSummary(string userId, int month, int year)
+
+
+        
+        await _db.Buckets.AddAsync(newBucket);
+        await _db.SaveChangesAsync();
+        
+        var UserBucket = new UserBuckets { ApplicationUserId = userId, BucketId = _db.Buckets.First(b => b.Name == bucket.Name).Id };
+        
+        await _db.UserBuckets.AddAsync(UserBucket);
+        await _db.SaveChangesAsync();
+
+        // THe code before cause issues with showing the total of the newly created bucket.
+        var userBucketTotal =  UserBucket.Total;
+        
+        return Result<UserBucketResponseDto>.Success(new UserBucketResponseDto
+        {
+            Bucket = newBucket,
+            BucketTotal = userBucketTotal
+        });
+
+    }
+    
+    public async Task<Result<BucketSummaryResponseDto>> GetSummary(string userId, int month, int year)
     {
         var userDoesExists = await _db.Users.AnyAsync(u => u.Id == userId);
 
         if (!userDoesExists)
         {
             _logger.LogWarning("Failed to retrieve transactions summary due invalid userId for userId: {UserId}", userId);
-            return Result<BucketResponseDto>.Failure();
+            return Result<BucketSummaryResponseDto>.Failure();
         }
 
         if (month == 0 || year == 0)
         {
             _logger.LogInformation("Successfully retrieved Bucket Transactions summary by userId for {UserId} without month and year", userId);
             return
-                Result<BucketResponseDto>.Success(new BucketResponseDto
+                Result<BucketSummaryResponseDto>.Success(new BucketSummaryResponseDto
                 {
                     Buckets = new List<BucketTransaction>()
                 });
@@ -82,14 +120,14 @@ public class BucketService : IBucketService
         // Make use of the query but change the return type so it matches the required output for the front-end.
         _logger.LogInformation("Successfully retrieved Bucket Transactions summary by userId for {UserId}.", userId);
 
-        return Result<BucketResponseDto>.Success(
-            new BucketResponseDto
+        return Result<BucketSummaryResponseDto>.Success(
+            new BucketSummaryResponseDto
             {
                 Month = month,
                 Year = year,
                 Buckets = query,
-                TotalExpenses = query.Where(x => x.BucketName != Buckets.Salary).Sum(x => x.BucketExpenseTotal),
-                TotalIncome = query.Where(x => x.BucketName == Buckets.Salary).Sum(x => x.BucketExpenseTotal),
+                TotalExpenses = query.Where(x => x.BucketName != nameof(Buckets.Salary)).Sum(x => x.BucketExpenseTotal),
+                TotalIncome = query.Where(x => x.BucketName == nameof(Buckets.Salary)).Sum(x => x.BucketExpenseTotal),
             });
 
     }

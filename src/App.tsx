@@ -9,11 +9,13 @@ import Filter from "./components/Filter";
 import Overview from "./components/Overview"
 import LoginForm from "./components/LoginForm.tsx";
 import Navbar from "./components/NavBar.tsx";
+import type {Bucket} from "./types/Bucket.tsx";
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [errorMessage, setErrorMessage] = useState<Error | undefined>();
-  
+  // buckets state
+  const [buckets, setBuckets] = useState<Bucket[]>([]);
   
   return (
       <BrowserRouter>
@@ -30,10 +32,13 @@ function App() {
               element={
                 <>
                   <Navbar/>
-                  <BucketList transactions={transactions}/>
+                  <BucketList transactions={transactions} setBuckets={setBuckets} buckets={buckets}/>
                   <Filter/>
+
+                  {/*  Pass here the buckets state*/}
+                    
                   <TransactionTable transactions={transactions} setTransactions={setTransactions}
-                                    ErrorMessage={errorMessage}/>
+                                    ErrorMessage={errorMessage} buckets={buckets}/>
                   <Pagination setTransactions={setTransactions} setErrorMessage={setErrorMessage}/>
                 </>
               }

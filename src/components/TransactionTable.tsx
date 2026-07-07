@@ -3,13 +3,15 @@ import type { Transaction } from "../types/Transaction";
 import TransactionRow from "./TransactionRow";
 import {useState} from "react";
 import CreateFormModal from "./CreateFormModal.tsx";
+import type {Bucket} from "../types/Bucket.tsx";
 
 interface TransactionTableProps {
+    buckets: Bucket[]
     transactions: Transaction[];
     setTransactions: Dispatch<SetStateAction<Transaction[]>>
     ErrorMessage: Error|undefined
 }
-const TransactionTable = ({ transactions, setTransactions,ErrorMessage }: TransactionTableProps) => {
+const TransactionTable = ({ buckets, transactions, setTransactions,ErrorMessage }: TransactionTableProps) => {
     const [showModal, setShowModal] = useState(false);
     
     // state to show the CreateFormTransactionForm with the transaction details.
@@ -40,7 +42,7 @@ const TransactionTable = ({ transactions, setTransactions,ErrorMessage }: Transa
         
         {/*Show create modal*/}
         { showModal ? 
-            <CreateFormModal SetShowModal={setShowModal} transactionID={updatedTransaction?.id} showModal={showModal} isUpdateForm={isUpdateForm} setTransactions={setTransactions}/>
+            <CreateFormModal buckets={buckets} SetShowModal={setShowModal} transactionID={updatedTransaction?.id} showModal={showModal} isUpdateForm={isUpdateForm} setUpdateForm={setUpdateForm} setTransactions={setTransactions}/>
             : null
         }
 
@@ -87,7 +89,7 @@ const TransactionTable = ({ transactions, setTransactions,ErrorMessage }: Transa
                     {
                         transactions.map((t) => {
                             return (
-                                <TransactionRow key={t.id} transaction={t} setTransactions={setTransactions} setShowModal={setShowModal} setUpdateForm={setUpdateForm} setUpdateTransaction={setUpdatedTransaction} /> 
+                                <TransactionRow key={t.id} transaction={t} setTransactions={setTransactions} buckets={buckets} setShowModal={setShowModal} setUpdateForm={setUpdateForm} setUpdateTransaction={setUpdatedTransaction} /> 
                             )
                         })
                     }
