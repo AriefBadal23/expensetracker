@@ -489,6 +489,8 @@ public class BucketTests: IClassFixture<TestDbFixture>
             Total = 0
         };
         db.UserBuckets.Add(newUserBucket);
+        await db.SaveChangesAsync();
+        
         
         var bucketService = new BucketService(db, bucketloggerMock.Object);
         
@@ -499,5 +501,192 @@ public class BucketTests: IClassFixture<TestDbFixture>
         Assert.False(canSeeOtherUserBucketData.Value);
     }
     
+    
+    [Fact]
+    public async Task UpdateBucket_Update_Bucket_Name_UpdateBucketSucessfully()
+    {
+        // Arrange
+        await using var db = _fixture.CreateContext();
+        var bucketloggerMock = new Mock<ILogger<BucketService>>();
+        
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
+        var seedingUser = await db.Users.FirstAsync(u => u.UserName == "john.doe@outlook.nl");
+        
+        // create a new bucket for the other user we are trying to get the data from that we should not see.
+        var newBucket = new Bucket
+        {
+            Icon = "🚗",
+            Name = "Car insurence",
+            Type = BucketTypes.Expense
+        };
+        await db.Buckets.AddAsync(newBucket);
+        await db.SaveChangesAsync();
+
+        var newCreatedBucket = await db.Buckets.FirstAsync(b => b.Name == newBucket.Name);
+        
+        var newUserBucket = new UserBuckets
+        {
+            ApplicationUserId = seedingUser.Id,
+            BucketId = newCreatedBucket.Id,
+            Total = 0
+        };
+        db.UserBuckets.Add(newUserBucket);
+        await db.SaveChangesAsync();
+        
+
+        var updateBucket = new BucketRequestDto
+        {
+            Icon = newCreatedBucket.Icon,
+            Type = newCreatedBucket.Type,
+            Name = "Car savings"
+        };
+        
+        
+        var bucketService = new BucketService(db, bucketloggerMock.Object);
+        
+        // Act
+        var updatedBucket = await bucketService.UpdateBucket( newCreatedBucket.Id,seedingUser.Id, updateBucket);
+        
+
+        // Assert
+        Assert.NotNull(updatedBucket.Value);
+        Assert.Equal("Car savings", updatedBucket.Value.Name);
+    }
+    
+    
+    [Fact]
+    public async Task UpdateBucket_Update_Bucket_Type_UpdateBucketSucessfully()
+    {
+        // Arrange
+        await using var db = _fixture.CreateContext();
+        var bucketloggerMock = new Mock<ILogger<BucketService>>();
+        
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
+        var seedingUser = await db.Users.FirstAsync(u => u.UserName == "john.doe@outlook.nl");
+        
+        // create a new bucket for the other user we are trying to get the data from that we should not see.
+        var newBucket = new Bucket
+        {
+            Icon = "🚗",
+            Name = "Car insurence",
+            Type = BucketTypes.Income
+        };
+        await db.Buckets.AddAsync(newBucket);
+        await db.SaveChangesAsync();
+
+        var newCreatedBucket = await db.Buckets.FirstAsync(b => b.Name == newBucket.Name);
+        
+        var newUserBucket = new UserBuckets
+        {
+            ApplicationUserId = seedingUser.Id,
+            BucketId = newCreatedBucket.Id,
+            Total = 0
+        };
+        db.UserBuckets.Add(newUserBucket);
+        await db.SaveChangesAsync();
+        
+
+        var updateBucket = new BucketRequestDto
+        {
+            Icon = newCreatedBucket.Icon,
+            Type = BucketTypes.Income,
+            Name = newCreatedBucket.Name
+        };
+        
+        
+        var bucketService = new BucketService(db, bucketloggerMock.Object);
+        
+        // Act
+        var updatedBucket = await bucketService.UpdateBucket( newCreatedBucket.Id,seedingUser.Id, updateBucket);
+        
+        
+
+        // Assert
+        Assert.NotNull(updatedBucket.Value);
+        Assert.Equal(BucketTypes.Income, updatedBucket.Value.Type);
+    }
+    
+    [Fact]
+    public async Task UpdateBucket_Update_Bucket_Icon_UpdateBucketSucessfully()
+    {
+        // Arrange
+        await using var db = _fixture.CreateContext();
+        var bucketloggerMock = new Mock<ILogger<BucketService>>();
+        
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
+        var seedingUser = await db.Users.FirstAsync(u => u.UserName == "john.doe@outlook.nl");
+        
+        // create a new bucket for the other user we are trying to get the data from that we should not see.
+        var newBucket = new Bucket
+        {
+            Icon = "🚗",
+            Name = "Car insurence",
+            Type = BucketTypes.Income
+        };
+        await db.Buckets.AddAsync(newBucket);
+        await db.SaveChangesAsync();
+
+        var newCreatedBucket = await db.Buckets.FirstAsync(b => b.Name == newBucket.Name);
+        
+        var newUserBucket = new UserBuckets
+        {
+            ApplicationUserId = seedingUser.Id,
+            BucketId = newCreatedBucket.Id,
+            Total = 0
+        };
+        db.UserBuckets.Add(newUserBucket);
+        await db.SaveChangesAsync();
+        
+
+        var updateBucket = new BucketRequestDto
+        {
+            Icon = "🚗🚗",
+            Type = newCreatedBucket.Type,
+            Name = newCreatedBucket.Name
+        };
+        
+        var bucketService = new BucketService(db, bucketloggerMock.Object);
+        
+        // Act
+        var updatedBucket = await bucketService.UpdateBucket( newCreatedBucket.Id,seedingUser.Id, updateBucket);
+
+        // Assert
+        Assert.NotNull(updatedBucket.Value);
+        Assert.Equal("🚗🚗", updatedBucket.Value.Icon);
+    }
+    
+    [Fact]
+    public async Task UpdateBucket_Update_Default_Bucket_UpdateBucketFailed()
+    {
+        // Arrange
+        await using var db = _fixture.CreateContext();
+        var bucketloggerMock = new Mock<ILogger<BucketService>>();
+        
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
+        var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
+        var defaultBucket = await db.UserBuckets.FirstAsync(ub => ub.BucketId == 2 && ub.ApplicationUserId == seedingUser.Id);
+        var userBucket = await db.Buckets.FirstAsync(b => b.Id == defaultBucket.BucketId);
+        
+    
+        var updateBucket = new BucketRequestDto
+        {
+            Icon = userBucket.Icon,
+            Type = userBucket.Type,
+            Name = "NotDefaultBucket!"
+        };
+        
+        var bucketService = new BucketService(db, bucketloggerMock.Object);
+        
+        // Act
+        var updatedBucket = await bucketService.UpdateBucket(userBucket.Id,seedingUser.Id, updateBucket);
+    
+        // Assert
+        Assert.Null(updatedBucket.Value);
+        Assert.False(updatedBucket.IsSuccess);
+    }
     
 }

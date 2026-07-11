@@ -2,6 +2,7 @@
 using expensetrackerapi.DTO;
 using expensetrackerapi.Models;
 using expensetrackerapi.Results;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace expensetrackerapi.Services;
@@ -171,4 +172,49 @@ public class BucketService : IBucketService
         return Result<bool>.Failure();
     }
 
+    public async Task<Result<BucketResponseDto>> UpdateBucket(int bucketId, string? userId, BucketRequestDto bucket)
+    {
+        var userExists = await _db.Users.FindAsync(userId);
+        var userbucketExists = await _db.UserBuckets.FindAsync(userId, bucketId);
+
+        
+        var userBucket = await (from ub in _db.UserBuckets
+            join b in _db.Buckets on ub.BucketId equals b.Id
+            where ub.ApplicationUserId == userId && ub.BucketId == bucketId
+            select b).FirstOrDefaultAsync();
+
+        if (userBucket == null || userbucketExists == null || userExists == null) return Result<BucketResponseDto>.Failure();
+
+        var defaultBuckets = new List<string>()
+        {
+            "Salary",
+            "Groceries",
+            "Shopping"
+        };
+
+        if (defaultBuckets.Contains(userBucket.Name))
+        {
+            return Result<BucketResponseDto>.Failure(new Error
+            {
+                Description = "Not allowed to update an default bucket."
+            });
+        }
+        userBucket.Name = bucket.Name;
+        userBucket.Icon = bucket.Icon;
+        userBucket.Type = bucket.Type;
+    
+        _db.Buckets.Update(userBucket);
+        await _db.SaveChangesAsync();
+    
+        
+        
+
+        return Result<BucketResponseDto>.Success(new BucketResponseDto
+        {
+            Icon = bucket.Icon,
+            Name = bucket.Name,
+            Type = bucket.Type
+        });
+        
+    }
 }

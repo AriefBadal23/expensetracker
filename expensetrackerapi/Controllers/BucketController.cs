@@ -2,6 +2,7 @@ using expensetrackerapi.Contracts;
 using expensetrackerapi.DTO;
 using expensetrackerapi.Models;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
@@ -78,6 +79,20 @@ public class BucketsController : ControllerBase
         }
 
         return BadRequest("Failed to delete bucket.");
+    }
+
+    [HttpPut("{bucketId:int}")]
+    public async Task<ActionResult> UpdateBucket(int bucketId, [FromBody] BucketRequestDto bucket)
+    {
+        var userId = _manager.GetUserId(User);
+        var updateBucket = await _bucketService.UpdateBucket(bucketId,userId, bucket);
+        if (updateBucket.IsSuccess)
+        {
+            return Ok(updateBucket);
+        }
+
+        return BadRequest("Failed to update bucket");
+
     }
     
 }
