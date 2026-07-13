@@ -5,7 +5,7 @@ export enum BucketTypes  {
 }
 
 export  interface Bucket {
-  bucketTotal: number,
+  bucketTotal?: number,
   bucket: {
     id?: number;
     name: string;

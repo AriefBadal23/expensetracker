@@ -33,7 +33,7 @@ export function validateDescription(name:string):boolean{
 
 export function validateAmount(amount:string):boolean{
     // Validate if amount is not larger then 100_000 and more then 0.
-    const regex = /^(?:100000|[0-9]{1,5})$/u
+    const regex = /^(?:100000|[0-9]{1,5})(?:\.[0-9]{1,2})?$/u
     const result = regex.test(amount)
     if(result && Number(amount) > 0){
         return true
@@ -64,8 +64,14 @@ export function UserIsLoggedIn():boolean{
 
 export function validateIcon(icon: string): boolean {
     if (!icon || icon.trim().length === 0) return false;
-    const regex = /^(\p{Emoji})$/u;
-    return regex.test(icon);
+    // Accept single or multi-codepoint emoji sequences (ZWJ, variation selectors, skin-tone modifiers)
+    const glyphRegex = /^(?:[\u2600-\u26FF\u2700-\u27BF]|\uD83C[\uDDE6-\uDDFF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDEFF]|\uD83E[\uDD00-\uDDFF])(?:\uFE0F)?(?:\uD83C[\uDFFB-\uDFFF])?$/u;
+    const parts = icon.split('\u200D');
+    if (parts.length === 0) return false;
+    for (const part of parts) {
+        if (!glyphRegex.test(part)) return false;
+    }
+    return true;
 }
 
 export function validateBucketName(name: string): boolean {

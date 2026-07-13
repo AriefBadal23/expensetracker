@@ -9,6 +9,7 @@ interface TransactionRowProps {
   setTransactions: Dispatch<SetStateAction<Transaction[]>>
     setShowModal: Dispatch<SetStateAction<boolean>>
     setUpdateForm:Dispatch<SetStateAction<boolean>>
+    // seperate state for the transaction to track changes (see TransactionTable)
     setUpdateTransaction:Dispatch<SetStateAction<Transaction>>
     buckets: Bucket[]
 }

@@ -311,8 +311,11 @@ const CreateTransactionForm = ({buckets, setUpdateForm, isUpdateForm, transactio
 
       switch(name) {
           case "amount":
-              handleAmountChange(value);
-              break;
+              // 13/07 fixed bug with not accepting a comma value e.g. 100,10 euro
+              { const text = (value || "").trim();
+              const normalized = text.replace(',','.');
+              handleAmountChange(normalized);
+              break; }
           case "description":
               handleDescriptionChange(value);
               break;
@@ -386,22 +389,21 @@ const CreateTransactionForm = ({buckets, setUpdateForm, isUpdateForm, transactio
             className="form-floating mb-3"
             style={errorStyle}
         >
+          {/*  fix notes: (B)*/}
+          {/*// browser expects the decimal separator is a dot (.), a comma will be ignored*/}
+          {/*  the pattern attribute I was using for number type was being ignored, it only applies to text.*/}
+          {/*  I have changed the type attribute to text and the regex is changed*/}
           <input
-              className="form-control"
-              required
-              type="number"
-              onChange={(e) => {
-                  change(e)
-              }}
-              name="amount"
-              placeholder="amount"
-              value={formdata.amount}
-              pattern="100000|[0-9]{1,5}"
-              title="Voer een bedrag in van 0 tot 100000"
-              style={{
-                border: "none", 
-                boxShadow: "none"
-              }}
+          className="form-control"
+          required
+          type="text"
+          name="amount"
+          placeholder="amount"
+          value={String(formdata.amount || "")}
+          onChange={(e) => change(e)}
+          pattern="^\d{1,6}([.,]\d{1,2})?$"
+          title="Voer een bedrag in van 0 tot 100000, optionale decimalen met . of , (max 2 decimals)"
+          style={{ border: "none", boxShadow: "none" }}
           />
           <label htmlFor="amount">Amount</label>
             

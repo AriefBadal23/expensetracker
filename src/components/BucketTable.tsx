@@ -1,7 +1,8 @@
 ﻿import {type Dispatch, type SetStateAction, useEffect, useState} from "react";
-import type {Bucket} from "../types/Bucket.tsx";
+import {type Bucket} from "../types/Bucket.tsx";
 import BucketRow from "./BucketRow.tsx";
 import {getErrorMessage} from "../utils/utils.ts";
+import CreateBucketForm from "./CreateBucketForm.tsx";
 
 
 interface BucketTableProps{
@@ -10,11 +11,15 @@ interface BucketTableProps{
     buckets: Bucket[]
 }
 const BucketTable = ({setShowBucketModal, setBuckets, buckets}:BucketTableProps) => {
+
+    const [isUpdateForm, setIsUpdateForm] = useState<{isOpen: boolean, bucketId?: number}>({isOpen:false});
+    const [modalIsShown, setModalIsShown] = useState<boolean>(false)
     
-   // const [buckets, setUserBuckets] = useState<Bucket[]>([])
+    
     
     // TODO: Error handling for failing api call
     const [error, setError] = useState<string | null>(null)
+    
     useEffect(
         // call fetch function HERE
         () => {
@@ -53,64 +58,76 @@ const BucketTable = ({setShowBucketModal, setBuckets, buckets}:BucketTableProps)
         []
     )
     return (
-        <div
-            className="modal fade show"
-            id="createTransaction"
-            aria-labelledby="createTransactionLabel"
-            aria-hidden="true"
-            style={{display: "block"}}>
-
-            <div className="modal-dialog">
-                <div className="modal-content">
-                    <div className="modal-header">
-                        <h1 className="modal-title fs-5" id="createTransactionLabel"> Manage buckets</h1>
-
-                        <button
-                            type="button"
-                            className="btn-close"
-                            data-bs-dismiss="modal"
-                            aria-label="Close"
-                            onClick={() => setShowBucketModal(false)}
-                        ></button>
-                    </div>
-                    <div className="modal-body">
-                        <div className="container mt-4">
-                            {error && <p style={{ color: "red", marginTop: "0.25rem" }}>{error}</p>}
-                            
-                            <table className="table">
-                                <thead>
-                                <tr>
-                                    <th scope="col">Bucket</th>
-                                    <th scope="col">Type</th>
-                                    <th scope="col">Delete</th>
-                                    <th scope="col">Update</th>
-                                </tr>
-                                </thead>
-                                <tbody>
-                                {
-                                    buckets.map((bucket:Bucket) => (
-                                        <BucketRow bucket={bucket} key={bucket.bucket.id} setBuckets={setBuckets} setError={setError} error={error}/>
-                                    ))
-                                    
-                                    
-                                }
-                                </tbody>
-                            </table>
+            <div
+                className="modal fade show"
+                id="createTransaction"
+                aria-labelledby="createTransactionLabel"
+                aria-hidden="true"
+                style={{display: "block"}}>
+    
+                <div className="modal-dialog">
+                    <div className="modal-content">
+                        <div className="modal-header">
+                            <h1 className="modal-title fs-5" id="createTransactionLabel"> Manage buckets</h1>
+    
+                            <button
+                                type="button"
+                                className="btn-close"
+                                data-bs-dismiss="modal"
+                                aria-label="Close"
+                                onClick={() => setShowBucketModal(false)}
+                            ></button>
                         </div>
-                    </div>
-                    <div className="modal-footer">
-                        <button
-                            type="button"
-                            className="btn btn-secondary"
-                            data-bs-dismiss="modal"
-                            onClick={() => setShowBucketModal(false)}
-                        >
-                            Close
-                        </button>
+                        <div className="modal-body">
+                            <div className="container mt-4">
+                                {error && <p style={{ color: "red", marginTop: "0.25rem" }}>{error}</p>}
+
+                                {
+                                    isUpdateForm.isOpen ? <CreateBucketForm setBuckets={setBuckets} isUpdateForm={isUpdateForm.isOpen} setIsUpdateForm={setIsUpdateForm} bucketId={isUpdateForm.bucketId}/> :
+                                <table className="table">
+                                    <thead>
+                                    <tr>
+                                        <th scope="col">Bucket</th>
+                                        <th scope="col">Type</th>
+                                        <th scope="col">Delete</th>
+                                        <th scope="col">Update</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    {
+                                        buckets.map((bucket:Bucket) => (
+                                            <BucketRow bucket={bucket}
+                                                       key={bucket.bucket.id}
+                                                       setBuckets={setBuckets}
+                                                       setError={setError}
+                                                       error={error}
+                                                       setShowModal={setModalIsShown}
+                                                       modalIsShown={modalIsShown}
+                                                       setIsUpdateForm={setIsUpdateForm}
+                                                       
+                                            />
+                                        ))
+                                        
+                                        
+                                    }
+                                    </tbody>
+                                </table>
+                                }
+                            </div>
+                        </div>
+                        <div className="modal-footer">
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                data-bs-dismiss="modal"
+                                onClick={() => setShowBucketModal(false)}
+                            >
+                                Close
+                            </button>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
     )
 }
 

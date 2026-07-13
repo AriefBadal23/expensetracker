@@ -1,20 +1,19 @@
 import "../styles/BucketList.css";
 import BucketCard from "./BucketCard";
 import {type Dispatch, type SetStateAction, useEffect, useState} from "react";
-import type {Transaction} from "../types/Transaction.tsx";
 import {getErrorMessage} from "../utils/utils.ts";
 import CreateBucketModal from "./CreateBucketModal.tsx";
 import type {Bucket} from "../types/Bucket.tsx";
 
 interface BucketListProps {
-    transactions: Transaction[],
     setBuckets: Dispatch<SetStateAction<Bucket[]>>
     buckets: Bucket[]
     
 }
 
 
-const BucketList = ({transactions, setBuckets, buckets}: BucketListProps) => {
+const BucketList = ({setBuckets, buckets}: BucketListProps) => {
+    // Dashboard overview with all the userbuckets.
     const [isPending, setPending] = useState(true);
     const [showModal, setShowModal] = useState(false)
     const [errorMessage, setErrorMessage] = useState<Error | undefined>();
@@ -79,7 +78,7 @@ const BucketList = ({transactions, setBuckets, buckets}: BucketListProps) => {
             }
         }
         fetchBuckets();
-    }, [transactions, setBuckets]);
+    }, []);
     return (
         <>
             <h1>Transaction Overview</h1>
@@ -100,8 +99,8 @@ const BucketList = ({transactions, setBuckets, buckets}: BucketListProps) => {
                                     key={b.bucket.id}
                                     id={b.bucket.id}
                                     name={b.bucket.name}
-                                    amount={b.bucketTotal}
                                     icon={b.bucket.icon}
+                                    amount={b.bucketTotal}
                                 />
                             </div>
                         );
@@ -111,7 +110,7 @@ const BucketList = ({transactions, setBuckets, buckets}: BucketListProps) => {
             }
             <input className="btn btn-primary" type="button" value="Create Bucket" onClick={() => setShowModal(true)}/>
             {showModal ?
-                <CreateBucketModal setShowModal={setShowModal} showModal={showModal} setBuckets={setBuckets} setErrorMessage={setErrorMessage}/> : null
+                <CreateBucketModal  setShowModal={setShowModal} showModal={showModal} setBuckets={setBuckets} setErrorMessage={setErrorMessage}/> : null
             }
 
         </>
