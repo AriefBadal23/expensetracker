@@ -92,7 +92,19 @@ public class BucketsController : ControllerBase
         }
 
         return BadRequest("Failed to update bucket");
+    }
 
+    [HttpGet("details")]
+    public async Task<ActionResult> GetBucketDetails([FromQuery] int id)
+    {
+        var userId = _manager.GetUserId(User);
+        var getBucketDetails = await _bucketService.BucketDetails(id, userId);
+        if (getBucketDetails.IsSuccess)
+        {
+            return Ok(getBucketDetails);
+        }
+
+        return BadRequest("Failed to get bucket details");
     }
     
 }

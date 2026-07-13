@@ -17,7 +17,7 @@ public class RequestTransactionDto
 
     [JsonPropertyName("amount")]
     [Range(0, 100_000, ErrorMessage = "The amount must be between 0 and 100_000.")]
-    public required int Amount { get; set; }
+    public required decimal Amount { get; set; }
 
     [CreatedAtValidation]
     [Required(ErrorMessage = "Created_at is required.")]

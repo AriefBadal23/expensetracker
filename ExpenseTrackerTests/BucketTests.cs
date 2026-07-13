@@ -551,7 +551,7 @@ public class BucketTests: IClassFixture<TestDbFixture>
 
         // Assert
         Assert.NotNull(updatedBucket.Value);
-        Assert.Equal("Car savings", updatedBucket.Value.Name);
+        Assert.Equal("Car savings", updatedBucket.Value.Bucket.Name);
     }
     
     
@@ -605,7 +605,7 @@ public class BucketTests: IClassFixture<TestDbFixture>
 
         // Assert
         Assert.NotNull(updatedBucket.Value);
-        Assert.Equal(BucketTypes.Income, updatedBucket.Value.Type);
+        Assert.Equal(BucketTypes.Income, updatedBucket.Value.Bucket.Type);
     }
     
     [Fact]
@@ -655,7 +655,7 @@ public class BucketTests: IClassFixture<TestDbFixture>
 
         // Assert
         Assert.NotNull(updatedBucket.Value);
-        Assert.Equal("🚗🚗", updatedBucket.Value.Icon);
+        Assert.Equal("🚗🚗", updatedBucket.Value.Bucket.Icon);
     }
     
     [Fact]

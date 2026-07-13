@@ -17,7 +17,7 @@ public record Transaction
     public string? Description { get; set; }
 
     [Range(0, 100_000, ErrorMessage = "The amount must be between 0 and 100_000.")]
-    public int Amount { get; set; }
+    public decimal Amount { get; set; }
 
     [CreatedAtValidation]
     [Required(ErrorMessage = "Created_at is required.")]

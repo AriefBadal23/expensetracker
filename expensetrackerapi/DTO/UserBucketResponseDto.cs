@@ -4,8 +4,8 @@ namespace expensetrackerapi.DTO;
 
 public class UserBucketResponseDto
 {
-    public int BucketTotal { get; set; }
-    public required Bucket Bucket { get; set; }
+    public decimal BucketTotal { get; set; }
+    public required BucketResponseDto Bucket { get; set; }
 
 
 }
