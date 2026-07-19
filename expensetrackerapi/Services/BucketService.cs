@@ -36,10 +36,16 @@ public class BucketService : IBucketService
                       where userbucket.ApplicationUserId == userId
                       select new UserBucketResponseDto
                       {
-                          Bucket = bucket,
+                          Bucket = new BucketResponseDto
+                          {
+                              Id = bucket.Id,
+                              Name = bucket.Name,
+                              Type = bucket.Type,
+                              Icon = bucket.Icon
+                          },
                           BucketTotal = userbucket.Total
                       };
-
+        
         _logger.LogInformation("Successfully retrieved buckets by userId: {UserId}", userId);
         return Result<List<UserBucketResponseDto>>.Success(
             await buckets.ToListAsync());
@@ -67,9 +73,9 @@ public class BucketService : IBucketService
         await _db.Buckets.AddAsync(newBucket);
         await _db.SaveChangesAsync();
 
-        var bucketId = await _db.Buckets.FirstAsync(b => b.Name == bucket.Name);
-        var userBucket = new UserBuckets { ApplicationUserId = userId, BucketId = bucketId.Id };
-
+        var newCreatedBucket = await _db.Buckets.FirstAsync(b => b.Name == bucket.Name);
+        var userBucket = new UserBuckets { ApplicationUserId = userId, BucketId = newCreatedBucket.Id };
+        
         await _db.UserBuckets.AddAsync(userBucket);
         await _db.SaveChangesAsync();
 
@@ -78,7 +84,13 @@ public class BucketService : IBucketService
 
         return Result<UserBucketResponseDto>.Success(new UserBucketResponseDto
         {
-            Bucket = newBucket,
+            Bucket = new BucketResponseDto
+            {
+                Id = userBucket.BucketId,
+                Name = newCreatedBucket.Name,
+                Type = newCreatedBucket.Type,
+                Icon = newCreatedBucket.Icon
+            },
             BucketTotal = userBucketTotal
         });
 
@@ -172,7 +184,7 @@ public class BucketService : IBucketService
         return Result<bool>.Failure();
     }
 
-    public async Task<Result<BucketResponseDto>> UpdateBucket(int bucketId, string? userId, BucketRequestDto bucket)
+    public async Task<Result<UserBucketResponseDto>> UpdateBucket(int bucketId, string? userId, BucketRequestDto bucket)
     {
         var userExists = await _db.Users.FindAsync(userId);
         var userbucketExists = await _db.UserBuckets.FindAsync(userId, bucketId);
@@ -181,9 +193,20 @@ public class BucketService : IBucketService
         var userBucket = await (from ub in _db.UserBuckets
             join b in _db.Buckets on ub.BucketId equals b.Id
             where ub.ApplicationUserId == userId && ub.BucketId == bucketId
-            select b).FirstOrDefaultAsync();
+            select new UserBucketResponseDto
+            {
+                Bucket = new BucketResponseDto
+                {
+                    Id = b.Id,
+                    Name = b.Name,
+                    Type = b.Type,
+                    Icon = b.Icon
+                    
+                },
+                BucketTotal = ub.Total
+            }).FirstOrDefaultAsync();
 
-        if (userBucket == null || userbucketExists == null || userExists == null) return Result<BucketResponseDto>.Failure();
+        if (userBucket == null || userbucketExists == null || userExists == null) return Result<UserBucketResponseDto>.Failure();
 
         var defaultBuckets = new List<string>()
         {
@@ -192,29 +215,68 @@ public class BucketService : IBucketService
             "Shopping"
         };
 
-        if (defaultBuckets.Contains(userBucket.Name))
+        if (defaultBuckets.Contains(userBucket.Bucket.Name))
         {
-            return Result<BucketResponseDto>.Failure(new Error
+            return Result<UserBucketResponseDto>.Failure(new Error
             {
                 Description = "Not allowed to update an default bucket."
             });
         }
-        userBucket.Name = bucket.Name;
-        userBucket.Icon = bucket.Icon;
-        userBucket.Type = bucket.Type;
-    
-        _db.Buckets.Update(userBucket);
+
+        Bucket? updatedBucket = await _db.Buckets.FindAsync(bucketId);
+        
+        
+        updatedBucket.Name = bucket.Name;
+        updatedBucket.Icon = bucket.Icon;
+        updatedBucket.Type = bucket.Type;
+        
+        _db.Buckets.Update(updatedBucket);
         await _db.SaveChangesAsync();
     
         
         
 
-        return Result<BucketResponseDto>.Success(new BucketResponseDto
+        return Result<UserBucketResponseDto>.Success(new UserBucketResponseDto
         {
+            Bucket= new BucketResponseDto
+            { 
+                Id = bucketId,
             Icon = bucket.Icon,
             Name = bucket.Name,
             Type = bucket.Type
+                
+            },
+            BucketTotal = userBucket.BucketTotal
         });
         
+    }
+
+    public async Task<Result<UserBucketResponseDto>> BucketDetails(int bucketId, string? userId)
+    {
+        var userExists = await _db.Users.FindAsync(userId);
+        var userbucketExists = await _db.UserBuckets.FindAsync(userId, bucketId);
+
+        // join userbuckets with buckets to get the specific bucket that correlates with the given bucketId parameter and userId
+        var userBucket = await (from ub in _db.UserBuckets
+            join b in _db.Buckets on ub.BucketId equals b.Id
+            where ub.ApplicationUserId == userId && ub.BucketId == bucketId
+            select new UserBucketResponseDto
+        {
+            Bucket = new BucketResponseDto
+            {
+                Id = b.Id,
+                Name = b.Name,
+                Icon = b.Icon,
+                Type = b.Type,
+            },
+            BucketTotal = ub.Total
+        }).FirstOrDefaultAsync();
+
+        if (userBucket == null || userbucketExists == null || userExists == null) return Result<UserBucketResponseDto>.Failure();
+        
+
+        return Result<UserBucketResponseDto>.Success(userBucket);
+
+
     }
 }

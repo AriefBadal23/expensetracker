@@ -34,11 +34,10 @@ function App() {
               element={
                 <>
                   <Navbar/>
-                  <BucketList transactions={transactions} setBuckets={setBuckets} buckets={buckets}/>
+                  <BucketList setBuckets={setBuckets} buckets={buckets}/>
                   <Filter/>
 
                   {/*  Pass here the buckets state*/}
-                    
                   <TransactionTable transactions={transactions} setTransactions={setTransactions}
                                     ErrorMessage={errorMessage} buckets={buckets} setBuckets={setBuckets}/>
                   <Pagination setTransactions={setTransactions} setErrorMessage={setErrorMessage}/>

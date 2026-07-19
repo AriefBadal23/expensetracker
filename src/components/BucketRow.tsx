@@ -1,16 +1,17 @@
 ﻿import type {Bucket} from "../types/Bucket.tsx";
-import {type Dispatch, type SetStateAction, useState} from "react";
+import {type Dispatch, type SetStateAction} from "react";
 import {getErrorMessage} from "../utils/utils.ts";
 
 interface BucketRowProps{
     bucket: Bucket
     setBuckets: Dispatch<SetStateAction<Bucket[]>>
     setError: Dispatch<SetStateAction<string | null>>
+    setShowModal: Dispatch<SetStateAction<boolean>>
+    modalIsShown: boolean
     error: string | null
+    setIsUpdateForm: Dispatch<SetStateAction<{isOpen: boolean, bucketId?: number}>>
 }
-const BucketRow = ({bucket, setBuckets, setError, error}:BucketRowProps) => {
-    
-    const [modalIsShown, setShowModal] = useState<boolean>(false)
+const BucketRow = ({bucket, setBuckets, setError, error, setShowModal, modalIsShown,setIsUpdateForm }:BucketRowProps) => {
     
     async function DeleteBucket(bucketId:number | undefined){
         try{
@@ -60,13 +61,11 @@ const BucketRow = ({bucket, setBuckets, setError, error}:BucketRowProps) => {
         }
     }
     
-        
-    // const confirmDelete = (): boolean => {
-    //    
-    // }
     return (
         <>
             <div>
+               
+                
                 {
                     modalIsShown ? (
                         <div
@@ -96,7 +95,10 @@ const BucketRow = ({bucket, setBuckets, setError, error}:BucketRowProps) => {
                                         <button
                                             type="button"
                                             className="btn btn-secondary"
-                                            onClick={() => setShowModal(false)}
+                                            onClick={() => {
+                                                setShowModal(false)
+                                            }
+                                        }
                                         >
                                             Cancel
                                         </button>
@@ -135,7 +137,9 @@ const BucketRow = ({bucket, setBuckets, setError, error}:BucketRowProps) => {
                 </td>
                 <td>
                     <button type="button"
-                            aria-label="Update transaction">
+                            aria-label="Update transaction" onClick={() => {
+                            setIsUpdateForm({isOpen:true, bucketId:bucket.bucket.id})
+                    }}>
                         <img src="update.png" alt="Update transaction"/></button>
                 </td>
             </tr>
