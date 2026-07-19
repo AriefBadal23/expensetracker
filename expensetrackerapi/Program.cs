@@ -70,10 +70,10 @@ try
                 {
                     policy.WithOrigins(
                     "https://localhost:7118",
-                    "https://localhost:3000",
+                    "http://localhost:3000",
                     "http://localhost:5173",
                     "https://localhost:5173"
-                )
+                )   
                         .AllowAnyHeader()
                         .AllowAnyMethod()
                         .AllowCredentials();
@@ -156,6 +156,7 @@ try
     builder.Services.AddOpenApi();
 
     var app = builder.Build();
+    app.UseCors(myAllowSpecificOrigins);
     app.Use(async (context, next) =>
     {
         var clientIp = context.Connection.RemoteIpAddress?.ToString() ?? "Unknown";
@@ -166,7 +167,6 @@ try
             await next.Invoke();
         }
     });
-    app.UseCors(myAllowSpecificOrigins);
 
     app.UseAuthentication();
     app.UseAuthorization();

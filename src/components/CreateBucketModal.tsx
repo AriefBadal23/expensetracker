@@ -14,11 +14,9 @@ interface ICreateBucketModal{
     setShowModal: Dispatch<SetStateAction<boolean>>
     setBuckets: Dispatch<SetStateAction<BucketType[]>>
     setErrorMessage: Dispatch<SetStateAction<Error | undefined>>
-    
 }
 
 const CreateBucketModal = ({showModal, setShowModal, setBuckets, setErrorMessage}:ICreateBucketModal) => {
-    console.log(`Modal state is ${showModal}`)
     return (
         <>
             {
@@ -44,7 +42,7 @@ const CreateBucketModal = ({showModal, setShowModal, setBuckets, setErrorMessage
                                     ></button>
                                 </div>
                                 <div className="modal-body">
-                                    <CreateBucketForm setShowModal = {setShowModal} setBuckets={setBuckets} setErrorMessage={setErrorMessage}/>
+                                    <CreateBucketForm  setBuckets={setBuckets} setErrorMessage={setErrorMessage} />
                                 </div>
                                 <div className="modal-footer">
                                     <button

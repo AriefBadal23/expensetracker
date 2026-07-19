@@ -240,8 +240,9 @@ namespace expensetrackerapi.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<Buckets>("Name")
-                        .HasColumnType("buckets");
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<int>("Type")
                         .HasColumnType("integer");
@@ -259,8 +260,8 @@ namespace expensetrackerapi.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("Amount")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("Amount")
+                        .HasColumnType("numeric");
 
                     b.Property<string>("ApplicationUserId")
                         .IsRequired()
@@ -294,8 +295,8 @@ namespace expensetrackerapi.Migrations
                     b.Property<int>("BucketId")
                         .HasColumnType("integer");
 
-                    b.Property<int>("Total")
-                        .HasColumnType("integer");
+                    b.Property<decimal>("Total")
+                        .HasColumnType("numeric");
 
                     b.HasKey("ApplicationUserId", "BucketId");
 

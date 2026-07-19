@@ -1,8 +1,11 @@
-﻿namespace expensetrackerapi.DTO;
+﻿using expensetrackerapi.Models;
+
+namespace expensetrackerapi.DTO;
 
 public class BucketResponseDto
 {
-    public string Name { get; set; }
-    public int Icon { get; set; }
-    public int Type { get; set; }
+    public required int Id { get; set; }
+    public required string Name { get; set; }
+    public required string Icon { get; set; }
+    public required BucketTypes Type { get; set; }
 }

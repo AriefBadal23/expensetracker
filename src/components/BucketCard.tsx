@@ -3,7 +3,7 @@ import "../styles/Bucket.css";
 interface BucketProps {
   name: string;
   icon: string;
-  amount: number;
+  amount?: number;
   id?: number;
 }
 

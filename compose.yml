@@ -1,0 +1,54 @@
+﻿services:
+
+  postgres:
+    image: postgres
+    working_dir: /expensetrackerapi
+    env_file:
+      - expensetrackerapi/.env
+    environment:
+      POSTGRES_USER: "${DBUsername}"
+      POSTGRES_PASSWORD: "${DBPassword}"
+      POSTGRES_DB: "${DBDatabase}"
+      
+    ports:
+      - "5432:5432"
+    
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+  api:
+    build:
+      context: ./expensetrackerapi
+      dockerfile: ./Dockerfile
+    env_file:
+      - expensetrackerapi/.env
+    ports:
+      - "7118:7118"
+    environment:
+      ASPNETCORE_URLS: "https://+:7118"
+      ASPNETCORE_ENVIRONMENT: "Development"
+      ASPNETCORE_Kestrel__Certificates__Default__Path: /certs/expensetracker.pfx
+      ASPNETCORE_Kestrel__Certificates__Default__Password: "${PFX_PASSWORD}"
+      ConnectionStrings__ExpenseTrackerContext: "Host=${DBHostname};Username=${DbUsername};Database=${DbDatabase}"
+      DBPassword: "${DBPassword}"
+      JWTSettings__Key: "${JWT_KEY}"
+      JWTSettings__Issuer: "ExpenseTracker"
+      JWTSettings__Audience: "ExpenseTrackerUsers"
+    depends_on:
+      - postgres
+    volumes:
+      - ./expensetrackerapi/certs/expensetracker.pfx:/certs/expensetracker.pfx:ro
+  
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - REACT_APP_API_URL=https://localhost:7118
+    depends_on:
+      - api
+
+volumes:
+  postgres_data:
