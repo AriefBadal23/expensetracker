@@ -31,6 +31,7 @@ const CreateBucketForm = ({isUpdateForm,setIsUpdateForm, setBuckets, setErrorMes
             icon: "",
             type: BucketTypes.Expense
 })
+    console.log(formData)
 
     
     const [errors, setErrors] = useState({ name: "", icon:"", type:"", uiMessage: ""});
@@ -145,7 +146,7 @@ const CreateBucketForm = ({isUpdateForm,setIsUpdateForm, setBuckets, setErrorMes
             
             
             const updatedBucket: BucketType = {
-                bucketTotal: data.value.bucket.bucketTotal,
+                bucketTotal: data.value.bucketTotal,
                 bucket: {
                     id: data.value.bucket.id,
                     name: data.value.bucket.name,
