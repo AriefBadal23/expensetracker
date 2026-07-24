@@ -14,22 +14,21 @@ using NodaTime;
 
 namespace ExpenseTrackerTests;
 
-public class TransactionTests: IClassFixture<TestDbFixture>
+public class TransactionTests : IClassFixture<TestDbFixture>
 {
-
     private readonly TestDbFixture _fixture;
-    
+
     public TransactionTests(TestDbFixture fixture)
     {
         _fixture = fixture;
     }
-    
+
     [Fact]
     public async Task TestCreateUser()
     {
         // Arrange
         await using var db = _fixture.CreateContext();
-        
+
         var newUser = new ApplicationUser
         {
             FirstName = "John",
@@ -37,24 +36,24 @@ public class TransactionTests: IClassFixture<TestDbFixture>
             Email = "johndoe@outlook.nl",
             PasswordHash = "Marvel01@"
         };
-        
+
         // Act
         var hasher = new PasswordHasher<ApplicationUser>();
-        var hashedPassword = hasher.HashPassword(newUser,newUser.PasswordHash);
+        var hashedPassword = hasher.HashPassword(newUser, newUser.PasswordHash);
         newUser.PasswordHash = hashedPassword;
         await db.Users.AddAsync(newUser);
         await db.SaveChangesAsync();
-        
+
         // Assert
         Assert.Contains(newUser, db.Users);
     }
-    
+
     [Fact]
     public async Task TestGetExistingUser()
     {
         // Arrange
         await using var db = _fixture.CreateContext();
-        
+
         var newUser = new ApplicationUser
         {
             FirstName = "John",
@@ -62,29 +61,28 @@ public class TransactionTests: IClassFixture<TestDbFixture>
             Email = "johndoe@outlook.nl",
             PasswordHash = "Marvel01@"
         };
-        
+
         // Act
         var hasher = new PasswordHasher<ApplicationUser>();
-        var hashedPassword = hasher.HashPassword(newUser,newUser.PasswordHash);
+        var hashedPassword = hasher.HashPassword(newUser, newUser.PasswordHash);
         newUser.PasswordHash = hashedPassword;
         await db.Users.AddAsync(newUser);
         await db.SaveChangesAsync();
-        
-        
+
+
         var user = await db.Users.FirstAsync(user => user.Email == "johndoe@outlook.nl");
 
         // Assert
         Assert.Equal(newUser, user);
-        Assert.Contains(user,db.Users);
+        Assert.Contains(user, db.Users);
     }
 
     [Fact]
     public async Task DeleteExistingUser()
     {
-        
         // Arrange
         await using var db = _fixture.CreateContext();
-        
+
         var newUser = new ApplicationUser
         {
             FirstName = "John",
@@ -92,20 +90,20 @@ public class TransactionTests: IClassFixture<TestDbFixture>
             Email = "johndoe@outlook.nl",
             PasswordHash = "Marvel01@"
         };
-        
+
         // Act
         var hasher = new PasswordHasher<ApplicationUser>();
-        var hashedPassword = hasher.HashPassword(newUser,newUser.PasswordHash);
+        var hashedPassword = hasher.HashPassword(newUser, newUser.PasswordHash);
         newUser.PasswordHash = hashedPassword;
         await db.Users.AddAsync(newUser);
         await db.SaveChangesAsync();
-        
+
         var user = await db.Users.FirstAsync(user => user.Email == "johndoe@outlook.nl");
-        
+
         // delete the user
         db.Users.Remove(user);
         await db.SaveChangesAsync();
-        
+
         // Assert
         Assert.DoesNotContain(newUser, db.Users);
     }
@@ -115,14 +113,14 @@ public class TransactionTests: IClassFixture<TestDbFixture>
     {
         // Arrange
         await using var db = _fixture.CreateContext();
-        
+
         // Act
 
         var buckets = new[]
         {
-                new Bucket{Id=1, Name=nameof(Buckets.Salary),Icon="💰", Type = BucketTypes.Income},
-                new Bucket{Id=2, Name=nameof(Buckets.Groceries),Icon="🏪", Type = BucketTypes.Expense},
-                new Bucket{Id=3, Name=nameof(Buckets.Shopping),Icon="🛒", Type = BucketTypes.Expense}
+            new Bucket { Id = 1, Name = nameof(Buckets.Salary), Icon = "💰", Type = BucketTypes.Income },
+            new Bucket { Id = 2, Name = nameof(Buckets.Groceries), Icon = "🏪", Type = BucketTypes.Expense },
+            new Bucket { Id = 3, Name = nameof(Buckets.Shopping), Icon = "🛒", Type = BucketTypes.Expense }
         };
 
         db.Buckets.AddRange(buckets);
@@ -145,7 +143,7 @@ public class TransactionTests: IClassFixture<TestDbFixture>
             }));
 
         var service = new ExpenseService(db, loggerMock.Object);
-        
+
         var newUser = new ApplicationUser
         {
             FirstName = "John",
@@ -154,16 +152,16 @@ public class TransactionTests: IClassFixture<TestDbFixture>
             PasswordHash = "Marvel01@"
         };
         var hasher = new PasswordHasher<ApplicationUser>();
-        var hashedPassword = hasher.HashPassword(newUser,newUser.PasswordHash);
+        var hashedPassword = hasher.HashPassword(newUser, newUser.PasswordHash);
         newUser.PasswordHash = hashedPassword;
-        
-        
+
+
         await db.Users.AddAsync(newUser);
         await db.SaveChangesAsync();
-        
+
         var user = await db.Users.FirstAsync(user => user.Email == "johndoe@outlook.nl");
-        
-        var userBuckets =  buckets.Select(bucket => new UserBuckets
+
+        var userBuckets = buckets.Select(bucket => new UserBuckets
         {
             ApplicationUserId = user.Id,
             BucketId = bucket.Id,
@@ -173,54 +171,51 @@ public class TransactionTests: IClassFixture<TestDbFixture>
 
         Result<ResponseTransactionDTo>[] transactionArrayResult = new Result<ResponseTransactionDTo>[3];
 
-        RequestTransactionDto[] transactions = new[] {
-
-        new RequestTransactionDto
+        RequestTransactionDto[] transactions = new[]
         {
-            BucketId = 1,
-            Description = "Salary payment",
-            Amount = 1000,
-            CreatedAt = new LocalDate(2025, 1, 20),
-        },
+            new RequestTransactionDto
+            {
+                BucketId = 1,
+                Description = "Salary payment",
+                Amount = 1000,
+                CreatedAt = new LocalDate(2025, 1, 20),
+            },
 
-        new RequestTransactionDto
-        {
-            BucketId = 2,
-            Description = "Shopping - Clothing",
-            Amount = 80,
-            CreatedAt = new LocalDate(2025, 1, 29),
-        },
-        new RequestTransactionDto
-        {
-            BucketId = 3,
-            Description = "Groceries at AH",
-            Amount = 120,
-            CreatedAt = new LocalDate(2025, 1, 12),
-        },
-
-
-
-    };
+            new RequestTransactionDto
+            {
+                BucketId = 2,
+                Description = "Shopping - Clothing",
+                Amount = 80,
+                CreatedAt = new LocalDate(2025, 1, 29),
+            },
+            new RequestTransactionDto
+            {
+                BucketId = 3,
+                Description = "Groceries at AH",
+                Amount = 120,
+                CreatedAt = new LocalDate(2025, 1, 12),
+            },
+        };
 
         for (var i = 0; i < transactionArrayResult.Length; i++)
         {
-            var transactionIsCreated = await service.CreateTransaction(user.Id,transactions[i] );
+            var transactionIsCreated = await service.CreateTransaction(user.Id, transactions[i]);
 
             if (transactionIsCreated.IsSuccess)
             {
                 transactionArrayResult[i] = transactionIsCreated;
             }
         }
-        
-        
+
+
         await db.SaveChangesAsync();
 
         var salaryBucketTotal =
             await db.UserBuckets.FirstAsync(ub => ub.BucketId == 1 && ub.ApplicationUserId == user.Id);
-        
+
         var shoppingBucketTotal =
             await db.UserBuckets.FirstAsync(ub => ub.BucketId == 2 && ub.ApplicationUserId == user.Id);
-        
+
         var groceriesBucketTotal =
             await db.UserBuckets.FirstAsync(ub => ub.BucketId == 3 && ub.ApplicationUserId == user.Id);
 
@@ -236,18 +231,17 @@ public class TransactionTests: IClassFixture<TestDbFixture>
     public async Task GetTransactions_ReturnsAllTransactions()
     {
         // Arrange
-        await using  var db = _fixture.CreateContext();
+        await using var db = _fixture.CreateContext();
 
         var seeder = new DbIntializer();
         await seeder.SeedAsync(db);
         var user = await db.Users.FirstAsync(user => user.Email == "arief@outlook.nl");
 
-        
+
         // Act
         // Bucket  id=1 is Salary and id=2 is Groceries and id=3 is Shopping
         Transaction[] firstFiveTransactions = new Transaction[]
         {
-            
             new()
             {
                 Id = 1,
@@ -298,13 +292,13 @@ public class TransactionTests: IClassFixture<TestDbFixture>
                 CreatedAt = new LocalDate(2025, 3, 2)
             },
         };
-        
+
         // Assert
         Assert.Equal(33, await db.Transactions.CountAsync(x => x.ApplicationUserId == user.Id));
         Assert.Equal(firstFiveTransactions, db.Transactions.OrderBy(transaction => transaction.Id).Take(5));
         // asserts op de waarde niet een heel object!
     }
-    
+
     [Fact]
     public async Task TestDeletingTransactionById_Correct_Totals()
     {
@@ -312,9 +306,9 @@ public class TransactionTests: IClassFixture<TestDbFixture>
 
         await using var db = _fixture.CreateContext();
         var loggerMock = new Mock<ILogger<ExpenseService>>();
-        
+
         var userServiceMock = new Mock<IUserService>();
-        
+
         var user = new RegisteredUserDto
         {
             Id = Guid.NewGuid().ToString(),
@@ -322,7 +316,7 @@ public class TransactionTests: IClassFixture<TestDbFixture>
             FirstName = "John",
             LastName = "Doe"
         };
-        
+
         userServiceMock
             .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
                 dto.Email == "arief@outlook.nl" &&
@@ -339,12 +333,14 @@ public class TransactionTests: IClassFixture<TestDbFixture>
         // 3-> 80
         // 5 -> 150
         // 8 -> 60
-        var T_3_isDeleted = await new ExpenseService(db,loggerMock.Object).DeleteTransaction(seedingUser.Id,3); // 80
-        var T_5_isDeleted = await new ExpenseService(db, loggerMock.Object).DeleteTransaction(seedingUser.Id,5); //150
-        var T_8_isDeleted = await new ExpenseService(db, loggerMock.Object).DeleteTransaction(seedingUser.Id,8); // 60
-        
-        var currentShoppingTotal =  await db.UserBuckets.FirstAsync(ub => ub.BucketId == 2 && ub.ApplicationUserId == seedingUser.Id);
-        var currentSalaryTotal = await db.UserBuckets.FirstAsync(ub => ub.BucketId ==1 && ub.ApplicationUserId == seedingUser.Id);
+        var T_3_isDeleted = await new ExpenseService(db, loggerMock.Object).DeleteTransaction(seedingUser.Id, 3); // 80
+        var T_5_isDeleted = await new ExpenseService(db, loggerMock.Object).DeleteTransaction(seedingUser.Id, 5); //150
+        var T_8_isDeleted = await new ExpenseService(db, loggerMock.Object).DeleteTransaction(seedingUser.Id, 8); // 60
+
+        var currentShoppingTotal =
+            await db.UserBuckets.FirstAsync(ub => ub.BucketId == 2 && ub.ApplicationUserId == seedingUser.Id);
+        var currentSalaryTotal =
+            await db.UserBuckets.FirstAsync(ub => ub.BucketId == 1 && ub.ApplicationUserId == seedingUser.Id);
 
         // Assert
         Assert.True(T_3_isDeleted.Value);
@@ -360,7 +356,7 @@ public class TransactionTests: IClassFixture<TestDbFixture>
         await using var db = _fixture.CreateContext();
         var expenseloggerMock = new Mock<ILogger<ExpenseService>>();
         var userServiceMock = new Mock<IUserService>();
-        
+
         var user = new RegisteredUserDto
         {
             Id = Guid.NewGuid().ToString(),
@@ -368,7 +364,7 @@ public class TransactionTests: IClassFixture<TestDbFixture>
             FirstName = "John",
             LastName = "Doe"
         };
-        
+
         userServiceMock
             .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
                 dto.Email == "arief@outlook.nl" &&
@@ -380,78 +376,79 @@ public class TransactionTests: IClassFixture<TestDbFixture>
         var seeder = new DbIntializer();
         await seeder.SeedAsync(db);
         var seedingUser = await db.Users.FirstAsync(u => u.UserName == "arief@outlook.nl");
-        
+
         var expenseService = new ExpenseService(db, expenseloggerMock.Object);
 
-       
 
         foreach (var transaction in db.Transactions)
         {
-            await expenseService.DeleteTransaction(seedingUser.Id,transaction.Id);
+            await expenseService.DeleteTransaction(seedingUser.Id, transaction.Id);
         }
 
         var buckets = await db.Buckets.CountAsync();
-        Assert.Equal(3,buckets);
+        Assert.Equal(3, buckets);
     }
 
     [Fact]
     public async Task TestInvalidCreationDateValidationAttribute()
     {
-     // ARRANGE
-     await using var db = _fixture.CreateContext();
-     var userServiceMock = new Mock<IUserService>();
+        // ARRANGE
+        await using var db = _fixture.CreateContext();
+        var userServiceMock = new Mock<IUserService>();
 
-     userServiceMock
-         .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
-             dto.Email == "arief@outlook.nl" &&
-             dto.FirstName == "John" &&
-             dto.LastName == "Doe")))
-         .ReturnsAsync(Result<RegisteredUserDto>.Success(new RegisteredUserDto
-         {
-             Id = Guid.NewGuid().ToString(),
-             Email = "arief@outlook.nl",
-             FirstName = "John",
-             LastName = "Doe"
-         }));
+        userServiceMock
+            .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
+                dto.Email == "arief@outlook.nl" &&
+                dto.FirstName == "John" &&
+                dto.LastName == "Doe")))
+            .ReturnsAsync(Result<RegisteredUserDto>.Success(new RegisteredUserDto
+            {
+                Id = Guid.NewGuid().ToString(),
+                Email = "arief@outlook.nl",
+                FirstName = "John",
+                LastName = "Doe"
+            }));
 
 
-     var seeder = new DbIntializer();
-     await seeder.SeedAsync(db);
-     
-     var user = await db.Users.FirstAsync(user => user.Email == "arief@outlook.nl");
-     
-     Transaction[] newTransactions =
-     {
-         new Transaction{BucketId=1,
-                        ApplicationUserId= user.Id,
-                        Description="TestSalaris",
-                        Amount=100,
-                        CreatedAt= new LocalDate(2030,1,20),
-                         },
-         
-         new Transaction{BucketId=3,
-                        ApplicationUserId= user.Id,
-                        Description="Shopping - clothing",
-                        Amount=80,
-                        CreatedAt= new LocalDate(2025,1,20),
-                        },
+        var seeder = new DbIntializer();
+        await seeder.SeedAsync(db);
 
-     };
-     // ACT
-     db.Transactions.AddRange(newTransactions);
-     await db.SaveChangesAsync();
+        var user = await db.Users.FirstAsync(user => user.Email == "arief@outlook.nl");
 
-     var attr = new CreatedAtValidationAttribute();
-     var context = new ValidationContext(new { });
-     var result = attr.GetValidationResult(newTransactions[0].CreatedAt, context);
-     // ASSERT
-     Assert.NotNull(result);
-     Assert.NotEqual(ValidationResult.Success, result);
-     Assert.Equal("The created date year must not be later than this year.", result.ErrorMessage);
+        Transaction[] newTransactions =
+        {
+            new Transaction
+            {
+                BucketId = 1,
+                ApplicationUserId = user.Id,
+                Description = "TestSalaris",
+                Amount = 100,
+                CreatedAt = new LocalDate(2030, 1, 20),
+            },
 
+            new Transaction
+            {
+                BucketId = 3,
+                ApplicationUserId = user.Id,
+                Description = "Shopping - clothing",
+                Amount = 80,
+                CreatedAt = new LocalDate(2025, 1, 20),
+            },
+        };
+        // ACT
+        db.Transactions.AddRange(newTransactions);
+        await db.SaveChangesAsync();
+
+        var attr = new CreatedAtValidationAttribute();
+        var context = new ValidationContext(new { });
+        var result = attr.GetValidationResult(newTransactions[0].CreatedAt, context);
+        // ASSERT
+        Assert.NotNull(result);
+        Assert.NotEqual(ValidationResult.Success, result);
+        Assert.Equal("The created date year must not be later than this year.", result.ErrorMessage);
     }
-    
-    
+
+
     [Fact]
     public async Task UpdateTransaction_WithValidDto_UpdatesDescriptionAmountAndCreatedAt()
     {
@@ -466,17 +463,17 @@ public class TransactionTests: IClassFixture<TestDbFixture>
             FirstName = "John",
             LastName = "Doe"
         };
-        
+
         userServiceMock
             .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
                 dto.Email == "arief@outlook.nl" &&
                 dto.FirstName == "John" &&
                 dto.LastName == "Doe")))
             .ReturnsAsync(Result<RegisteredUserDto>.Success(user));
-        
+
         var seeder = new DbIntializer();
         await seeder.SeedAsync(db);
-        
+
         var seeduser = await db.Users.FirstAsync(u => u.Email == "arief@outlook.nl");
 
         var logger = new Mock<ILogger<ExpenseService>>();
@@ -493,18 +490,16 @@ public class TransactionTests: IClassFixture<TestDbFixture>
                 CreatedAt = new LocalDate(2025, 1, 10)
             });
 
-        var Userbucket =  await db.UserBuckets.FirstAsync(b => b.ApplicationUserId == seeduser.Id && b.BucketId == 1);
-        
+        var Userbucket = await db.UserBuckets.FirstAsync(b => b.ApplicationUserId == seeduser.Id && b.BucketId == 1);
+
         // Assert
-        Assert.Equal("Weekly Salary",updatedTransaction.Value.Description );
-        Assert.Equal(100,updatedTransaction.Value.Amount );
+        Assert.Equal("Weekly Salary", updatedTransaction.Value.Description);
+        Assert.Equal(100, updatedTransaction.Value.Amount);
         Assert.Equal(4830, Userbucket.Total);
-        Assert.Equal(new LocalDate(2025,1, 10),updatedTransaction.Value.CreatedAt );
-        
-       
+        Assert.Equal(new LocalDate(2025, 1, 10), updatedTransaction.Value.CreatedAt);
     }
-    
-    
+
+
     [Fact]
     public async Task UpdateTransaction_WithValidDto_UpdatesBucket()
     {
@@ -519,17 +514,17 @@ public class TransactionTests: IClassFixture<TestDbFixture>
             FirstName = "John",
             LastName = "Doe"
         };
-        
+
         userServiceMock
             .Setup(x => x.RegisterAsync(It.Is<RegisterUserDto>(dto =>
                 dto.Email == "arief@outlook.nl" &&
                 dto.FirstName == "John" &&
                 dto.LastName == "Doe")))
             .ReturnsAsync(Result<RegisteredUserDto>.Success(user));
-        
+
         var seeder = new DbIntializer();
         await seeder.SeedAsync(db);
-        
+
         var seeduser = await db.Users.FirstAsync(u => u.Email == "arief@outlook.nl");
 
         var logger = new Mock<ILogger<ExpenseService>>();
@@ -542,18 +537,16 @@ public class TransactionTests: IClassFixture<TestDbFixture>
             {
                 BucketId = 2, // Only changing the bucket here from 1 to 2.
                 Description = "New IPhone 17", // changing the description.
-                Amount = 1900,
+                Amount = (decimal)1900.10,
                 CreatedAt = new LocalDate(2025, 1, 10)
             });
-            
-        
+
+
         // Assert
         Assert.NotNull(seeduser.Id);
-        Assert.Equal("New IPhone 17",updatedTransaction!.Value!.Description );
-        Assert.Equal(2,updatedTransaction.Value.BucketId);
-        Assert.Equal(1900,updatedTransaction.Value.Amount );
-        Assert.Equal(new LocalDate(2025,1, 10),updatedTransaction.Value.CreatedAt );
-       
+        Assert.Equal("New IPhone 17", updatedTransaction!.Value!.Description);
+        Assert.Equal(2, updatedTransaction.Value.BucketId);
+        Assert.Equal(1900, updatedTransaction.Value.Amount);
+        Assert.Equal(new LocalDate(2025, 1, 10), updatedTransaction.Value.CreatedAt);
     }
-
 }
