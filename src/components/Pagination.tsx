@@ -32,7 +32,7 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
               url = url + `&year=${year}`
           }
           if(month !== null ){
-              url = url + `&month=${month}`
+              url = url + `&month=${month}` 
           }
           if(bucketId !== null){
               url = url + `&bucket=${bucketId}`

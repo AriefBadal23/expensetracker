@@ -1,126 +1,154 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import "../styles/Filter.css";
+import type {Bucket} from "../types/Bucket.tsx";
 
-const Filter = () => {
-  const [isShown, setisShown] = useState<boolean>(false);
+interface FilterProps {
+    buckets: Bucket[]
+}
 
-  const [search] = useSearchParams();
-  const activeId = search.get("id");
-  const navigate = useNavigate();
-  
-  return (
-    <>
-      <div
-        id="transaction-filter"
-        className="btn-group"
-        role="group"
-        aria-label="Transaction filter"
-      >
-        <input
-          type="radio"
-          className="btn-check"
-          name="bucket"
-          id="bucket-0"
-          checked={activeId === null}
-          onChange={() => {
-            navigate("/");
-            setisShown(false);
-          }}
-        />
-        <label className="btn btn-outline-primary" htmlFor="bucket-0">
-          All buckets
-        </label>
-        <input
-          type="radio"
-          className="btn-check"
-          name="bucket"
-          id="bucket-1"
-          checked={activeId === "1"}
-          onChange={() => {
-            navigate("?id=1&year=2025");
-            setisShown(false);
-          }}
-        />
-        <label className="btn btn-outline-primary" htmlFor="bucket-1">
-          Salary Bucket
-        </label>
 
-        
-        <input
-          type="radio"
-          className="btn-check"
-          name="bucket"
-          id="bucket-2"
-          checked={activeId === "2"}
-          onChange={() => {
-            navigate("?id=2&year=2025");
-            setisShown(false);
-          }}
-        />
-        <label className="btn btn-outline-primary" htmlFor="bucket-2">
-          Shopping Bucket
-        </label>
-          
-      <input
-          type="radio"
-          className="btn-check"
-          name="bucket"
-          id="bucket-3"
-          checked={activeId === "3"}
-          onChange={() => {
-              navigate("?id=3&year=2025");
-              setisShown(false);
-          }}
-      />
-      <label className="btn btn-outline-primary" htmlFor="bucket-3">
-          Groceries Bucket
-      </label>  
-          
-          
-        <input
-          type="radio"
-          className="btn-check"
-          name="filter"
-          id="filter"
-          value="Filter on month"
-          checked={activeId === "filter"}
-          onClick={() => setisShown(!isShown)}
-        />
-      
-      </div>
+const Filter = ({buckets}: FilterProps) => {
+    const [isShown, setisShown] = useState<boolean>(false);
+    const [errorMessage, setErrorMessage] = useState<Error | undefined>();
+    const [userBuckets, setUserBuckets] = useState<Bucket[]>([]);
 
-      {/*{activeId != null && isShown === false ? (*/}
-      {/*  <div>*/}
-      {/*    <span id="daypicker">*/}
-      {/*      <DayPicker*/}
-      {/*        month={selectedMonth}*/}
-      {/*        onMonthChange={setSelectedMonth}*/}
-      {/*        captionLayout="dropdown"*/}
-      {/*        showOutsideDays={false}*/}
-      {/*        modifiers={{}}*/}
-      {/*      />*/}
-      {/*    </span>*/}
-      
-      {/*    <input*/}
-      {/*      id="filter-btn"*/}
-      {/*      type="button"*/}
-      {/*      value="Filter"*/}
-      {/*      onClick={() => {*/}
-      {/*        navigate(*/}
-      {/*          `/transactions?month=${*/}
-      {/*            selectedMonth?.getMonth() + 1*/}
-      {/*          }&year=${selectedMonth?.getFullYear()}&id=${activeId}`*/}
-      {/*        );*/}
-      {/*        setisShown(false);*/}
-      {/*      }}*/}
-      {/*    />*/}
-      {/*  </div>*/}
-      {/*) : (*/}
-      {/*  <p></p>*/}
-      {/*)}*/}
-    </>
-  );
+    const [search] = useSearchParams();
+    const activeId = search.get("id");
+    const navigate = useNavigate();
+
+
+    useEffect(() => {
+        const fetchUserbuckets = async () => {
+            const URL = "https://localhost:7118/api/v1/buckets/user"
+            try {
+                const response = await fetch(URL, {
+                    method: "GET",
+                    credentials: "include"
+                })
+                if (!response.ok) {
+                    let message = "Something went wrong."
+                    console.error("GET /buckets/user failed", {
+                        status: response.status,
+                        statusText: response.statusText
+                    });
+
+                    if (response.status === 401) {
+                        message = "Unauthorized access"
+                    }
+                    setErrorMessage(new Error(message))
+                    return;
+                }
+                const data = await response.json();
+                setUserBuckets(data.value)
+
+            } catch (e) {
+                console.error(e)
+            }
+        }
+        fetchUserbuckets()
+    }, [buckets])
+
+    const ErrorMessageStyle = {
+        color: "#B00020",
+        backgroundColor: "#FFEBEE",
+        borderLeft: "4px solid #D32F2F",
+        padding: "8px 12px",
+        borderRadius: "4px",
+        fontSize: "16px",
+        lineHeight: "1.4",
+        fontFamily: "Segoe UI, Tahoma, sans-serif",
+        marginTop: "6px"
+    };
+
+    return (
+        <>
+            <div
+                id="transaction-filter"
+                className="btn-group"
+                role="group"
+                aria-label="Transaction filter"
+            >
+                {errorMessage && <div><p style={ErrorMessageStyle}>{errorMessage.message}</p></div>}
+                <input
+                    type="radio"
+                    className="btn-check"
+                    name="bucket"
+                    id="bucket-0"
+                    checked={activeId === null}
+                    onChange={() => {
+                        navigate("/dashboard");
+                        setisShown(false);
+                    }}
+                />
+                <label className="btn btn-outline-primary" htmlFor="bucket-0">
+                    All buckets
+                </label>
+                {
+                    userBuckets.map((bucket: Bucket) => (
+                        <div key={bucket.bucket.id}>
+                            <input
+                                type="radio"
+                                className="btn-check"
+                                name={bucket.bucket.name}
+                                id={bucket.bucket.name}
+                                checked={activeId === bucket.bucket.id.toString()}
+                                onChange={() => {
+                                    navigate(`?id=${bucket.bucket.id}&year=2025`);
+                                    setisShown(false);
+                                }}
+                            />
+                            <label className="btn btn-outline-primary" htmlFor={bucket.bucket.name}>
+                                {bucket.bucket.name}
+                            </label>
+
+
+                        </div>
+                    ))
+                }
+                <input
+                    type="radio"
+                    className="btn-check"
+                    name="filter"
+                    id="filter"
+                    value="Filter on month"
+                    checked={activeId === "filter"}
+                    onClick={() => setisShown(!isShown)}
+                />
+
+            </div>
+
+            {/*{activeId != null && isShown === false ? (*/}
+            {/*  <div>*/}
+            {/*    <span id="daypicker">*/}
+            {/*      <DayPicker*/}
+            {/*        month={selectedMonth}*/}
+            {/*        onMonthChange={setSelectedMonth}*/}
+            {/*        captionLayout="dropdown"*/}
+            {/*        showOutsideDays={false}*/}
+            {/*        modifiers={{}}*/}
+            {/*      />*/}
+            {/*    </span>*/}
+
+            {/*    <input*/}
+            {/*      id="filter-btn"*/}
+            {/*      type="button"*/}
+            {/*      value="Filter"*/}
+            {/*      onClick={() => {*/}
+            {/*        navigate(*/}
+            {/*          `/transactions?month=${*/}
+            {/*            selectedMonth?.getMonth() + 1*/}
+            {/*          }&year=${selectedMonth?.getFullYear()}&id=${activeId}`*/}
+            {/*        );*/}
+            {/*        setisShown(false);*/}
+            {/*      }}*/}
+            {/*    />*/}
+            {/*  </div>*/}
+            {/*) : (*/}
+            {/*  <p></p>*/}
+            {/*)}*/}
+        </>
+    );
 };
 
 export default Filter;

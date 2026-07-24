@@ -1,4 +1,3 @@
-
 using expensetrackerapi.Contracts;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -12,11 +11,11 @@ public class DbIntializer : IDbInitializer
     // Now I make the ApplicationUser object, hash the password and store the user in the DB without any userService methods.
     public async Task SeedAsync(ExpenseTrackerContext context)
     {
-
         if (await context.Buckets.AnyAsync())
         {
             return;
         }
+
         Console.WriteLine("Database seeding started");
 
         var hasher = new PasswordHasher<ApplicationUser>();
@@ -31,7 +30,6 @@ public class DbIntializer : IDbInitializer
             NormalizedEmail = "ARIEF@OUTLOOK.NL",
             EmailConfirmed = false,
             SecurityStamp = Guid.NewGuid().ToString("D")
-
         };
 
         user.PasswordHash = hasher.HashPassword(user, "Marvel01@");
@@ -46,24 +44,26 @@ public class DbIntializer : IDbInitializer
             NormalizedEmail = "JOHN.DOE@OUTLOOK.NL",
             EmailConfirmed = false,
             SecurityStamp = Guid.NewGuid().ToString("D")
-
         };
-        
+
+        dummyUser.PasswordHash = hasher.HashPassword(user, "Marvel01@");
+
         await context.Users.AddRangeAsync(dummyUser, user);
 
         Console.WriteLine($"{await context.SaveChangesAsync()} User has been added to the database.");
 
         var buckets = new Bucket[]
         {
-            new() {Name=nameof(Buckets.Salary),Icon="💰", Type = BucketTypes.Income},
-            new() {Name=nameof(Buckets.Shopping),Icon="🛒", Type = BucketTypes.Expense},
-            new() {Name=nameof(Buckets.Groceries),Icon="🏪", Type = BucketTypes.Expense},
+            new() { Name = nameof(Buckets.Salary), Icon = "💰", Type = BucketTypes.Income },
+            new() { Name = nameof(Buckets.Shopping), Icon = "🛒", Type = BucketTypes.Expense },
+            new() { Name = nameof(Buckets.Groceries), Icon = "🏪", Type = BucketTypes.Expense },
         };
 
         await context.Buckets.AddRangeAsync(buckets);
         await context.SaveChangesAsync();
 
-        var userBuckets = buckets.Select(bucket => new UserBuckets { ApplicationUserId = user.Id, BucketId = bucket.Id }).ToList();
+        var userBuckets = buckets
+            .Select(bucket => new UserBuckets { ApplicationUserId = user.Id, BucketId = bucket.Id }).ToList();
         await context.UserBuckets.AddRangeAsync(userBuckets);
         Console.WriteLine($"{await context.SaveChangesAsync()} Buckets has been added to the database.");
 
@@ -111,7 +111,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 2,
                 Description = "Shopping - online order",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 150,
 
                 CreatedAt = new LocalDate(2025, 3, 2)
@@ -120,7 +120,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 1,
                 Description = "Monthly Salary",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 1000,
 
                 CreatedAt = new LocalDate(2025, 3, 5)
@@ -129,7 +129,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 3,
                 Description = "Groceries at the AH",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 110,
 
                 CreatedAt = new LocalDate(2025, 4, 10)
@@ -138,7 +138,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 2,
                 Description = "Shopping - electronics",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 60,
 
                 CreatedAt = new LocalDate(2025, 4, 18)
@@ -147,7 +147,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 1,
                 Description = "Monthly Salary",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 1000,
 
                 CreatedAt = new LocalDate(2025, 5, 5)
@@ -156,7 +156,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 3,
                 Description = "Groceries",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 105,
                 CreatedAt = new LocalDate(2025, 1, 28)
             },
@@ -164,7 +164,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 2,
                 Description = "Shopping - shoes",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 140,
                 CreatedAt = new LocalDate(2025, 2, 22)
             },
@@ -172,7 +172,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 3,
                 Description = "Groceries",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 98,
                 CreatedAt = new LocalDate(2025, 3, 18)
             },
@@ -180,7 +180,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 2,
                 Description = "Shopping - gadgets",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 75,
                 CreatedAt = new LocalDate(2025, 4, 25)
             },
@@ -188,7 +188,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 3,
                 Description = "Groceries",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 115,
                 CreatedAt = new LocalDate(2025, 5, 19)
             },
@@ -196,7 +196,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 1,
                 Description = "Monthly Salary",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 1000,
                 CreatedAt = new LocalDate(2025, 6, 5)
             },
@@ -204,7 +204,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 3,
                 Description = "Groceries",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 102,
                 CreatedAt = new LocalDate(2025, 6, 21)
             },
@@ -212,7 +212,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 2,
                 Description = "Shopping - summer sale",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 160,
                 CreatedAt = new LocalDate(2025, 7, 9)
             },
@@ -244,7 +244,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 1,
                 Description = "Monthly Salary",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 1000,
                 CreatedAt = new LocalDate(2025, 9, 5)
             },
@@ -252,7 +252,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 3,
                 Description = "Groceries",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 112,
                 CreatedAt = new LocalDate(2025, 10, 11)
             },
@@ -260,7 +260,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 2,
                 Description = "Shopping - jacket",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 180,
                 CreatedAt = new LocalDate(2025, 11, 6)
             },
@@ -268,7 +268,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 1,
                 Description = "Monthly Salary",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 1000,
                 CreatedAt = new LocalDate(2025, 2, 5)
             },
@@ -276,7 +276,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 1,
                 Description = "Monthly Salary",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 1000,
                 CreatedAt = new LocalDate(2025, 12, 5)
             },
@@ -284,7 +284,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 3,
                 Description = "Extra groceries",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 45,
                 CreatedAt = new LocalDate(2025, 1, 8)
             },
@@ -292,7 +292,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 2,
                 Description = "Shopping - small items",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 35,
                 CreatedAt = new LocalDate(2025, 1, 18)
             },
@@ -300,7 +300,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 3,
                 Description = "Extra groceries",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 55,
                 CreatedAt = new LocalDate(2025, 3, 10)
             },
@@ -308,7 +308,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 2,
                 Description = "Shopping - accessories",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 65,
                 CreatedAt = new LocalDate(2025, 3, 22)
             },
@@ -316,7 +316,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 3,
                 Description = "Groceries",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 48,
                 CreatedAt = new LocalDate(2025, 7, 12)
             },
@@ -324,7 +324,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 2,
                 Description = "Shopping - sale item",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 40,
                 CreatedAt = new LocalDate(2025, 7, 20)
             },
@@ -332,7 +332,7 @@ public class DbIntializer : IDbInitializer
             {
                 BucketId = 3,
                 Description = "Late groceries",
-               ApplicationUserId = newUser.Id,
+                ApplicationUserId = newUser.Id,
                 Amount = 52,
                 CreatedAt = new LocalDate(2025, 7, 27)
             },
@@ -344,18 +344,19 @@ public class DbIntializer : IDbInitializer
                 Amount = 30,
                 CreatedAt = new LocalDate(2025, 3, 28)
             }
-
         };
 
         // Make sure the Total is up-to-date of the buckets.
 
-        var salaryBucket = await context.UserBuckets.FirstAsync(ub => ub.BucketId == 1 && ub.ApplicationUserId == user.Id);
+        var salaryBucket =
+            await context.UserBuckets.FirstAsync(ub => ub.BucketId == 1 && ub.ApplicationUserId == user.Id);
 
 
         foreach (var t in transactions)
         {
             var userBucket =
-                await context.UserBuckets.FirstAsync(ub => ub.ApplicationUserId == user.Id && ub.BucketId == t.BucketId);
+                await context.UserBuckets.FirstAsync(ub =>
+                    ub.ApplicationUserId == user.Id && ub.BucketId == t.BucketId);
 
             var bucket = await context.Buckets.FirstAsync(x => x.Id == t.BucketId);
 
@@ -369,11 +370,7 @@ public class DbIntializer : IDbInitializer
                 // Update the bucket & Salary Total
                 salaryBucket.Total -= t.Amount;
                 userBucket.Total += t.Amount;
-
-
             }
-
-
         }
 
         await context.Transactions.AddRangeAsync(transactions);
@@ -382,6 +379,4 @@ public class DbIntializer : IDbInitializer
         Console.WriteLine($"{await context.SaveChangesAsync()} transactions are added.");
         Console.WriteLine("Database seeding completed");
     }
-
-
 }
