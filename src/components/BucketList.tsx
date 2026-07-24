@@ -4,15 +4,16 @@ import {type Dispatch, type SetStateAction, useEffect, useState} from "react";
 import {getErrorMessage} from "../utils/utils.ts";
 import CreateBucketModal from "./CreateBucketModal.tsx";
 import type {Bucket} from "../types/Bucket.tsx";
+import type {Transaction} from "../types/Transaction.tsx";
 
 interface BucketListProps {
     setBuckets: Dispatch<SetStateAction<Bucket[]>>
     buckets: Bucket[]
-    
+    transactions: Transaction[]
 }
 
 
-const BucketList = ({setBuckets, buckets}: BucketListProps) => {
+const BucketList = ({setBuckets, buckets, transactions}: BucketListProps) => {
     // Dashboard overview with all the userbuckets.
     const [isPending, setPending] = useState(true);
     const [showModal, setShowModal] = useState(false)
@@ -78,7 +79,7 @@ const BucketList = ({setBuckets, buckets}: BucketListProps) => {
             }
         }
         fetchBuckets();
-    }, []);
+    }, [transactions]);
     return (
         <>
             <h1>Transaction Overview</h1>

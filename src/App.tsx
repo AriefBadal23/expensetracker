@@ -34,8 +34,8 @@ function App() {
               element={
                 <>
                   <Navbar/>
-                  <BucketList setBuckets={setBuckets} buckets={buckets}/>
-                  <Filter/>
+                    <BucketList setBuckets={setBuckets} buckets={buckets} transactions={transactions}/>
+                    <Filter buckets={buckets}/>
 
                   {/*  Pass here the buckets state*/}
                   <TransactionTable transactions={transactions} setTransactions={setTransactions}

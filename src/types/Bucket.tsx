@@ -7,7 +7,7 @@ export enum BucketTypes  {
 export  interface Bucket {
   bucketTotal?: number,
   bucket: {
-    id?: number;
+    id: number;
     name: string;
     icon: string;
     type?: BucketTypes
