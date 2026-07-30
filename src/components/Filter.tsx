@@ -61,93 +61,62 @@ const Filter = ({buckets}: FilterProps) => {
         marginTop: "6px"
     };
 
+    const YEAR = new Date().getFullYear();
     return (
-        <>
-            <div
-                id="transaction-filter"
-                className="btn-group"
-                role="group"
-                aria-label="Transaction filter"
-            >
-                {errorMessage && <div><p style={ErrorMessageStyle}>{errorMessage.message}</p></div>}
-                <input
-                    type="radio"
-                    className="btn-check"
-                    name="bucket"
-                    id="bucket-0"
-                    checked={activeId === null}
-                    onChange={() => {
-                        navigate("/dashboard");
-                        setisShown(false);
-                    }}
-                />
-                <label className="btn btn-outline-primary" htmlFor="bucket-0">
-                    All buckets
-                </label>
-                {
-                    userBuckets.map((bucket: Bucket) => (
-                        <div key={bucket.bucket.id}>
-                            <input
-                                type="radio"
-                                className="btn-check"
-                                name={bucket.bucket.name}
-                                id={bucket.bucket.name}
-                                checked={activeId === bucket.bucket.id.toString()}
-                                onChange={() => {
-                                    navigate(`?id=${bucket.bucket.id}&year=2025`);
-                                    setisShown(false);
-                                }}
-                            />
-                            <label className="btn btn-outline-primary" htmlFor={bucket.bucket.name}>
-                                {bucket.bucket.name}
-                            </label>
+        <div
+            id="transaction-filter"
+            className="btn-group"
+            role="group"
+            aria-label="Transaction filter"
+        >
+            {errorMessage && <div><p style={ErrorMessageStyle}>{errorMessage.message}</p></div>}
+            <input
+                type="radio"
+                className="btn-check"
+                name="bucket"
+                id="bucket-0"
+                checked={activeId === null}
+                onChange={() => {
+                    navigate("/dashboard");
+                    setisShown(false);
+                }}
+            />
+            <label className="btn btn-outline-primary" htmlFor="bucket-0">
+                All buckets
+            </label>
+            {
+                userBuckets.map((bucket: Bucket) => (
+                    <div key={bucket.bucket.id}>
+                        <input
+                            type="radio"
+                            className="btn-check"
+                            name={bucket.bucket.name}
+                            id={bucket.bucket.name}
+                            checked={activeId === bucket.bucket.id.toString()}
+                            onChange={() => {
+                                navigate(`?id=${bucket.bucket.id}&year=${YEAR}`);
+                                setisShown(false);
+                            }}
+                        />
+                        <label className="btn btn-outline-primary" htmlFor={bucket.bucket.name}>
+                            {bucket.bucket.name}
+                        </label>
 
 
-                        </div>
-                    ))
-                }
-                <input
-                    type="radio"
-                    className="btn-check"
-                    name="filter"
-                    id="filter"
-                    value="Filter on month"
-                    checked={activeId === "filter"}
-                    onClick={() => setisShown(!isShown)}
-                />
+                    </div>
+                ))
+            }
+            <input
+                type="radio"
+                className="btn-check"
+                name="filter"
+                id="filter"
+                value="Filter on month"
+                checked={activeId === "filter"}
+                onClick={() => setisShown(!isShown)}
+            />
 
-            </div>
-
-            {/*{activeId != null && isShown === false ? (*/}
-            {/*  <div>*/}
-            {/*    <span id="daypicker">*/}
-            {/*      <DayPicker*/}
-            {/*        month={selectedMonth}*/}
-            {/*        onMonthChange={setSelectedMonth}*/}
-            {/*        captionLayout="dropdown"*/}
-            {/*        showOutsideDays={false}*/}
-            {/*        modifiers={{}}*/}
-            {/*      />*/}
-            {/*    </span>*/}
-
-            {/*    <input*/}
-            {/*      id="filter-btn"*/}
-            {/*      type="button"*/}
-            {/*      value="Filter"*/}
-            {/*      onClick={() => {*/}
-            {/*        navigate(*/}
-            {/*          `/transactions?month=${*/}
-            {/*            selectedMonth?.getMonth() + 1*/}
-            {/*          }&year=${selectedMonth?.getFullYear()}&id=${activeId}`*/}
-            {/*        );*/}
-            {/*        setisShown(false);*/}
-            {/*      }}*/}
-            {/*    />*/}
-            {/*  </div>*/}
-            {/*) : (*/}
-            {/*  <p></p>*/}
-            {/*)}*/}
-        </>
+        </div>
     );
 };
 
