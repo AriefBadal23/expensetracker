@@ -134,8 +134,8 @@ public class BucketService : IBucketService
                 Month = month,
                 Year = year,
                 Buckets = query,
-                TotalExpenses = query.Where(x => x.BucketName != nameof(Buckets.Salary)).Sum(x => x.BucketExpenseTotal),
-                TotalIncome = query.Where(x => x.BucketName == nameof(Buckets.Salary)).Sum(x => x.BucketExpenseTotal),
+                TotalExpenses = query.Where(x => x.BucketType == BucketTypes.Expense).Sum(x => x.BucketExpenseTotal),
+                TotalIncome = query.Where(x => x.BucketType == BucketTypes.Income).Sum(x => x.BucketExpenseTotal),
             });
     }
 

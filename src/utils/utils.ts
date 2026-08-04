@@ -64,14 +64,13 @@ export function UserIsLoggedIn():boolean{
 
 export function validateIcon(icon: string): boolean {
     if (!icon || icon.trim().length === 0) return false;
-    // Accept single or multi-codepoint emoji sequences (ZWJ, variation selectors, skin-tone modifiers)
-    const glyphRegex = /^(?:[\u2600-\u26FF\u2700-\u27BF]|\uD83C[\uDDE6-\uDDFF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDEFF]|\uD83E[\uDD00-\uDDFF])(?:\uFE0F)?(?:\uD83C[\uDFFB-\uDFFF])?$/u;
-    const parts = icon.split('\u200D');
-    if (parts.length === 0) return false;
-    for (const part of parts) {
-        if (!glyphRegex.test(part)) return false;
-    }
-    return true;
+
+    // Matches a single emoji "cluster": base emoji/pictograph/keycap/flag,
+    // optionally followed by variation selectors, skin-tone modifiers,
+    // and zero-width-joiner chained emoji (for sequences like family/profession emoji).
+    const emojiSequenceRegex =
+        /^(?:(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F|[0-9#*]\uFE0F?\u20E3|\p{Regional_Indicator}{2})(?:\uFE0F|\uFE0E)?(?:\uD83C[\uDFFB-\uDFFF])?(?:\u200D(?:\p{Emoji_Presentation}|\p{Emoji}\uFE0F)(?:\uFE0F)?(?:\uD83C[\uDFFB-\uDFFF])?)*)+$/u;
+    return emojiSequenceRegex.test(icon);
 }
 
 export function validateBucketName(name: string): boolean {

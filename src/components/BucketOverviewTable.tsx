@@ -11,10 +11,17 @@ const BucketOverviewTable = () => {
     
     // useState()
     const [transactions, setTransactionsData] = useState<TransactionsSummary | undefined>(undefined);
-    const [data, setData] = useState({
-        month:"1",
-        year: "2025"
+    const currentYear = new Date().getFullYear()
+    const currentMonth = new Date(Date.now()).getMonth() + 1;
+
+
+    const [data, setData] = useState<{ month: string, year: string }>({
+        month: currentMonth.toString(),
+        year: currentYear.toString()
     })
+
+    const months: string[] = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    
     const [errorMessage, setErrorMessage] = useState<Error | undefined>()
     const [isPending, setPending] = useState<boolean>(true)
     const ErrorMessageStyle = {
@@ -84,30 +91,25 @@ const BucketOverviewTable = () => {
                     {
                         !errorMessage && !isPending &&
                         <>
+
                             <div>
                                 {/*Predefined values*/}
                                 <select name="months" onChange={(e) => {
                                     setData({...data, month: e.target.value})
-                                }}>
-                                    <option value="1">January</option>
-                                    <option value="2">February</option>
-                                    <option value="3">March</option>
-                                    <option value="4">April</option>
-                                    <option value="5">May</option>
-                                    <option value="6">June</option>
-                                    <option value="7">July</option>
-                                    <option value="8">August</option>
-                                    <option value="9">September</option>
-                                    <option value="10">October</option>
-                                    <option value="11">November</option>
-                                    <option value="12">December</option>
+                                }} id="selectedMonth">
+                                    {
+                                        // cleaner way to show the months as an option element
+                                        months.map((month) => <option key={month} value={month}>{month}</option>
+                                        )
+                                    }
                                 </select>
 
                                 <select name="year" onChange={(e) => {
                                     setData({...data, year: e.target.value})
                                 }}>
                                     <option value="2025">2025</option>
-                                    <option value="2026">2026</option>
+                                    {/*// current year selected*/}
+                                    <option value="2026" selected>2026</option>
                                 </select>
                             </div>
                         <table className="table">

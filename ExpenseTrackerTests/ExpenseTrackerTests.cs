@@ -546,7 +546,7 @@ public class TransactionTests : IClassFixture<TestDbFixture>
         Assert.NotNull(seeduser.Id);
         Assert.Equal("New IPhone 17", updatedTransaction!.Value!.Description);
         Assert.Equal(2, updatedTransaction.Value.BucketId);
-        Assert.Equal(1900, updatedTransaction.Value.Amount);
+        Assert.Equal((decimal)1900.10, updatedTransaction.Value.Amount);
         Assert.Equal(new LocalDate(2025, 1, 10), updatedTransaction.Value.CreatedAt);
     }
 }
