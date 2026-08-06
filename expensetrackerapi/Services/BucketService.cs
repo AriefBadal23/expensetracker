@@ -7,7 +7,6 @@ using Microsoft.EntityFrameworkCore;
 
 namespace expensetrackerapi.Services;
 
-
 public class BucketService : IBucketService
 {
     private readonly ExpenseTrackerContext _db;
@@ -30,22 +29,21 @@ public class BucketService : IBucketService
         }
 
         var buckets = from bucket in _db.Buckets
-                      join userbucket in _db.UserBuckets on bucket.Id equals userbucket.BucketId into Userbucketgroup
+            join userbucket in _db.UserBuckets on bucket.Id equals userbucket.BucketId into Userbucketgroup
+            from userbucket in Userbucketgroup
+            where userbucket.ApplicationUserId == userId
+            select new UserBucketResponseDto
+            {
+                Bucket = new BucketResponseDto
+                {
+                    Id = bucket.Id,
+                    Name = bucket.Name,
+                    Type = bucket.Type,
+                    Icon = bucket.Icon
+                },
+                BucketTotal = userbucket.Total
+            };
 
-                      from userbucket in Userbucketgroup
-                      where userbucket.ApplicationUserId == userId
-                      select new UserBucketResponseDto
-                      {
-                          Bucket = new BucketResponseDto
-                          {
-                              Id = bucket.Id,
-                              Name = bucket.Name,
-                              Type = bucket.Type,
-                              Icon = bucket.Icon
-                          },
-                          BucketTotal = userbucket.Total
-                      };
-        
         _logger.LogInformation("Successfully retrieved buckets by userId: {UserId}", userId);
         return Result<List<UserBucketResponseDto>>.Success(
             await buckets.ToListAsync());
@@ -68,14 +66,12 @@ public class BucketService : IBucketService
         };
 
 
-
-
         await _db.Buckets.AddAsync(newBucket);
         await _db.SaveChangesAsync();
 
         var newCreatedBucket = await _db.Buckets.FirstAsync(b => b.Name == bucket.Name);
         var userBucket = new UserBuckets { ApplicationUserId = userId, BucketId = newCreatedBucket.Id };
-        
+
         await _db.UserBuckets.AddAsync(userBucket);
         await _db.SaveChangesAsync();
 
@@ -93,7 +89,6 @@ public class BucketService : IBucketService
             },
             BucketTotal = userBucketTotal
         });
-
     }
 
     public async Task<Result<BucketSummaryResponseDto>> GetSummary(string userId, int month, int year)
@@ -102,13 +97,16 @@ public class BucketService : IBucketService
 
         if (!userDoesExists)
         {
-            _logger.LogWarning("Failed to retrieve transactions summary due invalid userId for userId: {UserId}", userId);
+            _logger.LogWarning("Failed to retrieve transactions summary due invalid userId for userId: {UserId}",
+                userId);
             return Result<BucketSummaryResponseDto>.Failure();
         }
 
         if (month == 0 || year == 0)
         {
-            _logger.LogInformation("Successfully retrieved Bucket Transactions summary by userId for {UserId} without month and year", userId);
+            _logger.LogInformation(
+                "Successfully retrieved Bucket Transactions summary by userId for {UserId} without month and year",
+                userId);
             return
                 Result<BucketSummaryResponseDto>.Success(new BucketSummaryResponseDto
                 {
@@ -117,17 +115,13 @@ public class BucketService : IBucketService
         }
 
         var query = await (from buck in _db.Buckets
-                           join transaction in _db.Transactions on buck.Id equals transaction.BucketId
-                               into bucketTransactions
-
-                           let userTransactions = bucketTransactions
-                               .Where(t => t.CreatedAt.Month == month && t.CreatedAt.Year == year && t.ApplicationUserId == userId)
-
-
-                           let monthBucketTotal = userTransactions.Sum(x => x.Amount)
-
-                           select
-                                   new BucketTransaction(buck.Id, buck.Name, buck.Type, monthBucketTotal, userTransactions.ToArray())
+                join transaction in _db.Transactions on buck.Id equals transaction.BucketId
+                    into bucketTransactions
+                let userTransactions = bucketTransactions
+                    .Where(t => t.CreatedAt.Month == month && t.CreatedAt.Year == year && t.ApplicationUserId == userId)
+                let monthBucketTotal = userTransactions.Sum(x => x.Amount)
+                select
+                    new BucketTransaction(buck.Id, buck.Name, buck.Type, monthBucketTotal, userTransactions.ToArray())
             ).ToListAsync();
 
 
@@ -140,46 +134,54 @@ public class BucketService : IBucketService
                 Month = month,
                 Year = year,
                 Buckets = query,
-                TotalExpenses = query.Where(x => x.BucketName != nameof(Buckets.Salary)).Sum(x => x.BucketExpenseTotal),
-                TotalIncome = query.Where(x => x.BucketName == nameof(Buckets.Salary)).Sum(x => x.BucketExpenseTotal),
+                TotalExpenses = query.Where(x => x.BucketType == BucketTypes.Expense).Sum(x => x.BucketExpenseTotal),
+                TotalIncome = query.Where(x => x.BucketType == BucketTypes.Income).Sum(x => x.BucketExpenseTotal),
             });
-
     }
 
     public async Task<Result<bool>> DeleteBucket(string? userId, int bucketId)
     {
         var bucket = await _db.Buckets.FindAsync(bucketId);
-        var userBucket = await _db.UserBuckets.FindAsync(userId,bucketId);
-        var defaultBuckets = new string[] { nameof(Buckets.Groceries), nameof(Buckets.Salary), nameof(Buckets.Shopping) };
+        var userBucket = await _db.UserBuckets.FindAsync(userId, bucketId);
+        var defaultBuckets = new string[]
+            { nameof(Buckets.Groceries), nameof(Buckets.Salary), nameof(Buckets.Shopping) };
 
         // finds the bucket that will be deleted.
         var deletedBucket =
             await _db.UserBuckets.FirstOrDefaultAsync(ub =>
                 ub.ApplicationUserId == userId && ub.BucketId == bucketId);
-        
-        
+
+
         if (deletedBucket is not null)
         {
-            var totalDeletedBucket  =  deletedBucket.Total;
-            var userSalaryBucket = await _db.UserBuckets.FirstAsync(ub => ub.ApplicationUserId == userId && ub.BucketId == 1);
-            
+            var totalDeletedBucket = deletedBucket.Total;
+            var userSalaryBucket =
+                await _db.UserBuckets.FirstAsync(ub => ub.ApplicationUserId == userId && ub.BucketId == 1);
+
             // delete bucket and user bucket row 
             if (bucket is not null
                 && userBucket is not null
                 && !defaultBuckets.Contains(bucket.Name)
-                )
+               )
             {
                 // Make sure the bucket total moves back to the salary bucket.
-                 userSalaryBucket.Total += totalDeletedBucket;
+                userSalaryBucket.Total += totalDeletedBucket;
                 _db.Buckets.Remove(bucket);
+
+
+                if (userSalaryBucket.Total < 0)
+                {
+                    userSalaryBucket.Total = 0;
+                }
+
                 _db.UserBuckets.Update(userSalaryBucket);
                 _db.UserBuckets.Remove(userBucket);
+
                 await _db.SaveChangesAsync();
                 return Result<bool>.Success(true);
-
             }
         }
-        
+
 
         return Result<bool>.Failure();
     }
@@ -189,7 +191,7 @@ public class BucketService : IBucketService
         var userExists = await _db.Users.FindAsync(userId);
         var userbucketExists = await _db.UserBuckets.FindAsync(userId, bucketId);
 
-        
+
         var userBucket = await (from ub in _db.UserBuckets
             join b in _db.Buckets on ub.BucketId equals b.Id
             where ub.ApplicationUserId == userId && ub.BucketId == bucketId
@@ -201,12 +203,12 @@ public class BucketService : IBucketService
                     Name = b.Name,
                     Type = b.Type,
                     Icon = b.Icon
-                    
                 },
                 BucketTotal = ub.Total
             }).FirstOrDefaultAsync();
 
-        if (userBucket == null || userbucketExists == null || userExists == null) return Result<UserBucketResponseDto>.Failure();
+        if (userBucket == null || userbucketExists == null || userExists == null)
+            return Result<UserBucketResponseDto>.Failure();
 
         var defaultBuckets = new List<string>()
         {
@@ -224,31 +226,27 @@ public class BucketService : IBucketService
         }
 
         Bucket? updatedBucket = await _db.Buckets.FindAsync(bucketId);
-        
-        
+
+
         updatedBucket.Name = bucket.Name;
         updatedBucket.Icon = bucket.Icon;
         updatedBucket.Type = bucket.Type;
-        
+
         _db.Buckets.Update(updatedBucket);
         await _db.SaveChangesAsync();
-    
-        
-        
+
 
         return Result<UserBucketResponseDto>.Success(new UserBucketResponseDto
         {
-            Bucket= new BucketResponseDto
-            { 
+            Bucket = new BucketResponseDto
+            {
                 Id = bucketId,
-            Icon = bucket.Icon,
-            Name = bucket.Name,
-            Type = bucket.Type
-                
+                Icon = bucket.Icon,
+                Name = bucket.Name,
+                Type = bucket.Type
             },
             BucketTotal = userBucket.BucketTotal
         });
-        
     }
 
     public async Task<Result<UserBucketResponseDto>> BucketDetails(int bucketId, string? userId)
@@ -261,22 +259,21 @@ public class BucketService : IBucketService
             join b in _db.Buckets on ub.BucketId equals b.Id
             where ub.ApplicationUserId == userId && ub.BucketId == bucketId
             select new UserBucketResponseDto
-        {
-            Bucket = new BucketResponseDto
             {
-                Id = b.Id,
-                Name = b.Name,
-                Icon = b.Icon,
-                Type = b.Type,
-            },
-            BucketTotal = ub.Total
-        }).FirstOrDefaultAsync();
+                Bucket = new BucketResponseDto
+                {
+                    Id = b.Id,
+                    Name = b.Name,
+                    Icon = b.Icon,
+                    Type = b.Type,
+                },
+                BucketTotal = ub.Total
+            }).FirstOrDefaultAsync();
 
-        if (userBucket == null || userbucketExists == null || userExists == null) return Result<UserBucketResponseDto>.Failure();
-        
+        if (userBucket == null || userbucketExists == null || userExists == null)
+            return Result<UserBucketResponseDto>.Failure();
+
 
         return Result<UserBucketResponseDto>.Success(userBucket);
-
-
     }
 }

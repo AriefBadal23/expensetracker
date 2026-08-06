@@ -19,6 +19,8 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
 
   const PAGESIZE = 10;
   const TOTALPAGES = total / PAGESIZE;
+    const PageAmount: number = Math.ceil(TOTALPAGES);
+  
   useEffect(() => {
     const fetchTransactions = async () => {
       try {
@@ -32,7 +34,7 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
               url = url + `&year=${year}`
           }
           if(month !== null ){
-              url = url + `&month=${month}`
+              url = url + `&month=${month}` 
           }
           if(bucketId !== null){
               url = url + `&bucket=${bucketId}`
@@ -78,34 +80,37 @@ const Pagination = ({ setTransactions, setErrorMessage }: PaginationProps) => {
   }, [page, search, setErrorMessage, setTransactions]); //! beide als dependancy
 
   return (
-      <>
-          
-        <div>
-          <p>
-            Page: {page}/{Math.ceil(TOTALPAGES)}
-          </p>
-          <input
-            type="button"
-            value="Prev"
-            disabled={page === 1}
-            onClick={() => {
-              if (page > 0) {
-                SetPage(page - 1);
-              }
-            }}
-          />
-          <input
-            type="button"
-            value="Next"
-            disabled={page === Math.ceil(TOTALPAGES)} // why does it work only with === (loose/strict equality in JS?)
-            onClick={() => {
-              if (page <= TOTALPAGES) {
-                SetPage(page + 1);
-              }
-            }}
-          />
-        </div>
-      </>
+      <div>
+          {
+              Math.ceil(TOTALPAGES) === 0 ? <p>No transactions found</p> :
+                  <div>
+
+                      <p>
+                          Page: {page}/{PageAmount}
+                      </p>
+                      <input
+                          type="button"
+                          value="Prev"
+                          disabled={page === 1}
+                          onClick={() => {
+                              if (page > 0) {
+                                  SetPage(page - 1);
+                              }
+                          }}
+                      />
+                      <input
+                          type="button"
+                          value="Next"
+                          disabled={page === PageAmount} // why does it work only with === (loose/strict equality in JS?)
+                          onClick={() => {
+                              if (page <= TOTALPAGES) {
+                                  SetPage(page + 1);
+                              }
+                          }}
+                      />
+                  </div>
+          }
+      </div>
   );
 };
 
