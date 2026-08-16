@@ -102,7 +102,7 @@ namespace expensetrackerapi.Services
         }
 
         public async Task<Result<object>> GetTransactions(string? userId, int? month, int? year, int? bucket,
-            int pageNumber = 1, int pageSize = 3)
+            int pageNumber = 1, int pageSize = 10)
         {
             if (userId == null)
             {
@@ -197,10 +197,12 @@ namespace expensetrackerapi.Services
             {
                 var bucketYearTransactions = await _db.Transactions
                     .Where(t => t.ApplicationUserId == userId && t.CreatedAt.Year == year && t.BucketId == bucket)
-                    .OrderByDescending(t => t.CreatedAt)
-                    .Skip((pageNumber - 1) * pageSize)
-                    .Take(pageSize)
                     .ToListAsync();
+
+                var pagedBucketYearTransactions = bucketYearTransactions.OrderByDescending(t => t.CreatedAt)
+                    .Skip((pageNumber - 1) * pageSize)
+                    .Take(pageSize);
+
 
                 _logger.LogInformation(
                     "User:{UserId} received all transactions with parameters: Year: {Year}, BucketId: {BucketId} ",
@@ -209,8 +211,9 @@ namespace expensetrackerapi.Services
                 return Result<object>.Success(
                     new
                     {
-                        Total = bucketYearTransactions.Count,
-                        Transactions = bucketYearTransactions
+                        Total = bucketYearTransactions.Count(),
+                        PageTotal = pagedBucketYearTransactions.Count(),
+                        Transactions = pagedBucketYearTransactions
                     }
                 );
             }
