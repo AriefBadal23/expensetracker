@@ -7,12 +7,19 @@ namespace expensetrackerapi.Contracts;
 
 public interface IExpenseService
 {
-    public Task<Result<object>> GetTransactions(string userId, int? month, int? year, int? bucket, int pageNumber = 1, int pageSize = 3);
+    public Task<Result<object>> GetTransactions(string userId, int? month, int? year, int? bucket, int pageNumber = 1,
+        int pageSize = 3);
+
     public Task<Result<ResponseTransactionDTo>> CreateTransaction(string userId, RequestTransactionDto transaction);
+
+    public Task<Result<ResponseTransactionDTo[]>> CreateTransactions(string userId,
+        RequestTransactionDto[] transactions);
 
     public Task<Result<bool>> DeleteTransaction(string userId, int transactionId);
 
-    public Task<Result<ResponseTransactionDTo?>> GetTransactionById(int id); // Task is enough; no async modifier required.
+    public Task<Result<ResponseTransactionDTo?>>
+        GetTransactionById(int id); // Task is enough; no async modifier required.
 
-    public Task<Result<ResponseTransactionDTo?>> UpdateTransaction(string userId, int id, UpdateTransactionDto transaction);
+    public Task<Result<ResponseTransactionDTo?>> UpdateTransaction(string userId, int id,
+        UpdateTransactionDto transaction);
 }

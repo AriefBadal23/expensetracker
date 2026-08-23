@@ -12,7 +12,6 @@ namespace expensetrackerapi.Controllers
     [Route("api/v1/[controller]")]
     public class Transactions : ControllerBase
     {
-
         private readonly IExpenseService _expenseExpenseService;
         private readonly UserManager<ApplicationUser> _userManager;
 
@@ -45,13 +44,14 @@ namespace expensetrackerapi.Controllers
             var userId = _userManager.GetUserId(User);
             if (userId is null) return BadRequest("Invalid userId provided.");
 
-            var transactions = await _expenseExpenseService.GetTransactions(userId, month, year, bucket, pageNumber, pageSize);
+            var transactions =
+                await _expenseExpenseService.GetTransactions(userId, month, year, bucket, pageNumber, pageSize);
             if (!transactions.IsSuccess)
             {
                 return NotFound();
             }
-            return Ok(transactions);
 
+            return Ok(transactions);
         }
 
         [HttpPost]
@@ -65,15 +65,23 @@ namespace expensetrackerapi.Controllers
 
             if (transactionCreated.Value == null) return BadRequest();
             return Ok(transactionCreated);
+        }
 
+        [HttpPost("import")]
+        public async Task<ActionResult> CreateTransactions([FromBody] RequestTransactionDto[] transactions)
+        {
+            var userId = _userManager.GetUserId(User);
 
+            if (userId is null) return Unauthorized();
+            var transactionCreated = await _expenseExpenseService.CreateTransactions(userId, transactions);
 
+            if (transactionCreated.Value == null) return BadRequest();
+            return Ok(transactionCreated);
         }
 
         [HttpDelete("{transactionId:int}")]
         public async Task<ActionResult> DeleteTransaction(int transactionId)
         {
-
             var userId = _userManager.GetUserId(User);
             if (userId is null) return Unauthorized();
             var isDeleted = await _expenseExpenseService.DeleteTransaction(userId, transactionId);
@@ -81,6 +89,7 @@ namespace expensetrackerapi.Controllers
             {
                 return Ok();
             }
+
             return NotFound();
         }
 
@@ -95,6 +104,7 @@ namespace expensetrackerapi.Controllers
             {
                 return Ok(transaction);
             }
+
             return NotFound();
         }
     }

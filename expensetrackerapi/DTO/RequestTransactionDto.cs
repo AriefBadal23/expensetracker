@@ -3,12 +3,12 @@ using System.Text.Json.Serialization;
 using expensetrackerapi.Models;
 using expensetrackerapi.Validation;
 using NodaTime;
+
 namespace expensetrackerapi.DTO;
 
 public class RequestTransactionDto
 {
-    [JsonPropertyName("bucketId")]
-    public required int BucketId { get; set; }
+    [JsonPropertyName("bucketId")] public required int BucketId { get; set; }
 
     [JsonPropertyName("description")]
     [Required(ErrorMessage = "The Description is required.")]
@@ -19,8 +19,8 @@ public class RequestTransactionDto
     [Range(0, 100_000, ErrorMessage = "The amount must be between 0 and 100_000.")]
     public required decimal Amount { get; set; }
 
+    [JsonPropertyName("createdAt")]
     [CreatedAtValidation]
     [Required(ErrorMessage = "Created_at is required.")]
     public required LocalDate CreatedAt { get; set; }
-
 }

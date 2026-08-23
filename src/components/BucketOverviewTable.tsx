@@ -23,6 +23,7 @@ const BucketOverviewTable = () => {
     
     const [errorMessage, setErrorMessage] = useState<Error | undefined>()
     const [isPending, setPending] = useState<boolean>(true)
+
     const ErrorMessageStyle = {
         color: "#B00020",
         backgroundColor: "#FFEBEE",
@@ -34,6 +35,7 @@ const BucketOverviewTable = () => {
         fontFamily: "Segoe UI, Tahoma, sans-serif",
         marginTop: "6px"
     };
+
     // useEffect()
     useEffect(() => {
         const fetchSummary =  async () =>
@@ -49,6 +51,7 @@ const BucketOverviewTable = () => {
                     return;
                 }
                 const result = await response.json();
+
 
                 if(typeof result.value !== 'object'){
                     throw new Error("Failed to fetch summary of bucket data")
