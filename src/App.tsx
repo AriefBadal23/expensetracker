@@ -10,6 +10,7 @@ import Overview from "./components/Overview"
 import LoginForm from "./components/LoginForm.tsx";
 import Navbar from "./components/NavBar.tsx";
 import type {Bucket} from "./types/Bucket.tsx";
+import ImportForm from "./components/ImportForm.tsx";
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -17,6 +18,8 @@ function App() {
   const [errorMessage, setErrorMessage] = useState<Error | undefined>();
   // buckets state
   const [buckets, setBuckets] = useState<Bucket[]>([]);
+
+    const [currentPage, setCurrentPage] = useState<number>(1)
   
   return (
       <BrowserRouter>
@@ -28,19 +31,24 @@ function App() {
               path="/overview"
               element={<Overview/>}
           />
-            
-          <Route
+            <Route
+                path="/import"
+                element={<ImportForm/>}
+            />
+            <Route
               path="/dashboard"
               element={
                 <>
                   <Navbar/>
                     <BucketList setBuckets={setBuckets} buckets={buckets} transactions={transactions}/>
-                    <Filter buckets={buckets}/>
+                    <Filter buckets={buckets} setCurrentPage={setCurrentPage}/>
 
                   {/*  Pass here the buckets state*/}
                   <TransactionTable transactions={transactions} setTransactions={setTransactions}
                                     ErrorMessage={errorMessage} buckets={buckets} setBuckets={setBuckets}/>
-                  <Pagination setTransactions={setTransactions} setErrorMessage={setErrorMessage}/>
+
+                    <Pagination setTransactions={setTransactions} setErrorMessage={setErrorMessage}
+                                setCurrentPage={setCurrentPage} currentPage={currentPage}/>
                 </>
               }
           />
