@@ -1,5 +1,5 @@
 ﻿import {useEffect, useState} from "react";
-import type {TransactionsSummary} from "../components/OverviewRow"
+import type {TransactionsSummary} from "./OverviewRow.tsx"
 import OverviewRow from "./OverviewRow"
 import TotalCard from "./TotalCard"
 import {BucketType} from "../types/BucketType.tsx"
@@ -19,7 +19,6 @@ const BucketOverviewTable = () => {
         month: currentMonth.toString(),
         year: currentYear.toString()
     })
-
     const months: string[] = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
     
     const [errorMessage, setErrorMessage] = useState<Error | undefined>()

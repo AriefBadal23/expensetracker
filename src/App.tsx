@@ -17,6 +17,8 @@ function App() {
   const [errorMessage, setErrorMessage] = useState<Error | undefined>();
   // buckets state
   const [buckets, setBuckets] = useState<Bucket[]>([]);
+
+    const [currentPage, setCurrentPage] = useState<number>(1)
   
   return (
       <BrowserRouter>
@@ -35,12 +37,14 @@ function App() {
                 <>
                   <Navbar/>
                     <BucketList setBuckets={setBuckets} buckets={buckets} transactions={transactions}/>
-                    <Filter buckets={buckets}/>
+                    <Filter buckets={buckets} setCurrentPage={setCurrentPage}/>
 
                   {/*  Pass here the buckets state*/}
                   <TransactionTable transactions={transactions} setTransactions={setTransactions}
                                     ErrorMessage={errorMessage} buckets={buckets} setBuckets={setBuckets}/>
-                  <Pagination setTransactions={setTransactions} setErrorMessage={setErrorMessage}/>
+
+                    <Pagination setTransactions={setTransactions} setErrorMessage={setErrorMessage}
+                                setCurrentPage={setCurrentPage} currentPage={currentPage}/>
                 </>
               }
           />
