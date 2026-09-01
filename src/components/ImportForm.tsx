@@ -13,6 +13,7 @@ const ImportForm = () => {
 
     const [file, setFile] = useState<string>("")
     const [errors, setErrors] = useState({uiMessage: ""})
+    const [AlertisShown, setAlertisShown] = useState<boolean>(false)
 
     const errorStyle = {
         borderRadius: "5px",
@@ -25,6 +26,7 @@ const ImportForm = () => {
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         try {
+            setAlertisShown(false)
             if (e.target.files) {
                 const selectedFile = e.target.files[0]
 
@@ -99,7 +101,9 @@ const ImportForm = () => {
                 return;
             }
             const data = await response.json()
+
             console.log(data);
+            setAlertisShown(true)
             return data;
         } catch (e) {
             const message = getErrorMessage(e);
@@ -118,6 +122,12 @@ const ImportForm = () => {
                 {errors["uiMessage"] && (
                     <p style={{color: "red", marginTop: "0.25rem"}}>{errors["uiMessage"]}</p>)}
             </div>
+
+            {AlertisShown && <div className="alert alert-success" role="alert">
+                Transactions are created successfully from file.
+            </div>}
+            
+            
             <div className="mb-3">
                 <label htmlFor="formFile" className="form-label">Upload file here</label>
                 <input className="form-control" type="file" id="formFile" onChange={handleFileChange} accept=".csv"/>
@@ -154,7 +164,7 @@ const ImportForm = () => {
                     </div>
                 </div>
             )}
-            <input type="submit" onClick={SubmitData} value="Upload file"/>
+            <button type="submit" className="btn btn-primary" onClick={SubmitData}>Upload file</button>
         </div>
     )
 }
