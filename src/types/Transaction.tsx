@@ -1,5 +1,5 @@
 export type Transaction = {
-  id?: number;
+  id: number;
   bucketId: number;
   description: string;
   amount: number;
