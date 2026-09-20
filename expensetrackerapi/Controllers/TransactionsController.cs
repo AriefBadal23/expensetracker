@@ -93,6 +93,22 @@ namespace expensetrackerapi.Controllers
             return NotFound();
         }
 
+        [HttpDelete("bulk")]
+        public async Task<ActionResult> DeleteTransactions([FromBody] int[] transactionIds)
+        {
+            var userId = _userManager.GetUserId(User);
+            if (userId is null) return Unauthorized();
+
+            var result = await _expenseExpenseService.DeleteTransactions(userId, transactionIds);
+
+            if (result.IsSuccess)
+            {
+                return Ok(new { message = "Transactions deleted successfully" });
+            }
+
+            return BadRequest(new { message = "Failed to delete transactions" });
+        }
+
         [HttpPut("{id:int}")]
         public async Task<ActionResult> Update(int id, [FromBody] UpdateTransactionDto updatedTransaction)
         {

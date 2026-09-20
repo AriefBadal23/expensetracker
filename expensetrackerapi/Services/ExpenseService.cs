@@ -421,5 +421,59 @@ namespace expensetrackerapi.Services
                 transactionId);
             return Result<bool>.Failure();
         }
+
+        public async Task<Result<bool>> DeleteTransactions(string userId, int[] transactionIds)
+        {
+            if (transactionIds == null || transactionIds.Length == 0)
+            {
+                _logger.LogWarning("UserId: {UserId} attempted to delete transactions with empty ID list", userId);
+                return Result<bool>.Failure();
+            }
+
+            var transactionsToDelete = await _db.Transactions
+                .Where(t => transactionIds.Contains(t.Id) && t.ApplicationUserId == userId)
+                .ToListAsync();
+
+            if (transactionsToDelete.Count == 0)
+            {
+                _logger.LogWarning("UserId: {UserId} - No transactions found to delete", userId);
+                return Result<bool>.Failure();
+            }
+
+            var userIncome = await _db.UserBuckets.FirstAsync(ub =>
+                ub.BucketId == 1 && ub.ApplicationUserId == userId);
+
+            var bucketGroups = transactionsToDelete.GroupBy(t => t.BucketId);
+
+            foreach (var group in bucketGroups)
+            {
+                var bucket = await _db.Buckets.FirstAsync(b => b.Id == group.Key);
+                var userBucket = await _db.UserBuckets.FirstAsync(ub =>
+                    ub.BucketId == group.Key && ub.ApplicationUserId == userId);
+
+                var totalAmount = group.Sum(t => t.Amount);
+
+                if (bucket.Type == BucketTypes.Expense)
+                {
+                    userBucket.Total -= totalAmount;
+                    userIncome.Total += totalAmount;
+                }
+                else
+                {
+                    userIncome.Total -= totalAmount;
+                }
+
+                _db.UserBuckets.Update(userBucket);
+            }
+
+            _db.Transactions.RemoveRange(transactionsToDelete);
+            _db.UserBuckets.Update(userIncome);
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("UserId: {UserId} successfully deleted {Count} transactions",
+                userId, transactionsToDelete.Count);
+
+            return Result<bool>.Success(true);
+        }
     }
 }
