@@ -10,6 +10,7 @@ import Overview from "./components/Overview"
 import LoginForm from "./components/LoginForm.tsx";
 import Navbar from "./components/NavBar.tsx";
 import type {Bucket} from "./types/Bucket.tsx";
+import ImportForm from "./components/ImportForm.tsx";
 
 function App() {
   const [transactions, setTransactions] = useState<Transaction[]>([]);
@@ -30,8 +31,11 @@ function App() {
               path="/overview"
               element={<Overview/>}
           />
-            
-          <Route
+            <Route
+                path="/import"
+                element={<ImportForm/>}
+            />
+            <Route
               path="/dashboard"
               element={
                 <>

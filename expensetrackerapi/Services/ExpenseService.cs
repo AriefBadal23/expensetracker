@@ -121,7 +121,7 @@ namespace expensetrackerapi.Services
 
                 var monthTransactions = await _db.Transactions
                     .Where(t => t.ApplicationUserId == userId && t.CreatedAt.Month == month && t.CreatedAt.Year == year)
-                    .OrderByDescending(t => t.CreatedAt)
+                    .OrderByDescending(t => t.CreatedAt).ThenByDescending(t => t.Amount)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize).ToListAsync();
 
@@ -137,7 +137,7 @@ namespace expensetrackerapi.Services
             {
                 var bucketTransactions = await _db.Transactions
                     .Where(t => t.ApplicationUserId == userId && t.BucketId == bucket)
-                    .OrderByDescending(t => t.CreatedAt)
+                    .OrderByDescending(t => t.CreatedAt).ThenByDescending(t => t.Amount)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize).ToListAsync();
 
@@ -158,7 +158,7 @@ namespace expensetrackerapi.Services
                 var monthTransactions = await _db.Transactions
                     .Where(t => t.ApplicationUserId == userId && t.CreatedAt.Month == month &&
                                 t.CreatedAt.Year == year && t.BucketId == bucket)
-                    .OrderByDescending(t => t.CreatedAt)
+                    .OrderByDescending(t => t.CreatedAt).ThenByDescending(t => t.Amount)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
@@ -179,7 +179,7 @@ namespace expensetrackerapi.Services
             {
                 var monthTransactions = await _db.Transactions
                     .Where(t => t.ApplicationUserId == userId && t.CreatedAt.Month == month && t.CreatedAt.Year == year)
-                    .OrderByDescending(t => t.CreatedAt)
+                    .OrderByDescending(t => t.CreatedAt).ThenByDescending(t => t.Amount)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
@@ -200,6 +200,7 @@ namespace expensetrackerapi.Services
                     .ToListAsync();
 
                 var pagedBucketYearTransactions = bucketYearTransactions.OrderByDescending(t => t.CreatedAt)
+                    .ThenByDescending(t => t.Amount)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize);
 
@@ -222,7 +223,7 @@ namespace expensetrackerapi.Services
             {
                 var monthTransactions = await _db.Transactions
                     .Where(t => t.ApplicationUserId == userId && t.CreatedAt.Year == year)
-                    .OrderByDescending(t => t.CreatedAt)
+                    .OrderByDescending(t => t.CreatedAt).ThenByDescending(t => t.Amount)
                     .Skip((pageNumber - 1) * pageSize)
                     .Take(pageSize)
                     .ToListAsync();
@@ -243,7 +244,7 @@ namespace expensetrackerapi.Services
             // No month, year and bucket is provided. Return all transactions of the user.
             var transactions = await _db.Transactions
                 .Where(t => t.ApplicationUserId == userId)
-                .OrderByDescending(t => t.CreatedAt)
+                .OrderByDescending(t => t.CreatedAt).ThenByDescending(t => t.Amount)
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize).ToListAsync();
 
@@ -315,9 +316,69 @@ namespace expensetrackerapi.Services
             return Result<ResponseTransactionDTo>.Success(response);
         }
 
+        public async Task<Result<ResponseTransactionDTo[]>> CreateTransactions(string userId,
+            RequestTransactionDto[] transactions)
+        {
+            ResponseTransactionDTo[] mappedTransactionsResponse = new ResponseTransactionDTo[transactions.Length];
+            Transaction[] mappedTransactions = new Transaction[transactions.Length];
+
+            // Salary bucket of the current logged in user.
+            UserBuckets salary =
+                await _db.UserBuckets.FirstAsync(ub => ub.BucketId == 1 && ub.ApplicationUserId == userId);
+
+            // map each DTO object to an Transaction object
+            for (var i = 0; i < transactions.Length; i++)
+            {
+                var mappedTransaction = _mapper.TransactionDtoToRequestTransaction(transactions[i]);
+
+                mappedTransaction.ApplicationUserId = userId;
+                mappedTransactions[i] = mappedTransaction;
+
+
+                // Bucket of the new created transaction.
+                Bucket? transactionBucket =
+                    await _db.Buckets.FirstOrDefaultAsync(b => b.Id == mappedTransaction.BucketId);
+
+                var userBuckets = await _db.UserBuckets.FirstAsync(ub =>
+                    ub.ApplicationUserId == userId && ub.BucketId == mappedTransaction.BucketId); // bucketID: 2
+
+                // Guard clauses, always start with null check first.
+                if (transactionBucket == null || mappedTransaction.Amount <= 0)
+                {
+                    _logger.LogWarning(
+                        "UserId: {UserId} failed to create a new transaction, incorrect amount or bucket was provided.",
+                        userId);
+
+                    return Result<ResponseTransactionDTo[]>.Failure();
+                }
+
+                if (userBuckets.BucketId >= 0 && transactionBucket.Name != nameof(Buckets.Salary))
+                {
+                    userBuckets.Total += mappedTransaction.Amount;
+                    salary.Total -= mappedTransaction.Amount;
+                }
+                else
+                {
+                    salary.Total += mappedTransaction.Amount;
+                }
+
+
+                var response = _mapper.TransactionToResponseTransaction(mappedTransaction);
+                _logger.LogInformation("UserId: {UserId} successfully created a new transaction", userId);
+                mappedTransactionsResponse[i] = response;
+            }
+
+            _db.Transactions.AddRange(mappedTransactions);
+            _db.UserBuckets.Update(salary);
+            await _db.SaveChangesAsync();
+
+            return Result<ResponseTransactionDTo[]>.Success(mappedTransactionsResponse);
+        }
+
         public async Task<Result<bool>> DeleteTransaction(string userId, int transactionId)
         {
             var deletedTransaction = await _db.Transactions.FindAsync(transactionId);
+            var salarytransactionsCount = await _db.Transactions.CountAsync(t => t.BucketId == 1);
 
             var transactionBucket = await _db.Buckets.FirstAsync(bucket =>
                 deletedTransaction != null && bucket.Id == deletedTransaction.BucketId);
@@ -337,18 +398,31 @@ namespace expensetrackerapi.Services
                 // -----
                 // Is the transaction not an income
                 // then add it back to the income and decrease the bucket amount.
+                // only add when there is at least one income transaction to prevent negative.
                 // otherwise decrease it from the income and decrease it from the Income as well.
 
                 if (transactionBucket.Type == BucketTypes.Expense)
                 {
                     userBuckets.Total -= deletedTransaction.Amount;
-                    userIncome.Total += deletedTransaction.Amount;
+                    if (salarytransactionsCount == 0)
+                    {
+                        userIncome.Total = 0;
+                    }
+                    else
+                    {
+                        userIncome.Total += deletedTransaction.Amount;
+                    }
                 }
                 else
                 {
                     userIncome.Total -= deletedTransaction.Amount;
+                    if (salarytransactionsCount == 0)
+                    {
+                        userIncome.Total = 0;
+                    }
                 }
 
+                _db.UserBuckets.Update(userBuckets);
                 await _db.SaveChangesAsync();
 
                 _logger.LogInformation("UserId: {UserId} successfully deleted transactionId {DeletedTransaction}",
@@ -360,6 +434,61 @@ namespace expensetrackerapi.Services
             _logger.LogWarning("UserId: {UserId} failed to delete transactionId {DeletedTransaction}", userId,
                 transactionId);
             return Result<bool>.Failure();
+        }
+
+        public async Task<Result<bool>> DeleteTransactions(string userId, int[] transactionIds)
+        {
+            if (transactionIds.Length == 0)
+            {
+                _logger.LogWarning("UserId: {UserId} attempted to delete transactions with empty ID list", userId);
+                return Result<bool>.Failure();
+            }
+
+            var transactionsToDelete = await _db.Transactions
+                .Where(t => transactionIds.Contains(t.Id) && t.ApplicationUserId == userId)
+                .ToListAsync();
+
+            if (transactionsToDelete.Count == 0)
+            {
+                _logger.LogWarning("UserId: {UserId} - No transactions found to delete", userId);
+                return Result<bool>.Failure();
+            }
+
+            var userIncome = await _db.UserBuckets.FirstAsync(ub =>
+                ub.BucketId == 1 && ub.ApplicationUserId == userId);
+
+            var bucketGroups = transactionsToDelete.GroupBy(t => t.BucketId);
+
+            foreach (var group in bucketGroups)
+            {
+                var bucket = await _db.Buckets.FirstAsync(b => b.Id == group.Key);
+                var userBucket = await _db.UserBuckets.FirstAsync(ub =>
+                    ub.BucketId == group.Key && ub.ApplicationUserId == userId);
+
+                var totalAmount = group.Sum(t => t.Amount);
+
+                if (bucket.Type == BucketTypes.Expense
+                    && userBucket.Total >= totalAmount)
+                {
+                    userBucket.Total -= totalAmount;
+                    userIncome.Total += totalAmount;
+                }
+                else
+                {
+                    userIncome.Total -= totalAmount;
+                }
+
+                _db.UserBuckets.Update(userBucket);
+            }
+
+            _db.Transactions.RemoveRange(transactionsToDelete);
+            _db.UserBuckets.Update(userIncome);
+            await _db.SaveChangesAsync();
+
+            _logger.LogInformation("UserId: {UserId} successfully deleted {Count} transactions",
+                userId, transactionsToDelete.Count);
+
+            return Result<bool>.Success(true);
         }
     }
 }
