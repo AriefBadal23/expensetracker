@@ -126,8 +126,6 @@ const ImportForm = () => {
             {AlertisShown && <div className="alert alert-success" role="alert">
                 Transactions are created successfully from file.
             </div>}
-            
-            
             <div className="mb-3">
                 <label htmlFor="formFile" className="form-label">Upload file here</label>
                 <input className="form-control" type="file" id="formFile" onChange={handleFileChange} accept=".csv"/>

@@ -5,6 +5,7 @@ import {useState} from "react";
 import CreateFormModal from "./CreateFormModal.tsx";
 import type {Bucket} from "../types/Bucket.tsx";
 import BucketTable from "./BucketTable.tsx";
+import ImportFormModal from "./ImportFormModal.tsx";
 
 interface TransactionTableProps {
     buckets: Bucket[],
@@ -22,6 +23,7 @@ const TransactionTable = ({
                               setBuckets
                           }: TransactionTableProps) => {
     const [showModal, setShowModal] = useState(false);
+    const [showImportModal, setShowImportModal] = useState(false);
 
     const [showBucketModal, setShowBucketModal] = useState(false);
 
@@ -103,6 +105,10 @@ const TransactionTable = ({
                 : null
             }
 
+            {showImportModal ?
+                <ImportFormModal setShowModal={setShowImportModal}/> : null
+            }
+
             {/*Show error message if any*/}
             {ErrorMessage &&
                 <div className={'text-danger'}><p style={ErrorMessageStyle}>{ErrorMessage.message}</p></div>}
@@ -158,6 +164,15 @@ const TransactionTable = ({
                         onClick={selectAllTransactions}
                     >
                         Select all ({transactions.length})
+                    </button>
+                </span>
+                    <span style={{padding: 5}}>
+                    <button
+                        type="button"
+                        className="btn btn-primary"
+                        onClick={() => setShowImportModal(true)}
+                    >
+                        Import transactions
                     </button>
                 </span>
                     <table className="table">
