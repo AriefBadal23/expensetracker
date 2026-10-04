@@ -17,6 +17,8 @@ public interface IExpenseService
 
     public Task<Result<bool>> DeleteTransaction(string userId, int transactionId);
 
+    public Task<Result<bool>> DeleteTransactions(string userId, int[] transactionIds);
+
     public Task<Result<ResponseTransactionDTo?>>
         GetTransactionById(int id); // Task is enough; no async modifier required.
 
