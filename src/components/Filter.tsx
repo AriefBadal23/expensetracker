@@ -1,14 +1,15 @@
-import {useEffect, useState} from "react";
+import {type Dispatch, type SetStateAction, useEffect, useState} from "react";
 import { useSearchParams, useNavigate } from "react-router-dom";
 import "../styles/Filter.css";
 import type {Bucket} from "../types/Bucket.tsx";
 
 interface FilterProps {
     buckets: Bucket[]
+    setCurrentPage: Dispatch<SetStateAction<number>>
 }
 
 
-const Filter = ({buckets}: FilterProps) => {
+const Filter = ({buckets, setCurrentPage}: FilterProps) => {
     const [isShown, setisShown] = useState<boolean>(false);
     const [errorMessage, setErrorMessage] = useState<Error | undefined>();
     const [userBuckets, setUserBuckets] = useState<Bucket[]>([]);
@@ -49,6 +50,12 @@ const Filter = ({buckets}: FilterProps) => {
         fetchUserbuckets()
     }, [buckets])
 
+    useEffect(() => {
+        setCurrentPage(1);
+    }, [activeId, setCurrentPage]);
+    
+    
+
     const ErrorMessageStyle = {
         color: "#B00020",
         backgroundColor: "#FFEBEE",
@@ -61,7 +68,8 @@ const Filter = ({buckets}: FilterProps) => {
         marginTop: "6px"
     };
 
-    const YEAR = new Date().getFullYear();
+    const CURRENT_YEAR = 2026
+    
     return (
         <div
             id="transaction-filter"
@@ -94,7 +102,7 @@ const Filter = ({buckets}: FilterProps) => {
                             id={bucket.bucket.name}
                             checked={activeId === bucket.bucket.id.toString()}
                             onChange={() => {
-                                navigate(`?id=${bucket.bucket.id}&year=${YEAR}`);
+                                navigate(`?id=${bucket.bucket.id}&year=${CURRENT_YEAR}`);
                                 setisShown(false);
                             }}
                         />

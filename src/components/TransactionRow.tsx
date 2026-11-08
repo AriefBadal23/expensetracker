@@ -1,4 +1,4 @@
-import type {Dispatch, SetStateAction} from "react";
+import {type Dispatch, type SetStateAction} from "react";
 import type {Transaction} from "../types/Transaction";
 import {Buckets} from "../types/Buckets.tsx";
 import type {Bucket} from "../types/Bucket.tsx";
@@ -34,8 +34,7 @@ const TransactionRow = ({transaction, setTransactions, buckets, setShowModal, se
   }
   
   return (
-      // fragments
-      <tr key={transaction.id} id={transaction.id?.toString()}>
+      <>
           <td>{transaction.description}</td>
           <td>{buckets.find(bucket => bucket.bucket.id === transaction.bucketId)?.bucket.name === Buckets.Salary ? `   + €${transaction.amount}` : ` - € ${transaction.amount}`}</td>
           <td>{buckets.find(bucket => bucket.bucket.id === transaction.bucketId)?.bucket.name}</td>
@@ -46,7 +45,6 @@ const TransactionRow = ({transaction, setTransactions, buckets, setShowModal, se
                       onClick={() => DeleteTransaction(transaction.id)}>
                   <img src="delete.png" alt="Delete transaction"/></button>
           </td>
-
           <td>
               <button type="button"
                       aria-label="Update transaction"
@@ -57,7 +55,7 @@ const TransactionRow = ({transaction, setTransactions, buckets, setShowModal, se
                       }}>
                   <img src="update.png" alt="Update transaction"/></button>
           </td>
-      </tr>
+      </>
   );
 };
 

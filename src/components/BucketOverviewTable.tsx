@@ -1,5 +1,5 @@
 ﻿import {useEffect, useState} from "react";
-import type {TransactionsSummary} from "../components/OverviewRow"
+import type {TransactionsSummary} from "./OverviewRow.tsx"
 import OverviewRow from "./OverviewRow"
 import TotalCard from "./TotalCard"
 import {BucketType} from "../types/BucketType.tsx"
@@ -20,10 +20,25 @@ const BucketOverviewTable = () => {
         year: currentYear.toString()
     })
 
-    const months: string[] = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"]
+    const months: { [key: string]: number } = {
+        "Januari": 1,
+        "Februari": 2,
+        "Maart": 3,
+        "April": 4,
+        "Mei": 5,
+        "Juni": 6,
+        "Juli": 7,
+        "Augustus": 8,
+        "September": 9,
+        "Oktober": 10,
+        "November": 11,
+        "December": 12
+    }
+    
     
     const [errorMessage, setErrorMessage] = useState<Error | undefined>()
     const [isPending, setPending] = useState<boolean>(true)
+
     const ErrorMessageStyle = {
         color: "#B00020",
         backgroundColor: "#FFEBEE",
@@ -35,13 +50,13 @@ const BucketOverviewTable = () => {
         fontFamily: "Segoe UI, Tahoma, sans-serif",
         marginTop: "6px"
     };
+
     // useEffect()
     useEffect(() => {
         const fetchSummary =  async () =>
         {
             try{
                 const url = `https://localhost:7118/api/v1/buckets/summary?month=${data.month}&year=${data.year}`
-                
                 const response = await fetch(url, {
                     credentials: "include"
                 })
@@ -50,6 +65,7 @@ const BucketOverviewTable = () => {
                     return;
                 }
                 const result = await response.json();
+
 
                 if(typeof result.value !== 'object'){
                     throw new Error("Failed to fetch summary of bucket data")
@@ -99,7 +115,8 @@ const BucketOverviewTable = () => {
                                 }} id="selectedMonth">
                                     {
                                         // cleaner way to show the months as an option element
-                                        months.map((month) => <option key={month} value={month}>{month}</option>
+                                        Object.entries(months).map(([name, value]) => <option key={name}
+                                                                                              value={value}>{name}</option>
                                         )
                                     }
                                 </select>
