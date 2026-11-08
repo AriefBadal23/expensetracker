@@ -17,5 +17,8 @@ jobs:
         uses: actions/setup-node@v7.1.0
 
       - name: test  
-        run: echo "hello world"
+        run: ls -l
     
+      - name: Install SBOM tool
+        run: curl -sSfL https://get.anchore.io/syft | sudo sh -s -- -b /usr/local/bin & syft ./expensetracker
+      
