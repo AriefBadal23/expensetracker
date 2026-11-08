@@ -78,7 +78,7 @@ public class DbIntializer : IDbInitializer
                 BucketId = 1,
                 Description = "Monthly Salary",
                 Amount = 1000,
-                CreatedAt = new LocalDate(2025, 1, 5)
+                CreatedAt = new LocalDate(2026, 1, 5)
             },
             new()
             {
@@ -87,7 +87,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Groceries at the AH",
                 Amount = 120,
 
-                CreatedAt = new LocalDate(2025, 1, 12)
+                CreatedAt = new LocalDate(2026, 1, 12)
             },
             new()
             {
@@ -96,7 +96,7 @@ public class DbIntializer : IDbInitializer
                 ApplicationUserId = newUser.Id,
                 Amount = 80,
 
-                CreatedAt = new LocalDate(2025, 1, 20)
+                CreatedAt = new LocalDate(2026, 1, 20)
             },
             new()
             {
@@ -105,7 +105,7 @@ public class DbIntializer : IDbInitializer
                 ApplicationUserId = newUser.Id,
                 Amount = 95,
 
-                CreatedAt = new LocalDate(2025, 2, 14)
+                CreatedAt = new LocalDate(2026, 2, 14)
             },
             new()
             {
@@ -114,7 +114,7 @@ public class DbIntializer : IDbInitializer
                 ApplicationUserId = newUser.Id,
                 Amount = 150,
 
-                CreatedAt = new LocalDate(2025, 3, 2)
+                CreatedAt = new LocalDate(2026, 3, 2)
             },
             new()
             {
@@ -123,7 +123,7 @@ public class DbIntializer : IDbInitializer
                 ApplicationUserId = newUser.Id,
                 Amount = 1000,
 
-                CreatedAt = new LocalDate(2025, 3, 5)
+                CreatedAt = new LocalDate(2026, 3, 5)
             },
             new()
             {
@@ -132,7 +132,7 @@ public class DbIntializer : IDbInitializer
                 ApplicationUserId = newUser.Id,
                 Amount = 110,
 
-                CreatedAt = new LocalDate(2025, 4, 10)
+                CreatedAt = new LocalDate(2026, 4, 10)
             },
             new()
             {
@@ -141,7 +141,7 @@ public class DbIntializer : IDbInitializer
                 ApplicationUserId = newUser.Id,
                 Amount = 60,
 
-                CreatedAt = new LocalDate(2025, 4, 18)
+                CreatedAt = new LocalDate(2026, 4, 18)
             },
             new()
             {
@@ -150,7 +150,7 @@ public class DbIntializer : IDbInitializer
                 ApplicationUserId = newUser.Id,
                 Amount = 1000,
 
-                CreatedAt = new LocalDate(2025, 5, 5)
+                CreatedAt = new LocalDate(2026, 5, 5)
             },
             new()
             {
@@ -158,7 +158,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Groceries",
                 ApplicationUserId = newUser.Id,
                 Amount = 105,
-                CreatedAt = new LocalDate(2025, 1, 28)
+                CreatedAt = new LocalDate(2026, 1, 28)
             },
             new()
             {
@@ -166,7 +166,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Shopping - shoes",
                 ApplicationUserId = newUser.Id,
                 Amount = 140,
-                CreatedAt = new LocalDate(2025, 2, 22)
+                CreatedAt = new LocalDate(2026, 2, 22)
             },
             new()
             {
@@ -174,7 +174,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Groceries",
                 ApplicationUserId = newUser.Id,
                 Amount = 98,
-                CreatedAt = new LocalDate(2025, 3, 18)
+                CreatedAt = new LocalDate(2026, 3, 18)
             },
             new()
             {
@@ -182,7 +182,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Shopping - gadgets",
                 ApplicationUserId = newUser.Id,
                 Amount = 75,
-                CreatedAt = new LocalDate(2025, 4, 25)
+                CreatedAt = new LocalDate(2026, 4, 25)
             },
             new()
             {
@@ -190,7 +190,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Groceries",
                 ApplicationUserId = newUser.Id,
                 Amount = 115,
-                CreatedAt = new LocalDate(2025, 5, 19)
+                CreatedAt = new LocalDate(2026, 5, 19)
             },
             new()
             {
@@ -198,7 +198,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Monthly Salary",
                 ApplicationUserId = newUser.Id,
                 Amount = 1000,
-                CreatedAt = new LocalDate(2025, 6, 5)
+                CreatedAt = new LocalDate(2026, 6, 5)
             },
             new()
             {
@@ -206,7 +206,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Groceries",
                 ApplicationUserId = newUser.Id,
                 Amount = 102,
-                CreatedAt = new LocalDate(2025, 6, 21)
+                CreatedAt = new LocalDate(2026, 6, 21)
             },
             new()
             {
@@ -214,7 +214,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Shopping - summer sale",
                 ApplicationUserId = newUser.Id,
                 Amount = 160,
-                CreatedAt = new LocalDate(2025, 7, 9)
+                CreatedAt = new LocalDate(2026, 7, 9)
             },
             new()
             {
@@ -222,7 +222,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Monthly Salary",
                 ApplicationUserId = newUser.Id,
                 Amount = 1000,
-                CreatedAt = new LocalDate(2025, 7, 5)
+                CreatedAt = new LocalDate(2026, 7, 5)
             },
             new()
             {
@@ -230,7 +230,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Groceries",
                 ApplicationUserId = newUser.Id,
                 Amount = 108,
-                CreatedAt = new LocalDate(2025, 8, 14)
+                CreatedAt = new LocalDate(2026, 8, 14)
             },
             new()
             {
@@ -238,7 +238,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Shopping - backpack",
                 ApplicationUserId = newUser.Id,
                 Amount = 90,
-                CreatedAt = new LocalDate(2025, 9, 3)
+                CreatedAt = new LocalDate(2026, 9, 3)
             },
             new()
             {
@@ -246,7 +246,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Monthly Salary",
                 ApplicationUserId = newUser.Id,
                 Amount = 1000,
-                CreatedAt = new LocalDate(2025, 9, 5)
+                CreatedAt = new LocalDate(2026, 9, 5)
             },
             new()
             {
@@ -254,7 +254,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Groceries",
                 ApplicationUserId = newUser.Id,
                 Amount = 112,
-                CreatedAt = new LocalDate(2025, 10, 11)
+                CreatedAt = new LocalDate(2026, 10, 11)
             },
             new()
             {
@@ -262,7 +262,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Shopping - jacket",
                 ApplicationUserId = newUser.Id,
                 Amount = 180,
-                CreatedAt = new LocalDate(2025, 11, 6)
+                CreatedAt = new LocalDate(2026, 11, 6)
             },
             new()
             {
@@ -270,7 +270,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Monthly Salary",
                 ApplicationUserId = newUser.Id,
                 Amount = 1000,
-                CreatedAt = new LocalDate(2025, 2, 5)
+                CreatedAt = new LocalDate(2026, 2, 5)
             },
             new()
             {
@@ -278,7 +278,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Monthly Salary",
                 ApplicationUserId = newUser.Id,
                 Amount = 1000,
-                CreatedAt = new LocalDate(2025, 12, 5)
+                CreatedAt = new LocalDate(2026, 12, 5)
             },
             new()
             {
@@ -286,7 +286,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Extra groceries",
                 ApplicationUserId = newUser.Id,
                 Amount = 45,
-                CreatedAt = new LocalDate(2025, 1, 8)
+                CreatedAt = new LocalDate(2026, 1, 8)
             },
             new()
             {
@@ -294,7 +294,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Shopping - small items",
                 ApplicationUserId = newUser.Id,
                 Amount = 35,
-                CreatedAt = new LocalDate(2025, 1, 18)
+                CreatedAt = new LocalDate(2026, 1, 18)
             },
             new()
             {
@@ -302,7 +302,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Extra groceries",
                 ApplicationUserId = newUser.Id,
                 Amount = 55,
-                CreatedAt = new LocalDate(2025, 3, 10)
+                CreatedAt = new LocalDate(2026, 3, 10)
             },
             new()
             {
@@ -310,7 +310,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Shopping - accessories",
                 ApplicationUserId = newUser.Id,
                 Amount = 65,
-                CreatedAt = new LocalDate(2025, 3, 22)
+                CreatedAt = new LocalDate(2026, 3, 22)
             },
             new()
             {
@@ -318,7 +318,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Groceries",
                 ApplicationUserId = newUser.Id,
                 Amount = 48,
-                CreatedAt = new LocalDate(2025, 7, 12)
+                CreatedAt = new LocalDate(2026, 7, 12)
             },
             new()
             {
@@ -326,7 +326,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Shopping - sale item",
                 ApplicationUserId = newUser.Id,
                 Amount = 40,
-                CreatedAt = new LocalDate(2025, 7, 20)
+                CreatedAt = new LocalDate(2026, 7, 20)
             },
             new()
             {
@@ -334,7 +334,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Late groceries",
                 ApplicationUserId = newUser.Id,
                 Amount = 52,
-                CreatedAt = new LocalDate(2025, 7, 27)
+                CreatedAt = new LocalDate(2026, 7, 27)
             },
             new()
             {
@@ -342,7 +342,7 @@ public class DbIntializer : IDbInitializer
                 Description = "Impulse buy",
                 ApplicationUserId = newUser.Id,
                 Amount = 30,
-                CreatedAt = new LocalDate(2025, 3, 28)
+                CreatedAt = new LocalDate(2026, 3, 28)
             }
         };
 

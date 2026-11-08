@@ -75,7 +75,7 @@ namespace expensetrackerapi.Controllers
             if (userId is null) return Unauthorized();
             var transactionCreated = await _expenseExpenseService.CreateTransactions(userId, transactions);
 
-            if (transactionCreated.Value == null) return BadRequest();
+            if (transactionCreated.Value == null) return BadRequest(new { message = "Failed to create transactions" });
             return Ok(transactionCreated);
         }
 
