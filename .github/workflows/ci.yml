@@ -20,5 +20,8 @@ jobs:
         run: ls -l
     
       - name: Install SBOM tool
-        run: curl -sSfL https://get.anchore.io/syft | sudo sh -s -- -b /usr/local/bin & syft ./expensetracker
+        run: curl -sSfL https://get.anchore.io/syft | sudo sh -s -- -b /usr/local/bin
+      
+      - name: Create SBOM
+        run: syft ./expensetracker
       
