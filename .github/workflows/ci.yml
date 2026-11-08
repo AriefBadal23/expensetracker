@@ -23,5 +23,8 @@ jobs:
         run: curl -sSfL https://get.anchore.io/syft | sudo sh -s -- -b /usr/local/bin
       
       - name: Create SBOM
-        run: syft ./
-      
+        run: syft ./ --source-name expensetracker -o cyclonedx-json=sbom.cdx.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: expensetracker-sbom
+          path: sbom.cdx.json
