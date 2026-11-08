@@ -212,7 +212,7 @@ namespace expensetrackerapi.Services
                 return Result<object>.Success(
                     new
                     {
-                        Total = bucketYearTransactions.Count(),
+                        Total = bucketYearTransactions.Count,
                         PageTotal = pagedBucketYearTransactions.Count(),
                         Transactions = pagedBucketYearTransactions
                     }
@@ -319,9 +319,13 @@ namespace expensetrackerapi.Services
         public async Task<Result<ResponseTransactionDTo[]>> CreateTransactions(string userId,
             RequestTransactionDto[] transactions)
         {
+            
             ResponseTransactionDTo[] mappedTransactionsResponse = new ResponseTransactionDTo[transactions.Length];
             Transaction[] mappedTransactions = new Transaction[transactions.Length];
-
+            
+            if (transactions.Length == 0) return Result<ResponseTransactionDTo[]>.Failure(new Error("EMPTY_INPUT", "No transactions provided"));
+            
+            
             // Salary bucket of the current logged in user.
             UserBuckets salary =
                 await _db.UserBuckets.FirstAsync(ub => ub.BucketId == 1 && ub.ApplicationUserId == userId);
@@ -400,7 +404,6 @@ namespace expensetrackerapi.Services
                 // then add it back to the income and decrease the bucket amount.
                 // only add when there is at least one income transaction to prevent negative.
                 // otherwise decrease it from the income and decrease it from the Income as well.
-
                 if (transactionBucket.Type == BucketTypes.Expense)
                 {
                     userBuckets.Total -= deletedTransaction.Amount;
