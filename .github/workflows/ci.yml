@@ -31,4 +31,8 @@ jobs:
       - name: Install Grype
         run: curl -sSfL https://get.anchore.io/grype | sudo sh -s -- -b /usr/local/bin
       - name: SCA Test
-        run: grype sbom.cdx.json
+        run: grype sbom:sbom.cdx.json -o sarif -f report
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sca-report
+          path: report
