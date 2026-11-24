@@ -20,7 +20,16 @@ jobs:
         run: ls -l
     
       - name: Install SBOM tool
-        run: curl -sSfL https://get.anchore.io/syft | sudo sh -s -- -b /usr/local/bin
+        env:
+          VERSION: "v13.9.0"
+          ASSET: "cdx-audit-linux-amd64"
+          BASE_URL: "https://github.com/cdxgen/cdxgen/releases/download/${VERSION}"
+        run: 
+              curl -fsSLO "${BASE_URL}/${ASSET}"
+              curl -fsSLO "${BASE_URL}/${ASSET}.sha256"
+              sha256sum -c "${ASSET}.sha256"
+              chmod +x "${ASSET}"
+              ./"${ASSET}" --help
 
       - name: Create SBOM
         run: syft ./ --source-name expensetracker -o cyclonedx-json=sbom.cdx.json
