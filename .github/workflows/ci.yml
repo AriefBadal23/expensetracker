@@ -33,7 +33,7 @@ jobs:
               sudo mv "${ASSET}" /usr/local/bin/cdxgen
 
       - name: Create SBOM
-        run: cdxgen -t js-o sbom.cdx.json
+        run: cdxgen -t js-o sbom.cdx.json .
       - uses: actions/upload-artifact@v7
         with:
           name: expensetracker-sbom
