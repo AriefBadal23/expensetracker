@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  pull_request:
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v7.1.0
+
+      - name: test  
+        run: ls -l
+    
+      - name: Install SBOM tool
+        run: curl -sSfL https://get.anchore.io/syft | sudo sh -s -- -b /usr/local/bin
+
+      - name: Create SBOM
+        run: syft ./ --source-name expensetracker -o cyclonedx-json=sbom.cdx.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: expensetracker-sbom
+          path: sbom.cdx.json
+      - name: Install Grype
+        run: curl -sSfL https://get.anchore.io/grype | sudo sh -s -- -b /usr/local/bin
+      - name: SCA Test
+        run: grype sbom:sbom.cdx.json -o sarif --file report.sarif
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sca-report
+          path: report.sarif

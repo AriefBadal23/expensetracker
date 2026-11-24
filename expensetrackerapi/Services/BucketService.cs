@@ -77,6 +77,8 @@ public class BucketService : IBucketService
 
         // THe code before cause issues with showing the total of the newly created bucket.
         var userBucketTotal = userBucket.Total;
+        _logger.LogInformation("User with userId {UserId} has created an new bucket with the name {BucketName}", userId,
+            newBucket.Name);
 
         return Result<UserBucketResponseDto>.Success(new UserBucketResponseDto
         {
@@ -178,6 +180,8 @@ public class BucketService : IBucketService
                 _db.UserBuckets.Remove(userBucket);
 
                 await _db.SaveChangesAsync();
+                _logger.LogInformation("User with userId {UserId} has deleted an new bucket with the id {BucketId}",
+                    userId, deletedBucket.BucketId);
                 return Result<bool>.Success(true);
             }
         }
@@ -235,6 +239,8 @@ public class BucketService : IBucketService
         _db.Buckets.Update(updatedBucket);
         await _db.SaveChangesAsync();
 
+        _logger.LogInformation("User with userId {UserId} has updated an bucket with the id {BucketId}", userId,
+            bucketId);
 
         return Result<UserBucketResponseDto>.Success(new UserBucketResponseDto
         {
@@ -271,9 +277,16 @@ public class BucketService : IBucketService
             }).FirstOrDefaultAsync();
 
         if (userBucket == null || userbucketExists == null || userExists == null)
+        {
+            _logger.LogInformation(
+                "User with userId {UserId} has failed to retrieve the details of an bucket with the id {BucketId}",
+                userId, bucketId);
             return Result<UserBucketResponseDto>.Failure();
+        }
 
-
+        _logger.LogInformation(
+            "User with userId {UserId} has retrieved the details of an bucket with the id {BucketId}", userId,
+            bucketId);
         return Result<UserBucketResponseDto>.Success(userBucket);
     }
 }
