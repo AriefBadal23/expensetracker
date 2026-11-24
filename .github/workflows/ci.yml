@@ -21,8 +21,8 @@ jobs:
     
       - name: Install SBOM tool
         run: |
-              VERSION="v13.9.0"
-              ASSET="cdx-audit-linux-amd64"
+              VERSION="v13.8.0"
+              ASSET="cdxgen-linux-amd64"
               BASE_URL="https://github.com/cdxgen/cdxgen/releases/download/${VERSION}"
               curl -fsSLO "${BASE_URL}/${ASSET}"
               curl -fsSLO "${BASE_URL}/${ASSET}.sha256"
