@@ -28,7 +28,7 @@ jobs:
               curl -fsSLO "${BASE_URL}/${ASSET}.sha256"
               sha256sum -c "${ASSET}.sha256"
               chmod +x "${ASSET}"
-              sudo mv "${ASSET}" /usr/local/bin/cdx-audit
+              sudo mv "${ASSET}" /usr/local/bin/cdxgen
 
       - name: Create SBOM
         run: cdxgen-secure -t js-o sbom.cdx.json
