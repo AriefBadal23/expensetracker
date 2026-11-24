@@ -31,7 +31,7 @@ jobs:
               sudo mv "${ASSET}" /usr/local/bin/cdx-audit
 
       - name: Create SBOM
-        run: syft ./ --source-name expensetracker -o cyclonedx-json=sbom.cdx.json
+        run: cdxgen-secure -t js-o sbom.cdx.json
       - uses: actions/upload-artifact@v7
         with:
           name: expensetracker-sbom
